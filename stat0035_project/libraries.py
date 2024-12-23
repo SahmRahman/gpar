@@ -11,6 +11,7 @@ from wbml.experiment import WorkingDirectory
 import wbml.plot
 import sys
 from datetime import datetime
+import pickle_helper
 
 print('Libraries imported successfully')
 
