@@ -5,7 +5,7 @@ from wbml.experiment import WorkingDirectory
 import wbml.plot
 
 if __name__ == "__main__":
-    wd = WorkingDirectory("_experiments", "synthetic", seed=1)
+    wd = WorkingDirectory("test_run", seed = 1)
 
     # Create toy data set.
     n = 200
@@ -13,9 +13,9 @@ if __name__ == "__main__":
     noise = 0.1
 
     # Draw functions depending on each other in complicated ways.
-    f1 = -np.sin(10 * np.pi * (x + 1)) / (2 * x + 1) - x ** 4
-    f2 = np.cos(f1) ** 2 + np.sin(3 * x)
-    f3 = f2 * f1 ** 2 + 3 * x
+    f1 = -np.cos(10 * np.pi * (x + 1)) / (2 * x + 1) - np.exp(x)
+    f2 = np.cos(f1) ** 2 + np.sin(x)
+    f3 = f2 * f1 ** 2 + 3 * x**5
     f = np.stack((f1, f2, f3), axis=0).T
 
     # Add noise and subsample.
@@ -24,19 +24,20 @@ if __name__ == "__main__":
 
     # Fit and predict GPAR.
     model = GPARRegressor(
-        scale=0.1,
-        linear=True,
-        linear_scale=10.0,
-        nonlinear=True,
-        nonlinear_scale=0.1,
-        noise=0.1,
-        impute=True,
-        replace=False,
-        normalise_y=False,
+        scale=0.1,              # Initial length scale for the inputs.
+        linear=True,            # Use linear dependencies between outputs.
+        linear_scale=10.0,      # Length scale for linear dependencies between outputs.
+        nonlinear=True,         # Also use nonlinear dependencies between outputs.
+        nonlinear_scale=0.1,    # Length scale for nonlinear dependencies (post-normalisation, if enabled).
+        noise=0.1,              # Variance of the observation noise.
+        impute=True,            # Impute missing data to ensure data is closed downwards.
+        replace=False,          # Do not replace data points with posterior mean of previous layer (may retain noise).
+        normalise_y=False       # Work with raw outputs, without normalising them.
     )
+
     model.fit(x_obs, y_obs)
     means, lowers, uppers = model.predict(
-        x, num_samples=200, credible_bounds=True, latent=True
+        x, num_samples=100, credible_bounds=True, latent=True
     )
 
     # Fit and predict independent GPs: set `markov=0` in GPAR.
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     )
     igp.fit(x_obs, y_obs)
     igp_means, igp_lowers, igp_uppers = igp.predict(
-        x, num_samples=200, credible_bounds=True, latent=True
+        x, num_samples=100, credible_bounds=True, latent=True
     )
 
     # Plot the result.
