@@ -95,15 +95,15 @@ def append_to_pickle(file_path, new_row):
 
 
 # Example usage
-pickle_file_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/stat0035_project/Models.pkl'
-new_row_data = []
-
-try:
-    append_to_pickle(pickle_file_path, new_row_data)
-    print("Row appended successfully.")
-
-    # Read back the pickle file to verify
-    df = read_pickle_as_dataframe(pickle_file_path)
-    print("Data in pickle file as DataFrame:\n", df)
-except (DataFrameNotFoundError, PickleFileError) as e:
-    print(f"Error: {e}")
+# pickle_file_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl"
+# new_row_data = []
+#
+# try:
+#     append_to_pickle(pickle_file_path, new_row_data)
+#     print("Row appended successfully.")
+#
+#     # Read back the pickle file to verify
+#     df = read_pickle_as_dataframe(pickle_file_path)
+#     print("Data in pickle file as DataFrame:\n", df)
+# except (DataFrameNotFoundError, PickleFileError) as e:
+#     print(f"Error: {e}")

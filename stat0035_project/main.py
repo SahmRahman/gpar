@@ -11,8 +11,8 @@ import libraries as libs
 
 
 class WindFarmGPAR:
-    __modelling_history_filepath = ''
-    __models_filepath = ''
+    __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
+    __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 
     def __init__(self, train_data_path, test_data_path, model_params=[], existing=False, model_index=-1):
         """
@@ -25,8 +25,15 @@ class WindFarmGPAR:
         """
         self.train_data = libs.pd.read_pickle(train_data_path)
         self.test_data = libs.pd.read_pickle(test_data_path)
-        self.model = WindFarmGPAR.create_model(existing, model_params, model_index)
+
         # need to have some control over missing filepath
+
+        self.model = WindFarmGPAR.create_model(existing, model_params, model_index)
+
+        if model_index > -1:
+            self.model_index = model_index
+        else:
+            self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath))
 
     @staticmethod
     def create_model(existing, model_params, model_index):
@@ -51,7 +58,8 @@ class WindFarmGPAR:
             # add new model to our models file
             libs.pkl.append_to_pickle(WindFarmGPAR.__models_filepath, model_params)
 
-            model = libs.gpar.GPARRegressor(model_params)
+            model = libs.gpar.GPARRegressor(*model_params)
+            # *model_params is python's way of unpacking an array
 
             # ================== GPARRegressor parameters ==================
 
@@ -86,7 +94,7 @@ class WindFarmGPAR:
         return df[columns].values
 
     @staticmethod
-    def log_results(results_df, input_cols, output_cols, training_indices, test_indices):
+    def log_results(results_df, input_cols, output_cols, training_indices, test_indices, model_index):
         """
         log the results of a model run
 
@@ -95,24 +103,25 @@ class WindFarmGPAR:
         :param output_cols: output columns, list of strings
         :param training_indices: indices of the original training data dataframe, list of ints
         :param test_indices: indices of the original test data dataframe, list of ints
+        :param model_index: model index, int
         :return: NONE, simply saves results to pickle file and prints the filename
         """
 
         # Get the current timestamp
         timestamp = libs.datetime.now().strftime("%Y-%m-%d_%H-%M")
 
-        # Create the dynamic filename
-        filename = f"test results_{timestamp}.pkl"
-
         results_df['Input Columns'] = input_cols
         results_df['Output Columns'] = output_cols
         results_df['Training Data Indices'] = training_indices
         results_df['Test Data Indices'] = test_indices
+        results_df['Model Index'] = model_index
+        results_df['Timestamp'] = timestamp
 
         # Save the DataFrame as a Pickle file
-        results_df.to_pickle(filename)
+        results_list = results_df.values
 
-        print(f"DataFrame saved to {filename}")
+        libs.pkl.append_to_pickle(file_path=WindFarmGPAR.__modelling_history_filepath,
+                                  new_row=results_list)
 
     def train_model(self, input_columns, output_columns):
         """
@@ -142,25 +151,13 @@ class WindFarmGPAR:
         test_input = WindFarmGPAR.specify_data(test_sample, input_columns)
         test_output = WindFarmGPAR.specify_data(test_sample, output_columns)
 
-        model_df = libs.pd.DataFrame(data={
-            'scale': libs.pd.Series(dtype='float'),
-            'linear': libs.pd.Series(dtype='bool'),
-            'linear_scale': libs.pd.Series(dtype='float'),
-            'nonlinear': libs.pd.Series(dtype='bool'),
-            'nonlinear_scale': libs.pd.Series(dtype='float'),
-            'noise': libs.pd.Series(dtype='float'),
-            'impute': libs.pd.Series(dtype='bool'),
-            'replace': libs.pd.Series(dtype='bool'),
-            'normalise_y': libs.pd.Series(dtype='bool')
-        })
-
         # train model
-        model.fit(training_input, training_output)
+        self.model.fit(training_input, training_output)
 
         # collect metadata
-        means, lowers, uppers = model.predict(test_input,
-                                              num_samples=5,
-                                              credible_bounds=True)
+        means, lowers, uppers = self.model.predict(test_input,
+                                                   num_samples=5,
+                                                   credible_bounds=True)
 
         error = means - test_output
 
@@ -187,8 +184,7 @@ class WindFarmGPAR:
 
 
 model_obj = WindFarmGPAR(train_data_path=libs.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/train.pkl",
-                         test_data_path=libs.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/test.pkl",
-                         local_path=libs.os.getcwd())
+                         test_data_path=libs.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/test.pkl")
 
 model_obj.train_model(input_columns=['Wind.speed.me'],
                       output_columns=['Power.me'])
