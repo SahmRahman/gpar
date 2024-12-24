@@ -72,7 +72,7 @@ class WindFarmGPAR:
         # Save the DataFrame as a Pickle file
         results_df.to_pickle(filename)
 
-        print(f"DataFrame saved to {filename}")
+        print(f"DataFrame saved to {filename} yeet")
 
     def train_model(self, input_columns, output_columns):
         """
