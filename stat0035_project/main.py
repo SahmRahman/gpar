@@ -7,12 +7,14 @@ Original file is located at
     https://colab.research.google.com/drive/1EIyv_OmfhwVD_5KTqAZvXIKv1-a_vwvZ
 """
 
-import libraries
+import libraries as libs
 
 
 class WindFarmGPAR:
+    __modelling_history_filepath = ''
+    __models_filepath = ''
 
-    def __init__(self, train_data_path, test_data_path, local_path, model_params):
+    def __init__(self, train_data_path, test_data_path, model_params=[], existing=False, model_index=-1):
         """
         initialiser for a model
 
@@ -21,11 +23,49 @@ class WindFarmGPAR:
         :param local_path: filepath, string
         :param model_params: list of 9 elements, parameters for the GPARRegressor model
         """
-        self.train_data = libraries.pd.read_pickle(train_data_path)
-        self.test_data = libraries.pd.read_pickle(test_data_path)
-        self.local_path = local_path
-        self.model_params = model_params
+        self.train_data = libs.pd.read_pickle(train_data_path)
+        self.test_data = libs.pd.read_pickle(test_data_path)
+        self.model = WindFarmGPAR.create_model(existing, model_params, model_index)
         # need to have some control over missing filepath
+
+    @staticmethod
+    def create_model(existing, model_params, model_index):
+        """
+        create GPARRegressor model, either from scratch or rebuild
+
+        :param existing: model exists already, bool
+        :param model_params: model parameters, list
+        :param model_index: index in model pickle/dataframe, int
+        :return: model, GPARRegressor instance
+        """
+
+        if existing and model_index > -1:
+            # model exists, pull from pickle file @ given index
+
+            models_df = libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)
+            return models_df[model_index]
+
+        else:
+            # need to make from scratch using model_params
+
+            # add new model to our models file
+            libs.pkl.append_to_pickle(WindFarmGPAR.__models_filepath, model_params)
+
+            model = libs.gpar.GPARRegressor(model_params)
+
+            # ================== GPARRegressor parameters ==================
+
+            # scale=0.1,            Initial length scale for the inputs.
+            # linear=True,          Use linear dependencies between outputs.
+            # linear_scale=10.0,    Length scale for linear dependencies between outputs.
+            # nonlinear=True,       Also use nonlinear dependencies between outputs.
+            # nonlinear_scale=0.1,  Length scale for nonlinear dependencies (post-normalisation, if enabled).
+            # noise=0.1,            Variance of the observation noise.
+            # impute=True,          Impute missing data to ensure data is closed downwards.
+            # replace=False,        Do not replace data points with posterior mean of previous layer (retains noise).
+            # normalise_y=False     Work with raw outputs, without normalising them.
+
+            return model
 
     def sample_data(self):
         train_sample = self.train_data.iloc[:100]
@@ -59,7 +99,7 @@ class WindFarmGPAR:
         """
 
         # Get the current timestamp
-        timestamp = libraries.datetime.now().strftime("%Y-%m-%d_%H-%M")
+        timestamp = libs.datetime.now().strftime("%Y-%m-%d_%H-%M")
 
         # Create the dynamic filename
         filename = f"test results_{timestamp}.pkl"
@@ -72,7 +112,7 @@ class WindFarmGPAR:
         # Save the DataFrame as a Pickle file
         results_df.to_pickle(filename)
 
-        print(f"DataFrame saved to {filename} yeet")
+        print(f"DataFrame saved to {filename}")
 
     def train_model(self, input_columns, output_columns):
         """
@@ -102,42 +142,17 @@ class WindFarmGPAR:
         test_input = WindFarmGPAR.specify_data(test_sample, input_columns)
         test_output = WindFarmGPAR.specify_data(test_sample, output_columns)
 
-        # Fit and predict GPAR.
-        model = libraries.gpar.GPARRegressor(self.model_params)
-            # scale=0.1,  # Initial length scale for the inputs.
-            # linear=True,  # Use linear dependencies between outputs.
-            # linear_scale=10.0,  # Length scale for linear dependencies between outputs.
-            # nonlinear=True,  # Also use nonlinear dependencies between outputs.
-            # nonlinear_scale=0.1,  # Length scale for nonlinear dependencies (post-normalisation, if enabled).
-            # noise=0.1,  # Variance of the observation noise.
-            # impute=True,  # Impute missing data to ensure data is closed downwards.
-            # replace=False,  # Do not replace data points with posterior mean of previous layer (retains noise).
-            # normalise_y=False  # Work with raw outputs, without normalising them.
-
-
-        model_df = libraries.pd.DataFrame(columns=['scale', 'linear', ...])
-        model_df[1] = [1, False, 1000]
-
-        dummy_model = libraries.gpar.GPARRegressor(
-            scale=1,  # Initial length scale for the inputs.
-            linear=False,  # Use linear dependencies between outputs.
-            linear_scale=10.0,  # Length scale for linear dependencies between outputs.
-            nonlinear=True,  # Also use nonlinear dependencies between outputs.
-            nonlinear_scale=0.1,  # Length scale for nonlinear dependencies (post-normalisation, if enabled).
-            noise=0.1,  # Variance of the observation noise.
-            impute=True,  # Impute missing data to ensure data is closed downwards.
-            replace=False,  # Do not replace data points with posterior mean of previous layer (retains noise).
-            normalise_y=False  # Work with raw outputs, without normalising them.
-        )
-
-        dummy_df = libraries.pd.DataFrame(
-            columns=['scale', 'linear', 'linear_scale', 'nonlinear', 'nonlinear_scale', 'noise', 'impute', 'replace',
-                     'normalise_y'])
-
-        dummy_df.loc[0] = [1, False, 10, True, 0.1, 0.1, True, False, False]
-        print(dummy_df)
-
-        dummy_df.to_pickle('dummy test pickle.pkl')
+        model_df = libs.pd.DataFrame(data={
+            'scale': libs.pd.Series(dtype='float'),
+            'linear': libs.pd.Series(dtype='bool'),
+            'linear_scale': libs.pd.Series(dtype='float'),
+            'nonlinear': libs.pd.Series(dtype='bool'),
+            'nonlinear_scale': libs.pd.Series(dtype='float'),
+            'noise': libs.pd.Series(dtype='float'),
+            'impute': libs.pd.Series(dtype='bool'),
+            'replace': libs.pd.Series(dtype='bool'),
+            'normalise_y': libs.pd.Series(dtype='bool')
+        })
 
         # train model
         model.fit(training_input, training_output)
@@ -160,7 +175,7 @@ class WindFarmGPAR:
         train_indices = train_sample[['index']].values.flatten()
         test_indices = test_sample[['index']].values.flatten()
 
-        metadata = libraries.pd.DataFrame(metadata)
+        metadata = libs.pd.DataFrame(metadata)
 
         WindFarmGPAR.log_results(
             results_df=metadata,
@@ -171,10 +186,9 @@ class WindFarmGPAR:
         )
 
 
-model_obj = WindFarmGPAR(train_data_path=libraries.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/train.pkl",
-                         test_data_path=libraries.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/test.pkl",
-                         local_path=libraries.os.getcwd())
+model_obj = WindFarmGPAR(train_data_path=libs.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/train.pkl",
+                         test_data_path=libs.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/test.pkl",
+                         local_path=libs.os.getcwd())
 
 model_obj.train_model(input_columns=['Wind.speed.me'],
                       output_columns=['Power.me'])
-

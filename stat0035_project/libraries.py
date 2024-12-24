@@ -1,5 +1,5 @@
 import os
-os.chdir("/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub")
+os.chdir("/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project")
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,7 +11,7 @@ from wbml.experiment import WorkingDirectory
 import wbml.plot
 import sys
 from datetime import datetime
-import pickle_helper
+import pickle_helper as pkl
 
 print('Libraries imported successfully')
 
