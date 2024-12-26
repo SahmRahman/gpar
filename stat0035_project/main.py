@@ -33,7 +33,7 @@ class WindFarmGPAR:
         if model_index > -1:
             self.model_index = model_index
         else:
-            self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath))
+            self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)) - 1
 
     @staticmethod
     def create_model(existing, model_params, model_index):
@@ -183,8 +183,9 @@ class WindFarmGPAR:
         )
 
 
-model_obj = WindFarmGPAR(train_data_path=libs.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/train.pkl",
-                         test_data_path=libs.os.getcwd() + "/Wind farm final year project _ SR_DL_PD/test.pkl")
+model_obj = WindFarmGPAR(train_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl",
+                         test_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl",
+                         model_params=[0.1, True, 10.0, True, 0.1, 0.1, True, False, False])
 
 model_obj.train_model(input_columns=['Wind.speed.me'],
                       output_columns=['Power.me'])

@@ -82,7 +82,7 @@ def append_to_pickle(file_path, new_row):
 
     validate_row(data, new_row)  # check incoming row matches values of dataframe
 
-    data[len(data)] = new_row  # if we got to here, then we can append the row
+    data.loc[len(data)] = new_row  # if we got to here, then we can append the row
 
     try:
         # Save updated data back to the pickle file
@@ -95,7 +95,44 @@ def append_to_pickle(file_path, new_row):
 
 
 # Example usage
-# pickle_file_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl"
+pickle_file_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl"
+
+data = read_pickle_as_dataframe(pickle_file_path)
+# print(data)
+# data = data.iloc[0:0]
+# print("data after removal")
+# print(data)
+# with open(pickle_file_path, 'wb') as f:
+#     pickle.dump(data, f)
+
+data_dict = {
+    'replace': pd.Series(dtype='bool'),
+    'impute': pd.Series(dtype='bool'),
+    'scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'scale_tie': pd.Series(dtype='bool'),
+    'per': pd.Series(dtype='bool'),
+    'per_period': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'per_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'per_decay': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'input_linear': pd.Series(dtype='bool'),
+    'input_linear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'linear': pd.Series(dtype='bool'),
+    'linear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'nonlinear': pd.Series(dtype='bool'),
+    'nonlinear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'rq': pd.Series(dtype='bool'),
+    'markov': pd.Series(dtype='int'),  # Using 'int' for Markov order
+    'noise': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'x_ind': pd.Series(dtype='object'),  # Using 'object' for tensors
+    'normalise_y': pd.Series(dtype='bool'),
+    'transform_y': pd.Series(dtype='object')  # Using 'object' for tuples
+}
+
+
+
+# data = read_pickle_as_dataframe()
+# print("just to check")
+# print(data)
 # new_row_data = []
 #
 # try:
