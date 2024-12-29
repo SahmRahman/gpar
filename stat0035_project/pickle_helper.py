@@ -45,21 +45,37 @@ def read_pickle_as_dataframe(file_path):
 
 
 # Function to validate a row against DataFrame column data types
-def validate_row(df, row):
-    # Check if the row length matches the number of columns
-    if len(row) != len(df.columns):
-        raise ValueError(
-            f"Row length {len(row)} does not match the number of DataFrame columns {len(df.columns)}."
-        )
+def validate_row(df, df_to_append):
+    # # Check if the row length matches the number of columns
+    # if len(df_to_append.columns) != len(df.columns):
+    #     # raise ValueError(
+    #     #     f"Row length {len(df_to_append)} does not match the number of DataFrame columns {len(df.columns)}."
+    #     # )
+    #     pass
 
-    for col, value in zip(df.columns, row):
-        expected_dtype = df[col].dtype
-        actual_dtype = pd.Series([value]).dtype
+    # for col, value in zip(df.columns, df_to_append.values()):
+    #     expected_dtype = df[col].dtype
+    #     actual_dtype = pd.Series([value]).dtype
+    #
+    #     # Check if the value matches the expected column dtype
+    #     if not pd.api.types.is_dtype_equal(expected_dtype, actual_dtype):
+    #         raise ValueError(
+    #             f"Value {value} in column '{col}' doesn't match expected type {expected_dtype}."
+    #         )
 
-        # Check if the value matches the expected column dtype
-        if not pd.api.types.is_dtype_equal(expected_dtype, actual_dtype):
+    for col, value in (df_to_append.columns.to_list(), df_to_append.values.flatten().tolist()):
+        if col in df.columns:
+            expected_dtype = df[col].dtype
+            actual_dtype = pd.Series([value]).dtype
+
+            # Check if the value matches the expected column dtype
+            if not pd.api.types.is_dtype_equal(expected_dtype, actual_dtype) and expected_dtype != 'object':
+                raise ValueError(
+                    f"Value {value} in column '{col}' doesn't match expected type {expected_dtype}."
+                )
+        else:
             raise ValueError(
-                f"Value {value} in column '{col}' doesn't match expected type {expected_dtype}."
+                f'New Column "{col}" not found in DataFrame.'
             )
 
 
@@ -82,7 +98,10 @@ def append_to_pickle(file_path, new_row):
 
     validate_row(data, new_row)  # check incoming row matches values of dataframe
 
-    data.loc[len(data)] = new_row  # if we got to here, then we can append the row
+    new_data = pd.DataFrame.from_dict([new_row])
+    # need to wrap new_row in a list so pandas knows to make a single row dataframe
+
+    data = pd.concat([data, new_data])  # if we got to here, then we can append the row
 
     try:
         # Save updated data back to the pickle file
@@ -95,7 +114,7 @@ def append_to_pickle(file_path, new_row):
 
 
 # Example usage
-pickle_file_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl"
+pickle_file_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl"
 
 data = read_pickle_as_dataframe(pickle_file_path)
 # print(data)

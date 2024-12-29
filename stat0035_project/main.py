@@ -14,14 +14,14 @@ class WindFarmGPAR:
     __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
     __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 
-    def __init__(self, train_data_path, test_data_path, model_params=[], existing=False, model_index=-1):
+    def __init__(self, train_data_path, test_data_path, model_params={}, existing=False, model_index=-1):
         """
         initialiser for a model
 
         :param train_data_path: filepath, string
         :param test_data_path: filepath, string
         :param local_path: filepath, string
-        :param model_params: list of 9 elements, parameters for the GPARRegressor model
+        :param model_params: dictionary of 9 pairs, parameter name:value for the GPARRegressor model
         """
         self.train_data = libs.pd.read_pickle(train_data_path)
         self.test_data = libs.pd.read_pickle(test_data_path)
@@ -41,7 +41,7 @@ class WindFarmGPAR:
         create GPARRegressor model, either from scratch or rebuild
 
         :param existing: model exists already, bool
-        :param model_params: model parameters, list
+        :param model_params: model parameters, dictionary
         :param model_index: index in model pickle/dataframe, int
         :return: model, GPARRegressor instance
         """
@@ -58,8 +58,8 @@ class WindFarmGPAR:
             # add new model to our models file
             libs.pkl.append_to_pickle(WindFarmGPAR.__models_filepath, model_params)
 
-            model = libs.gpar.GPARRegressor(*model_params)
-            # *model_params is python's way of unpacking an array
+            model = libs.gpar.GPARRegressor(*model_params.values())
+            # * is python's way of unpacking an array
 
             # ================== GPARRegressor parameters ==================
 
@@ -72,6 +72,8 @@ class WindFarmGPAR:
             # impute=True,          Impute missing data to ensure data is closed downwards.
             # replace=False,        Do not replace data points with posterior mean of previous layer (retains noise).
             # normalise_y=False     Work with raw outputs, without normalising them.
+
+            # there's some more but I don't think I'll mess with those
 
             return model
 
@@ -110,18 +112,20 @@ class WindFarmGPAR:
         # Get the current timestamp
         timestamp = libs.datetime.now().strftime("%Y-%m-%d_%H-%M")
 
-        results_df['Input Columns'] = input_cols
-        results_df['Output Columns'] = output_cols
-        results_df['Training Data Indices'] = training_indices
-        results_df['Test Data Indices'] = test_indices
+        results_df['Input Columns'] = [input_cols]
+        results_df['Output Columns'] = [output_cols]
+        results_df['Training Data Indices'] = [training_indices]
+        results_df['Test Data Indices'] = [test_indices]
+        # need to wrap the above in lists so their element in the dataframe is itself a list
+        # (rather than multiple entries of the same column)
+
         results_df['Model Index'] = model_index
         results_df['Timestamp'] = timestamp
 
         # Save the DataFrame as a Pickle file
-        results_list = results_df.values
 
         libs.pkl.append_to_pickle(file_path=WindFarmGPAR.__modelling_history_filepath,
-                                  new_row=results_list)
+                                  new_row=results_df)
 
     def train_model(self, input_columns, output_columns):
         """
@@ -162,11 +166,13 @@ class WindFarmGPAR:
         error = means - test_output
 
         metadata = {
-            "Means": means.flatten(),
-            "Lowers": lowers.flatten(),
-            "Uppers": uppers.flatten(),
-            "Error": error.flatten()
+            "Means": [means.flatten()],
+            "Lowers": [lowers.flatten()],
+            "Uppers": [uppers.flatten()],
+            "Error": [error.flatten()]
         }
+
+        # need to cast as whole list so lengths don't mess up
 
         # organise and log results
         train_indices = train_sample[['index']].values.flatten()
@@ -179,13 +185,34 @@ class WindFarmGPAR:
             input_cols=input_columns,
             output_cols=output_columns,
             training_indices=train_indices,
-            test_indices=test_indices
+            test_indices=test_indices,
+            model_index=self.model_index
         )
 
 
 model_obj = WindFarmGPAR(train_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl",
                          test_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl",
-                         model_params=[0.1, True, 10.0, True, 0.1, 0.1, True, False, False])
+                         model_index=0)
+
+# model_params={'scale': 0.1,
+#               'linear': True,
+#               'linear_scale': 10.0,
+#               'nonlinear': True,
+#               'nonlinear_scale': 0.1,
+#               'noise': 0.1,
+#               'impute': True,
+#               'replace': False,
+#               'normalise_y': False})
 
 model_obj.train_model(input_columns=['Wind.speed.me'],
                       output_columns=['Power.me'])
+
+# scale=0.1,            Initial length scale for the inputs.
+# linear=True,          Use linear dependencies between outputs.
+# linear_scale=10.0,    Length scale for linear dependencies between outputs.
+# nonlinear=True,       Also use nonlinear dependencies between outputs.
+# nonlinear_scale=0.1,  Length scale for nonlinear dependencies (post-normalisation, if enabled).
+# noise=0.1,            Variance of the observation noise.
+# impute=True,          Impute missing data to ensure data is closed downwards.
+# replace=False,        Do not replace data points with posterior mean of previous layer (retains noise).
+# normalise_y=False     Work with raw outputs, without normalising them.
