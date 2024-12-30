@@ -63,7 +63,7 @@ def validate_row(df, df_to_append):
     #             f"Value {value} in column '{col}' doesn't match expected type {expected_dtype}."
     #         )
 
-    for col, value in (df_to_append.columns.to_list(), df_to_append.values.flatten().tolist()):
+    for col, value in zip(df_to_append.columns.to_list(), df_to_append.values.flatten().tolist()):
         if col in df.columns:
             expected_dtype = df[col].dtype
             actual_dtype = pd.Series([value]).dtype
@@ -96,12 +96,13 @@ def append_to_pickle(file_path, new_row):
 
     data = read_pickle_as_dataframe(file_path)
 
+    if type(new_row) == dict:
+        new_row = pd.DataFrame.from_dict([new_row])
+        # need to wrap new_row in a list so pandas knows to make a single row dataframe
+
     validate_row(data, new_row)  # check incoming row matches values of dataframe
 
-    new_data = pd.DataFrame.from_dict([new_row])
-    # need to wrap new_row in a list so pandas knows to make a single row dataframe
-
-    data = pd.concat([data, new_data])  # if we got to here, then we can append the row
+    data = pd.concat([data, new_row])  # if we got to here, then we can append the row
 
     try:
         # Save updated data back to the pickle file
@@ -110,56 +111,27 @@ def append_to_pickle(file_path, new_row):
     except Exception as e:
         raise PickleFileError(f"Error saving to pickle file: {e}")
 
+# just keeping this if i never need to reset Models.pkl
 
-
-
-# Example usage
-pickle_file_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl"
-
-data = read_pickle_as_dataframe(pickle_file_path)
-# print(data)
-# data = data.iloc[0:0]
-# print("data after removal")
-# print(data)
-# with open(pickle_file_path, 'wb') as f:
-#     pickle.dump(data, f)
-
-data_dict = {
-    'replace': pd.Series(dtype='bool'),
-    'impute': pd.Series(dtype='bool'),
-    'scale': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'scale_tie': pd.Series(dtype='bool'),
-    'per': pd.Series(dtype='bool'),
-    'per_period': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'per_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'per_decay': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'input_linear': pd.Series(dtype='bool'),
-    'input_linear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'linear': pd.Series(dtype='bool'),
-    'linear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'nonlinear': pd.Series(dtype='bool'),
-    'nonlinear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'rq': pd.Series(dtype='bool'),
-    'markov': pd.Series(dtype='int'),  # Using 'int' for Markov order
-    'noise': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'x_ind': pd.Series(dtype='object'),  # Using 'object' for tensors
-    'normalise_y': pd.Series(dtype='bool'),
-    'transform_y': pd.Series(dtype='object')  # Using 'object' for tuples
-}
-
-
-
-# data = read_pickle_as_dataframe()
-# print("just to check")
-# print(data)
-# new_row_data = []
-#
-# try:
-#     append_to_pickle(pickle_file_path, new_row_data)
-#     print("Row appended successfully.")
-#
-#     # Read back the pickle file to verify
-#     df = read_pickle_as_dataframe(pickle_file_path)
-#     print("Data in pickle file as DataFrame:\n", df)
-# except (DataFrameNotFoundError, PickleFileError) as e:
-#     print(f"Error: {e}")
+# data_dict = {
+#     'replace': pd.Series(dtype='bool'),
+#     'impute': pd.Series(dtype='bool'),
+#     'scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'scale_tie': pd.Series(dtype='bool'),
+#     'per': pd.Series(dtype='bool'),
+#     'per_period': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'per_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'per_decay': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'input_linear': pd.Series(dtype='bool'),
+#     'input_linear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'linear': pd.Series(dtype='bool'),
+#     'linear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'nonlinear': pd.Series(dtype='bool'),
+#     'nonlinear_scale': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'rq': pd.Series(dtype='bool'),
+#     'markov': pd.Series(dtype='int'),  # Using 'int' for Markov order
+#     'noise': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'x_ind': pd.Series(dtype='object'),  # Using 'object' for tensors
+#     'normalise_y': pd.Series(dtype='bool'),
+#     'transform_y': pd.Series(dtype='object')  # Using 'object' for tuples
+# }

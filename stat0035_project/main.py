@@ -50,7 +50,12 @@ class WindFarmGPAR:
             # model exists, pull from pickle file @ given index
 
             models_df = libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)
-            return models_df[model_index]
+            model_params = models_df.iloc[model_index]
+
+            model_params = model_params[model_params.notna()]
+
+            # model_params = model_params.where(model_params.notna(), None)
+            # # replaces pandas `nan` values with None
 
         else:
             # need to make from scratch using model_params
@@ -58,24 +63,26 @@ class WindFarmGPAR:
             # add new model to our models file
             libs.pkl.append_to_pickle(WindFarmGPAR.__models_filepath, model_params)
 
-            model = libs.gpar.GPARRegressor(*model_params.values())
-            # * is python's way of unpacking an array
+        model = libs.gpar.GPARRegressor(**model_params)
+        # ** is python's way of unpacking a dictionary as parameters
 
-            # ================== GPARRegressor parameters ==================
+        # ================== GPARRegressor parameters ==================
 
-            # scale=0.1,            Initial length scale for the inputs.
-            # linear=True,          Use linear dependencies between outputs.
-            # linear_scale=10.0,    Length scale for linear dependencies between outputs.
-            # nonlinear=True,       Also use nonlinear dependencies between outputs.
-            # nonlinear_scale=0.1,  Length scale for nonlinear dependencies (post-normalisation, if enabled).
-            # noise=0.1,            Variance of the observation noise.
-            # impute=True,          Impute missing data to ensure data is closed downwards.
-            # replace=False,        Do not replace data points with posterior mean of previous layer (retains noise).
-            # normalise_y=False     Work with raw outputs, without normalising them.
+        '''
+        scale=0.1,            Initial length scale for the inputs.
+        linear=True,          Use linear dependencies between outputs.
+        linear_scale=10.0,    Length scale for linear dependencies between outputs.
+        nonlinear=True,       Also use nonlinear dependencies between outputs.
+        nonlinear_scale=0.1,  Length scale for nonlinear dependencies (post-normalisation, if enabled).
+        noise=0.1,            Variance of the observation noise.
+        impute=True,          Impute missing data to ensure data is closed downwards.
+        replace=False,        Do not replace data points with posterior mean of previous layer (retains noise).
+        normalise_y=False     Work with raw outputs, without normalising them.
+        '''
 
-            # there's some more but I don't think I'll mess with those
+        # there's some more, but I don't think I'll mess with those
 
-            return model
+        return model
 
     def sample_data(self):
         train_sample = self.train_data.iloc[:100]
@@ -190,9 +197,10 @@ class WindFarmGPAR:
         )
 
 
-model_obj = WindFarmGPAR(train_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl",
-                         test_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl",
-                         model_index=0)
+model_obj = WindFarmGPAR(
+    train_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl",
+    test_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl",
+    model_params={'scale': 50.0})
 
 # model_params={'scale': 0.1,
 #               'linear': True,
