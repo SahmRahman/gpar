@@ -33,7 +33,7 @@ class WindFarmGPAR:
         if model_index > -1:
             self.model_index = model_index
         else:
-            self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)) - 1
+            self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath))
 
     @staticmethod
     def create_model(existing, model_params, model_index):
