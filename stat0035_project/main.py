@@ -200,7 +200,9 @@ class WindFarmGPAR:
 model_obj = WindFarmGPAR(
     train_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl",
     test_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl",
-    model_params={'scale': 50.0})
+    model_params={},
+    existing=False,
+    model_index=-1)
 
 # model_params={'scale': 0.1,
 #               'linear': True,
