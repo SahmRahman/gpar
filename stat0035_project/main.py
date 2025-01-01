@@ -56,8 +56,7 @@ class WindFarmGPAR:
 
             model_params = model_params[model_params.notna()]
 
-            # model_params = model_params.where(model_params.notna(), None)
-            # # replaces pandas `nan` values with None
+            # only returns parameters that won't be their respective default values
 
         else:
             # need to make from scratch using model_params
@@ -70,19 +69,77 @@ class WindFarmGPAR:
 
         # ================== GPARRegressor parameters ==================
 
-        '''
-        scale=0.1,            Initial length scale for the inputs.
-        linear=True,          Use linear dependencies between outputs.
-        linear_scale=10.0,    Length scale for linear dependencies between outputs.
-        nonlinear=True,       Also use nonlinear dependencies between outputs.
-        nonlinear_scale=0.1,  Length scale for nonlinear dependencies (post-normalisation, if enabled).
-        noise=0.1,            Variance of the observation noise.
-        impute=True,          Impute missing data to ensure data is closed downwards.
-        replace=False,        Do not replace data points with posterior mean of previous layer (retains noise).
-        normalise_y=False     Work with raw outputs, without normalising them.
-        '''
-
-        # there's some more, but I don't think I'll mess with those
+        """
+        
+        replace (bool, optional):    
+            Replace observations with predictive means.
+            Helps the model deal with noisy data points.
+            Defaults to `False`.
+    
+        
+        impute (bool, optional):    
+            Impute data with predictive means to make the
+            data set closed downwards.
+            Helps the model deal with missing data.
+            Defaults to `True`.
+    
+        
+        scale (tensor, optional):    
+            Initial value(s) for the length scale(s) over the
+            inputs.
+            Defaults to `1.0`.
+    
+        
+        scale_tie (bool, optional):    
+            Tie the length scale(s) over the inputs.
+            Defaults to `False`.
+    
+        
+        per (bool, optional):    
+            Use a locally periodic kernel over the inputs.
+            Defaults to `False`.
+    
+        
+        per_period (tensor, optional):    
+            Initial value(s) for the period(s) of the
+            locally periodic kernel.
+            Defaults to `1.0`.
+    
+        
+        per_scale (tensor, optional):    
+            Initial value(s) for the length scale(s) of the
+            locally periodic kernel.
+            Defaults to `1.0`.
+    
+        
+        per_decay (tensor, optional):    
+            Initial value(s) for the length scale(s) of the
+            local change of the locally periodic kernel.
+            Defaults to `10.0`.
+    
+        
+        input_linear (bool, optional):    
+            Use a linear kernel over the inputs.
+            Defaults to `False`.
+    
+        
+        input_linear_scale (tensor, optional):    
+            Initial value(s) for the length
+            scale(s) of the linear kernel over the inputs.
+            Defaults to `100.0`.
+    
+        
+        linear (bool, optional):    
+            Use linear dependencies between outputs.
+            Defaults to `True`.
+    
+        
+        linear_scale (tensor, optional):    
+            Initial value(s) for the length scale(s) of
+            the linear dependencies.
+            Defaults to `100.0`.
+            
+        """
 
         return model
 
@@ -249,17 +306,6 @@ input_cols = [
     'Wind.dir.sin.max',
     'Wind.dir.cos.max'
 ]
-
-
-# model_params={'scale': 0.1,
-#               'linear': True,
-#               'linear_scale': 10.0,
-#               'nonlinear': True,
-#               'nonlinear_scale': 0.1,
-#               'noise': 0.1,
-#               'impute': True,
-#               'replace': False,
-#               'normalise_y': False})
 
 model_obj.train_model(input_columns=input_cols,
                       output_columns=['Power.me'])
