@@ -14,14 +14,15 @@ class WindFarmGPAR:
     __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
     __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 
-    def __init__(self, train_data_path, test_data_path, model_params={}, existing=False, model_index=-1):
+    def __init__(self, train_data_path, test_data_path, model_params, existing, model_index):
         """
         initialiser for a model
 
         :param train_data_path: filepath, string
         :param test_data_path: filepath, string
-        :param local_path: filepath, string
-        :param model_params: dictionary of 9 pairs, parameter name:value for the GPARRegressor model
+        :param existing: whether model already exists, boolean
+        :param model_index: index of model if it exists, int
+        :param model_params: parameter name:value for the GPARRegressor model, dictionary
         """
         self.train_data = libs.pd.read_pickle(train_data_path)
         self.test_data = libs.pd.read_pickle(test_data_path)
@@ -33,7 +34,8 @@ class WindFarmGPAR:
         if model_index > -1:
             self.model_index = model_index
         else:
-            self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath))
+            self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)) - 1
+            # need to have - 1 even if it's a new model b/c by now it would have been added to the Models.pkl file
 
     @staticmethod
     def create_model(existing, model_params, model_index):
@@ -200,9 +202,54 @@ class WindFarmGPAR:
 model_obj = WindFarmGPAR(
     train_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl",
     test_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl",
-    model_params={},
-    existing=False,
-    model_index=-1)
+    model_index=0,
+    existing=True,
+    model_params={})
+
+input_cols = [
+    'Wind.dir.std',
+    'Wind.speed.me',
+    'Wind.speed.sd',
+    'Wind.speed.min',
+    'Wind.speed.max',
+    'Front.bearing.temp.me',
+    'Front.bearing.temp.sd',
+    'Front.bearing.temp.min',
+    'Front.bearing.temp.max',
+    'Rear.bearing.temp.me',
+    'Rear.bearing.temp.sd',
+    'Rear.bearing.temp.min',
+    'Rear.bearing.temp.max',
+    'Stator1.temp.me',
+    'Nacelle.ambient.temp.me',
+    'Nacelle.temp.me',
+    'Transformer.temp.me',
+    'Gear.oil.inlet.temp.me',
+    'Gear.oil.temp.me',
+    'Top.box.temp.me',
+    'Hub.temp.me',
+    'Conv.Amb.temp.me',
+    'Rotor.bearing.temp.me',
+    'Transformer.cell.temp.me',
+    'Motor.axis1.temp.me',
+    'Motor.axis2.temp.me',
+    'CPU.temp.me',
+    'Blade.ang.pitch.pos.A.me',
+    'Blade.ang.pitch.pos.B.me',
+    'Blade.ang.pitch.pos.C.me',
+    'Gear.oil.inlet.press.me',
+    'Gear.oil.pump.press.me',
+    'Drive.train.acceleration.me',
+    'Tower.Acceleration.x',
+    'Tower.Acceleration.y',
+    'Wind.dir.sin.me',
+    'Wind.dir.cos.me',
+    'Wind.dir.sin.min',
+    'Wind.dir.cos.min',
+    'Wind.dir.sin.max',
+    'Wind.dir.cos.max'
+]
+
 
 # model_params={'scale': 0.1,
 #               'linear': True,
@@ -214,7 +261,7 @@ model_obj = WindFarmGPAR(
 #               'replace': False,
 #               'normalise_y': False})
 
-model_obj.train_model(input_columns=['Wind.speed.me'],
+model_obj.train_model(input_columns=input_cols,
                       output_columns=['Power.me'])
 
 # scale=0.1,            Initial length scale for the inputs.
