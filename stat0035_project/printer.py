@@ -84,3 +84,8 @@ df_columns = data.columns.tolist()
 # print("Num of shared elements:", len(shared_elements))
 
 selected_column_indices = [8,9,10,11,20,21,22,23,36,40,56,64,76,88,97,105,108,112,113,114,115,116,117,2,16,17,18,19,68,24,28,32,52,107,60,72,80,93,101,106,109]
+selected_column_indices.sort()
+
+selected_data = data.iloc[:, selected_column_indices]
+
+print("\n".join(selected_data.columns.tolist()))
