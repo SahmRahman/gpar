@@ -102,7 +102,10 @@ def append_to_pickle(file_path, new_row):
 
     validate_row(data, new_row)  # check incoming row matches values of dataframe
 
-    data = pd.concat([data, new_row])  # if we got to here, then we can append the row
+    data = pd.concat([data, new_row], ignore_index=True)
+    # if we got to here, then we can append the row
+    # ignore_index will make sure the concatenated dataframe's indices are successive and
+    # not affected by either of the original dataframes
 
     try:
         # Save updated data back to the pickle file
