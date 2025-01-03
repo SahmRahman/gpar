@@ -232,10 +232,10 @@ class WindFarmGPAR:
         error = means - test_output
 
         metadata = {
-            "Means": [means.flatten()],
-            "Lowers": [lowers.flatten()],
-            "Uppers": [uppers.flatten()],
-            "Error": [error.flatten()]
+            "Means": [means],
+            "Lowers": [lowers],
+            "Uppers": [uppers],
+            "Error": [error]
         }
 
         # need to cast as whole list so lengths don't mess up
