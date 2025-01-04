@@ -226,7 +226,7 @@ class WindFarmGPAR:
 
         # collect metadata
         means, lowers, uppers = self.model.predict(test_input,
-                                                   num_samples=5,
+                                                   num_samples=25,
                                                    credible_bounds=True)
 
         error = means - test_output
@@ -234,15 +234,16 @@ class WindFarmGPAR:
         # ================ organise and log results ================
 
         metadata = {
-            "Means": [{name: means[:, i].tolist() for i, name in enumerate(output_columns)}],
-            "Lowers": [{name: lowers[:, i].tolist() for i, name in enumerate(output_columns)}],
-            "Uppers": [{name: uppers[:, i].tolist() for i, name in enumerate(output_columns)}],
-            "Error": [{name: error[:, i].tolist() for i, name in enumerate(output_columns)}]
+            # uses dictionary comprehensions
+            # ---------- {key:value for key,value in iterable}
+            "Means":    [{name: means[:, i].tolist() for i, name in enumerate(output_columns)}],
+            "Lowers":   [{name: lowers[:, i].tolist() for i, name in enumerate(output_columns)}],
+            "Uppers":   [{name: uppers[:, i].tolist() for i, name in enumerate(output_columns)}],
+            "Error":    [{name: error[:, i].tolist() for i, name in enumerate(output_columns)}]
         }
         # dictionary with list values (of one length), each list consists of one dictionary where the output column is matched to its respective statistic list
         # e.g. metadata['Means'][0]['Power.me'] = list of sample means for Power.me
         # had to do additional list wrapping to not screw with dataframe element length
-
 
         train_indices = train_sample[['index']].values.flatten()
         test_indices = test_sample[['index']].values.flatten()
@@ -265,63 +266,56 @@ class WindFarmGPAR:
 model_obj = WindFarmGPAR(
     train_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl",
     test_data_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl",
-    model_index=0,
-    existing=True,
-    model_params={})
+    model_index=-1,
+    existing=False,
+    model_params={'scale':0.1})
 
-input_cols = [
-    'Wind.dir.std',
-    'Wind.speed.me',
-    'Wind.speed.sd',
-    'Wind.speed.min',
-    'Wind.speed.max',
-    'Front.bearing.temp.me',
-    'Front.bearing.temp.sd',
-    'Front.bearing.temp.min',
-    'Front.bearing.temp.max',
-    'Rear.bearing.temp.me',
-    'Rear.bearing.temp.sd',
-    'Rear.bearing.temp.min',
-    'Rear.bearing.temp.max',
-    'Stator1.temp.me',
-    'Nacelle.ambient.temp.me',
-    'Nacelle.temp.me',
-    'Transformer.temp.me',
-    'Gear.oil.inlet.temp.me',
-    'Gear.oil.temp.me',
-    'Top.box.temp.me',
-    'Hub.temp.me',
-    'Conv.Amb.temp.me',
-    'Rotor.bearing.temp.me',
-    'Transformer.cell.temp.me',
-    'Motor.axis1.temp.me',
-    'Motor.axis2.temp.me',
-    'CPU.temp.me',
-    'Blade.ang.pitch.pos.A.me',
-    'Blade.ang.pitch.pos.B.me',
-    'Blade.ang.pitch.pos.C.me',
-    'Gear.oil.inlet.press.me',
-    'Gear.oil.pump.press.me',
-    'Drive.train.acceleration.me',
-    'Tower.Acceleration.x',
-    'Tower.Acceleration.y',
-    'Wind.dir.sin.me',
-    'Wind.dir.cos.me',
-    'Wind.dir.sin.min',
-    'Wind.dir.cos.min',
-    'Wind.dir.sin.max',
-    'Wind.dir.cos.max'
-]
+input_cols = ['Wind.speed.me']
+
+# input_cols = [
+#     'Wind.dir.std',
+#     'Wind.speed.me',
+#     'Wind.speed.sd',
+#     'Wind.speed.min',
+#     'Wind.speed.max',
+#     'Front.bearing.temp.me',
+#     'Front.bearing.temp.sd',
+#     'Front.bearing.temp.min',
+#     'Front.bearing.temp.max',
+#     'Rear.bearing.temp.me',
+#     'Rear.bearing.temp.sd',
+#     'Rear.bearing.temp.min',
+#     'Rear.bearing.temp.max',
+#     'Stator1.temp.me',
+#     'Nacelle.ambient.temp.me',
+#     'Nacelle.temp.me',
+#     'Transformer.temp.me',
+#     'Gear.oil.inlet.temp.me',
+#     'Gear.oil.temp.me',
+#     'Top.box.temp.me',
+#     'Hub.temp.me',
+#     'Conv.Amb.temp.me',
+#     'Rotor.bearing.temp.me',
+#     'Transformer.cell.temp.me',
+#     'Motor.axis1.temp.me',
+#     'Motor.axis2.temp.me',
+#     'CPU.temp.me',
+#     'Blade.ang.pitch.pos.A.me',
+#     'Blade.ang.pitch.pos.B.me',
+#     'Blade.ang.pitch.pos.C.me',
+#     'Gear.oil.inlet.press.me',
+#     'Gear.oil.pump.press.me',
+#     'Drive.train.acceleration.me',
+#     'Tower.Acceleration.x',
+#     'Tower.Acceleration.y',
+#     'Wind.dir.sin.me',
+#     'Wind.dir.cos.me',
+#     'Wind.dir.sin.min',
+#     'Wind.dir.cos.min',
+#     'Wind.dir.sin.max',
+#     'Wind.dir.cos.max'
+# ]
+output_cols = ['Power.me']
 
 model_obj.train_model(input_columns=input_cols,
-                      output_columns=['Power.me'])
-
-# scale=0.1,            Initial length scale for the inputs.
-# linear=True,          Use linear dependencies between outputs.
-# linear_scale=10.0,    Length scale for linear dependencies between outputs.
-# nonlinear=True,       Also use nonlinear dependencies between outputs.
-# nonlinear_scale=0.1,  Length scale for nonlinear dependencies (post-normalisation, if enabled).
-# noise=0.1,            Variance of the observation noise.
-# impute=True,          Impute missing data to ensure data is closed downwards.
-# replace=False,        Do not replace data points with posterior mean of previous layer (retains noise).
-# normalise_y=False     Work with raw outputs, without normalising them.
+                      output_columns=output_cols)
