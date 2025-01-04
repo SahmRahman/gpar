@@ -231,20 +231,26 @@ class WindFarmGPAR:
 
         error = means - test_output
 
+        # ================ organise and log results ================
+
         metadata = {
-            "Means": [means],
-            "Lowers": [lowers],
-            "Uppers": [uppers],
-            "Error": [error]
+            "Means": [{name: means[:, i].tolist() for i, name in enumerate(output_columns)}],
+            "Lowers": [{name: lowers[:, i].tolist() for i, name in enumerate(output_columns)}],
+            "Uppers": [{name: uppers[:, i].tolist() for i, name in enumerate(output_columns)}],
+            "Error": [{name: error[:, i].tolist() for i, name in enumerate(output_columns)}]
         }
+        # dictionary with list values (of one length), each list consists of one dictionary where the output column is matched to its respective statistic list
+        # e.g. metadata['Means'][0]['Power.me'] = list of sample means for Power.me
+        # had to do additional list wrapping to not screw with dataframe element length
 
-        # need to cast as whole list so lengths don't mess up
 
-        # organise and log results
         train_indices = train_sample[['index']].values.flatten()
         test_indices = test_sample[['index']].values.flatten()
 
         metadata = libs.pd.DataFrame(metadata)
+        # now, metadata['Means'].iloc[0]['Power.me'] = list of sample means for Power.me
+        # ---- notice difference between [0] and .iloc[0] because we reference a row in a dataframe now
+        # ---- rather than just an element in a list
 
         WindFarmGPAR.log_results(
             results_df=metadata,
