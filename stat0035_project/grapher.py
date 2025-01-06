@@ -1,7 +1,7 @@
 import libraries as libs
 
 
-def plot_graph(x, y_list, labels=None, colors=None, x_label=None, y_label=None, title=None, x_limits=None,
+def plot_graph(x, y_list, model_history_index, labels=None, colors=None, x_label=None, y_label=None, title=None, x_limits=None,
                y_limits=None, save_path=None):
     """
     Plots a graph using the given x values and multiple y datasets with optional customization.
@@ -47,8 +47,9 @@ def plot_graph(x, y_list, labels=None, colors=None, x_label=None, y_label=None, 
 
     # Save the figure if a directory is provided
     if save_path:
-        filename = title.replace(" ", "_") + ".png" if title else f"Figure_{id(libs.plt)}.png"
-        # replace "_" with " " if a title is given, otherwise just do Figure_x.png
+        filename = title.replace(" ", "_") + ".png" if title else f"{x_label} vs. {y_label} - Modelling History Index {model_history_index} - {libs.datetime.now().strftime('%Y-%m-%d_%H-%M')}.png"
+        # replace "_" with " " if a title is given
+        # otherwise just do "X vs. Y - Modelling History Index z - 1999-01-01_00-59.png"
         full_path = libs.os.path.join(save_path, filename)
         libs.plt.savefig(full_path)
         print(f"Figure saved at: {full_path}")
