@@ -5,7 +5,7 @@ class WindFarmGPAR:
     __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
     __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 
-    def __init__(self, train_data_path, test_data_path, model_params, existing, model_index):
+    def __init__(self, train_data_path, test_data_path, model_params, existing, model_index, train_size=100, test_size=10):
         """
         initialiser for a model
 
@@ -14,6 +14,8 @@ class WindFarmGPAR:
         :param existing: whether model already exists, boolean
         :param model_index: index of model if it exists, int
         :param model_params: parameter name:value for the GPARRegressor model, dictionary
+        :param train_size: sample size of training data, int
+        :param test_size: sample size of test data, int
         """
         self.train_data = libs.pd.read_pickle(train_data_path)
         self.test_data = libs.pd.read_pickle(test_data_path)
@@ -27,6 +29,9 @@ class WindFarmGPAR:
         else:
             self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)) - 1
             # need to have - 1 even if it's a new model b/c by now it would have been added to the Models.pkl file
+
+        self.train_size = train_size
+        self.test_size = test_size
 
     @staticmethod
     def create_model(existing, model_params, model_index):
@@ -135,8 +140,14 @@ class WindFarmGPAR:
         return model
 
     def sample_data(self):
-        train_sample = self.train_data.iloc[:100]
-        test_sample = self.test_data.iloc[:100]
+        train_indices = libs.np.random.choice(self.train_data[['index']].values, self.train_size)
+        test_indices = libs.np.random.choice(self.test_data[['index']].values, self.test_size)
+        # get random sample without replacement from 'index' values in train/test dataframes
+        # of the given sizes
+
+        train_sample = self.train_data.iloc[train_indices]
+        test_sample = self.test_data.iloc[test_indices]
+        # select those rows
 
         return {"train": train_sample,
                 "test": test_sample}

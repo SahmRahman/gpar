@@ -8,6 +8,8 @@ models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondo
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 
+print(ph.read_pickle_as_dataframe(train_data_path)[['index']])
+
 
 print("Modelling History")
 df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)

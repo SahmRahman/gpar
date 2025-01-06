@@ -2,20 +2,30 @@ import GPARModel
 import pickle_helper as ph
 import grapher as gr
 
-
 model_history = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 
+# model = GPARModel.WindFarmGPAR(train_data_path=train_data_path,
+#                                test_data_path=test_data_path,
+#                                model_params={},
+#                                existing=True,
+#                                model_index=0)
+# model.train_model(input_columns=['Wind.speed.me'],
+#                   output_columns=['Power.me'])
+
+
 df = ph.read_pickle_as_dataframe(model_history)
-chosen_index = 3
+chosen_index = 10
 
 test_indices = df.iloc[chosen_index]['Test Data Indices']
-test_data = ph.read_pickle_as_dataframe(test_data_path).iloc[test_indices]
+test_data = ph.read_pickle_as_dataframe(test_data_path)
+test_data = test_data[test_data['index'].isin(test_indices)]
 
 train_indices = df.iloc[chosen_index]['Training Data Indices']
-train_data = ph.read_pickle_as_dataframe(train_data_path).iloc[train_indices]
+train_data = ph.read_pickle_as_dataframe(train_data_path)
+train_data = train_data[train_data['index'].isin(train_indices)]
 
 train_mean_power = ph.libs.np.mean(train_data['Power.me'])
 train_sd_power = ph.libs.np.std(train_data['Power.me'])
