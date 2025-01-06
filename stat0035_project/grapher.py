@@ -68,7 +68,7 @@ def plot_graph(x, y_list, model_history_index, labels=None, colors=None, x_label
         if title:
             filename = title.replace(" ", "_")
         else:
-            filename = f"{x_label} vs {y_label} - Modelling History Index {model_history_index} - {libs.datetime.now().strftime('%Y-%m-%d_%H-%M')}".replace(
+            filename = f"{libs.datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}".replace(
                 " ", "_")
 
         # replace "_" with " " if a title is given

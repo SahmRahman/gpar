@@ -1,7 +1,7 @@
 import pickle_helper as ph
 
 # Set option to display max number of columns
-ph.libs.pd.set_option('display.max_columns', 4)
+ph.libs.pd.set_option('display.max_columns', None)
 
 model_history = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
