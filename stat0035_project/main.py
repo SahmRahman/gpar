@@ -7,17 +7,18 @@ models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondo
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 
-# model = GPARModel.WindFarmGPAR(train_data_path=train_data_path,
-#                                test_data_path=test_data_path,
-#                                model_params={},
-#                                existing=True,
-#                                model_index=0)
-# model.train_model(input_columns=['Wind.speed.me'],
-#                   output_columns=['Power.me'])
-
+model = GPARModel.WindFarmGPAR(train_data_path=train_data_path,
+                               test_data_path=test_data_path,
+                               model_params={},
+                               existing=True,
+                               model_index=0,
+                               train_size=250,
+                               test_size=50)
+model.train_model(input_columns=['Wind.speed.me'],
+                  output_columns=['Power.me'])
 
 df = ph.read_pickle_as_dataframe(model_history)
-chosen_index = 10
+chosen_index = 11
 
 test_indices = df.iloc[chosen_index]['Test Data Indices']
 test_data = ph.read_pickle_as_dataframe(test_data_path)
@@ -36,19 +37,19 @@ test_sd_power = ph.libs.np.std(test_data['Power.me'])
 print(f"Training Data distribution for Power: N({round(float(train_mean_power), 2)}, {round(float(train_sd_power), 2)}^2)")
 print(f"Test Data distribution for Power: N({round(float(test_mean_power), 2)}, {round(float(test_sd_power), 2)}^2)")
 
-# x = test_data['Wind.speed.me'].values.tolist()
-# y = [test_data['Power.me'].values.tolist(),
-#      df.iloc[chosen_index]['Means']['Power.me'],
-#      df.iloc[chosen_index]['Lowers']['Power.me'],
-#      df.iloc[chosen_index]['Uppers']['Power.me']
-#      ]
+x = test_data['Wind.speed.me'].values.tolist()
+y = [test_data['Power.me'].values.tolist(),
+     df.iloc[chosen_index]['Means']['Power.me'],
+     df.iloc[chosen_index]['Lowers']['Power.me'],
+     df.iloc[chosen_index]['Uppers']['Power.me']
+     ]
 
 
-# gr.plot_graph(x=x,
-#               y_list=y,
-#               labels=['Observation', 'Means', 'Lower', 'Upper'],
-#               colors=['black', 'green', 'red', 'blue'],
-#               x_label='Mean Wind Speed (m/s)',
-#               y_label='Mean Power',
-#               title=f'Wind Speed vs Power {gr.libs.datetime.now().strftime("%Y-%m-%d_%H-%M")}',
-#               save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs')
+gr.plot_graph(x=x,
+              y_list=y,
+              labels=['Observation', 'Means', 'Lower', 'Upper'],
+              colors=['black', 'green', 'red', 'blue'],
+              x_label='Mean Wind Speed (metres per second)',
+              y_label='Mean Power',
+              model_history_index=chosen_index,
+              save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs')

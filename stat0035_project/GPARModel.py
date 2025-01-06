@@ -140,13 +140,13 @@ class WindFarmGPAR:
         return model
 
     def sample_data(self):
-        train_indices = libs.np.random.choice(self.train_data[['index']].values, self.train_size)
-        test_indices = libs.np.random.choice(self.test_data[['index']].values, self.test_size)
+        train_indices = libs.np.random.choice(self.train_data[['index']].values.flatten(), self.train_size)
+        test_indices = libs.np.random.choice(self.test_data[['index']].values.flatten(), self.test_size)
         # get random sample without replacement from 'index' values in train/test dataframes
         # of the given sizes
 
-        train_sample = self.train_data.iloc[train_indices]
-        test_sample = self.test_data.iloc[test_indices]
+        train_sample = self.train_data[self.train_data['index'].isin(train_indices)]
+        test_sample = self.test_data[self.test_data['index'].isin(test_indices)]
         # select those rows
 
         return {"train": train_sample,

@@ -1,7 +1,14 @@
 import libraries as libs
 
 
-def plot_graph(x, y_list, model_history_index, labels=None, colors=None, x_label=None, y_label=None, title=None, x_limits=None,
+def contains_illegal_chars(value, name):
+    illegal_characters = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0']
+    if any(char in value for char in illegal_characters):
+        raise ValueError(f"{name} contains illegal characters: {illegal_characters}")
+
+
+def plot_graph(x, y_list, model_history_index, labels=None, colors=None, x_label=None, y_label=None, title=None,
+               x_limits=None,
                y_limits=None, save_path=None):
     """
     Plots a graph using the given x values and multiple y datasets with optional customization.
@@ -18,6 +25,15 @@ def plot_graph(x, y_list, model_history_index, labels=None, colors=None, x_label
     - y_limits: tuple, optional, (min, max) limits for the y-axis
     - save_path: str, optional, directory to save the figure
     """
+
+    illegal_characters = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0']
+
+    # Validate labels
+    if x_label:
+        contains_illegal_chars(x_label, "x_label")
+    if y_label:
+        contains_illegal_chars(y_label, "y_label")
+
     libs.plt.figure(figsize=(8, 6))
 
     # Plot each dataset
@@ -47,10 +63,17 @@ def plot_graph(x, y_list, model_history_index, labels=None, colors=None, x_label
 
     # Save the figure if a directory is provided
     if save_path:
-        filename = title.replace(" ", "_") + ".png" if title else f"{x_label} vs. {y_label} - Modelling History Index {model_history_index} - {libs.datetime.now().strftime('%Y-%m-%d_%H-%M')}.png"
+        filename = ''
+
+        if title:
+            filename = title.replace(" ", "_")
+        else:
+            filename = f"{x_label} vs {y_label} - Modelling History Index {model_history_index} - {libs.datetime.now().strftime('%Y-%m-%d_%H-%M')}".replace(
+                " ", "_")
+
         # replace "_" with " " if a title is given
         # otherwise just do "X vs. Y - Modelling History Index z - 1999-01-01_00-59.png"
-        full_path = libs.os.path.join(save_path, filename)
+        full_path = libs.os.path.join(save_path, filename + '.png')
         libs.plt.savefig(full_path)
         print(f"Figure saved at: {full_path}")
 
