@@ -5,22 +5,16 @@ class WindFarmGPAR:
     __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
     __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 
-    def __init__(self, train_data_path, test_data_path, model_params, existing, model_index, train_size=100, test_size=10):
+    def __init__(self, model_params, existing, model_index):
         """
         initialiser for a model
 
-        :param train_data_path: filepath, string
-        :param test_data_path: filepath, string
         :param existing: whether model already exists, boolean
         :param model_index: index of model if it exists, int
         :param model_params: parameter name:value for the GPARRegressor model, dictionary
         :param train_size: sample size of training data, int
         :param test_size: sample size of test data, int
         """
-        self.train_data = libs.pd.read_pickle(train_data_path)
-        self.test_data = libs.pd.read_pickle(test_data_path)
-
-        # need to have some control over missing filepath
 
         self.model = WindFarmGPAR.create_model(existing, model_params, model_index)
 
@@ -28,10 +22,8 @@ class WindFarmGPAR:
             self.model_index = model_index
         else:
             self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)) - 1
-            # need to have - 1 even if it's a new model b/c by now it would have been added to the Models.pkl file
-
-        self.train_size = train_size
-        self.test_size = test_size
+            # need to have - 1 even if it's a new model b/c after the create_model() call,
+            # it would have been added to the Models.pkl file
 
     @staticmethod
     def create_model(existing, model_params, model_index):
@@ -182,20 +174,22 @@ class WindFarmGPAR:
 
         return model
 
-    def sample_data(self):
-        train_indices = libs.np.random.choice(self.train_data[['index']].values.flatten(), self.train_size)
-        test_indices = libs.np.random.choice(self.test_data[['index']].values.flatten(), self.test_size)
+    @staticmethod
+    def sample_data(train_df, test_df, train_size=100, test_size=10):
+        train_indices = libs.np.random.choice(train_df[['index']].values.flatten(), train_size)
+        test_indices = libs.np.random.choice(test_df[['index']].values.flatten(), test_size)
         # get random sample without replacement from 'index' values in train/test dataframes
         # of the given sizes
 
-        train_sample = self.train_data[self.train_data['index'].isin(train_indices)]
-        test_sample = self.test_data[self.test_data['index'].isin(test_indices)]
+        train_sample = train_df[train_df['index'].isin(train_indices)]
+        test_sample = test_df[test_df['index'].isin(test_indices)]
         # select those rows
 
         return {"train": train_sample,
                 "test": test_sample}
 
-    def sample_data(self, train_df, test_df, split_columns):
+    @staticmethod
+    def sample_data(train_df, test_df, split_columns, train_size=100, test_size=10):
 
         train_sample = []
         test_sample = []
@@ -207,8 +201,8 @@ class WindFarmGPAR:
                 selected_train_df = train_df[train_df[col] == value]
                 selected_test_df = test_df[test_df[col] == value]
 
-                train_indices = libs.np.random.choice(selected_train_df[['index']].values.flatten(), self.train_size)
-                test_indices = libs.np.random.choice(selected_test_df[['index']].values.flatten(), self.test_size)
+                train_indices = libs.np.random.choice(selected_train_df[['index']].values.flatten(), train_size)
+                test_indices = libs.np.random.choice(selected_test_df[['index']].values.flatten(), test_size)
 
                 train_sample.append(selected_train_df[selected_train_df['index'].isin(train_indices)])
                 test_sample.append(selected_test_df[selected_test_df['index'].isin(test_indices)])
@@ -220,7 +214,6 @@ class WindFarmGPAR:
         return {'train': train_sample,
                 'test': test_sample}
 
-
     @staticmethod
     def specify_data(df, columns):
         """
@@ -228,7 +221,7 @@ class WindFarmGPAR:
 
         :param df: input values, pandas DataFrame
         :param columns: input columns, list of strings
-        :return: 2D ndarray of selected columns from the dataframe, numpy ndarray
+        :return: ndarray of selected columns from the dataframe, numpy ndarray
         """
         return df[columns].values
 
@@ -264,43 +257,48 @@ class WindFarmGPAR:
         libs.pkl.append_to_pickle(file_path=WindFarmGPAR.__modelling_history_filepath,
                                   new_row=results_df)
 
-    def train_model(self, input_columns, output_columns):
+    def train_model(self, train_x, train_y,
+                    test_x, test_y,
+                    train_indices, test_indices,
+                    input_columns, output_columns):
         """
-        1) sample data of requested input and output columns
-        2) create the GPARRegressor model
-        3) train the model
-        4) store the results
-
-        :param input_columns: input columns, list of strings
-        :param output_columns: output columns, list of strings
-        :return: NONE, trains model and logs the results
+        fit model to train data, draw samples from resulting posterior and log the results
+        :param output_columns: names of outputs, list of strings
+        :param input_columns: names of inputs, list of strings
+        :param train_x: training input data, ndarray
+        :param train_y: training output data, ndarray
+        :param test_x: test input data, ndarray
+        :param test_y: test output data, ndarray
+        :param train_indices: indices in the training pickle file used for this model, list of ints
+        :param test_indices: indices in the test pickle file used for this model, list of ints
+        :return: NONE
         """
 
-        for cols in [input_columns, output_columns]:
-            if 'index' in cols:
-                cols.remove('index')
+        # for cols in [input_columns, output_columns]:
+        #     if 'index' in cols:
+        #         cols.remove('index')
 
-        sample_dict = self.sample_data()
-        train_sample = sample_dict['train']
-        test_sample = sample_dict['test']
+        # sample_dict = self.sample_data()
+        # train_sample = sample_dict['train']
+        # test_sample = sample_dict['test']
         # establish training and testing data for GPARRegressor model
         # want to preserve these to be pandas DataFrames
 
         # adjust shape/data type of data sample to be ndarrays for GPAR
-        training_input = WindFarmGPAR.specify_data(train_sample, input_columns)
-        training_output = WindFarmGPAR.specify_data(train_sample, output_columns)
-        test_input = WindFarmGPAR.specify_data(test_sample, input_columns)
-        test_output = WindFarmGPAR.specify_data(test_sample, output_columns)
+        # training_input = WindFarmGPAR.specify_data(train_sample, input_columns)
+        # training_output = WindFarmGPAR.specify_data(train_sample, output_columns)
+        # test_input = WindFarmGPAR.specify_data(test_sample, input_columns)
+        # test_output = WindFarmGPAR.specify_data(test_sample, output_columns)
 
         # train model
-        self.model.fit(training_input, training_output)
+        self.model.fit(train_x, train_y)
 
         # collect metadata
-        means, lowers, uppers = self.model.predict(test_input,
+        means, lowers, uppers = self.model.predict(test_x,
                                                    num_samples=25,
                                                    credible_bounds=True)
 
-        error = means - test_output
+        error = means - test_y
 
         # ================ organise and log results ================
 
@@ -312,12 +310,14 @@ class WindFarmGPAR:
             "Uppers": [{name: uppers[:, i].tolist() for i, name in enumerate(output_columns)}],
             "Error": [{name: error[:, i].tolist() for i, name in enumerate(output_columns)}]
         }
-        # dictionary with list values (of one length), each list consists of one dictionary where the output column is matched to its respective statistic list
+        # dictionary with list values (of one length),
+        # each list consists of one dictionary where the output column
+        #   is matched to its respective statistic list
         # e.g. metadata['Means'][0]['Power.me'] = list of sample means for Power.me
         # had to do additional list wrapping to not screw with dataframe element length
-
-        train_indices = train_sample[['index']].values.flatten()
-        test_indices = test_sample[['index']].values.flatten()
+        #
+        # train_indices = train_sample[['index']].values.flatten()
+        # test_indices = test_sample[['index']].values.flatten()
 
         metadata = libs.pd.DataFrame(metadata)
         # now, metadata['Means'].iloc[0]['Power.me'] = list of sample means for Power.me

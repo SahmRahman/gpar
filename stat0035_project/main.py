@@ -1,4 +1,4 @@
-import GPARModel
+from GPARModel import WindFarmGPAR
 import pickle_helper as ph
 import grapher as gr
 
@@ -7,12 +7,34 @@ models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondo
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 
-df1 = ph.libs.pd.DataFrame({'A':[1,2], 'B':[10,20]})
-df2 = ph.libs.pd.DataFrame({'a':[1,2,3], 'b':[10,20,30]})
+train_data = ph.read_pickle_as_dataframe(train_data_path)
+test_data = ph.read_pickle_as_dataframe(test_data_path)
 
-print(df1[df1['A'] == 1])
+model = WindFarmGPAR(model_params={},
+                     existing=True,
+                     model_index=0)
 
+input_cols = ['Wind.speed.me', 'turbine']
+output_cols = ['Power.me']
 
+sample_dict = WindFarmGPAR.sample_data(train_df=train_data,
+                                       test_df=test_data,
+                                       split_columns=['turbine'])
+train_sample = sample_dict['train']
+test_sample = sample_dict['test']
+train_indices, test_indices = [], []
+
+train_x, train_y, test_x, test_y = [ph.libs.np.array([])] * 4
+
+for i in range(len(train_sample)):
+    train_indices += train_sample[i]['index'].values.tolist()
+    test_indices += test_sample[i]['index'].values.tolist()
+    train_x = ph.libs.np.append(WindFarmGPAR.specify_data(train_sample[i], input_cols), train_x, axis=1)
+    train_y = ph.libs.np.append(WindFarmGPAR.specify_data(train_sample[i], input_cols), train_y, axis=1)
+    test_x = ph.libs.np.append(WindFarmGPAR.specify_data(train_sample[i], input_cols), test_x, axis=1)
+    test_y = ph.libs.np.append(WindFarmGPAR.specify_data(train_sample[i], input_cols), test_y, axis=1)
+
+model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices, input_cols, output_cols)
 
 # input_cols = [
 #     'Wind.dir.std',
