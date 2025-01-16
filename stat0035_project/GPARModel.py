@@ -66,7 +66,6 @@ class WindFarmGPAR:
         # ================== GPARRegressor parameters ==================
 
         """
-
         replace (bool, optional):    
             Replace observations with predictive means.
             Helps the model deal with noisy data points.
@@ -135,7 +134,51 @@ class WindFarmGPAR:
             the linear dependencies.
             Defaults to `100.0`.
 
-        """
+
+        nonlinear (bool, optional):    
+            Use nonlinear dependencies between outputs.
+            Defaults to `True`.
+
+
+        nonlinear_scale (tensor, optional):    
+            Initial value(s) for the length scale(s)
+            over the outputs.
+            Defaults to `0.1`.
+
+
+        rq (bool, optional):    
+            Use rational quadratic (RQ) kernels instead of
+            exponentiated quadratic (EQ) kernels.
+            Defaults to `False`.
+
+
+        markov (int, optional):    
+            Markov order of conditionals.
+            Set to `None` to have a fully connected structure.
+            Defaults to `None`.
+
+
+        noise (tensor, optional):    
+            Initial value(s) for the observation noise(s).
+            Defaults to `0.01`.
+
+
+        x_ind (tensor, optional):    
+            Locations of inducing points.
+            Set to `None` if inducing points should not be used.
+            Defaults to `None`.
+
+
+        normalise_y (bool, optional):    
+            Normalise outputs.
+            Defaults to `True`.
+
+
+        transform_y (tuple, optional):    
+            Tuple containing a transform and its
+            inverse, which should be applied to the data before fitting.
+            Defaults to the identity transform.
+"""
 
         return model
 
@@ -151,6 +194,32 @@ class WindFarmGPAR:
 
         return {"train": train_sample,
                 "test": test_sample}
+
+    def sample_data(self, train_df, test_df, split_columns):
+
+        train_sample = []
+        test_sample = []
+
+        for col in split_columns:
+            col_values = train_df[col].unique().tolist()
+            for value in col_values:
+
+                selected_train_df = train_df[train_df[col] == value]
+                selected_test_df = test_df[test_df[col] == value]
+
+                train_indices = libs.np.random.choice(selected_train_df[['index']].values.flatten(), self.train_size)
+                test_indices = libs.np.random.choice(selected_test_df[['index']].values.flatten(), self.test_size)
+
+                train_sample.append(selected_train_df[selected_train_df['index'].isin(train_indices)])
+                test_sample.append(selected_test_df[selected_test_df['index'].isin(test_indices)])
+                # append a new dataframe where column matches current value, and then take the sample
+        #
+        # train_sample = libs.pd.concat(train_sample, ignore_index=True)
+        # test_sample = libs.pd.concat(test_sample, ignore_index=True)
+
+        return {'train': train_sample,
+                'test': test_sample}
+
 
     @staticmethod
     def specify_data(df, columns):
