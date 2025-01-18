@@ -19,27 +19,49 @@ output_cols = ['Power.me']
 
 train_sample_times = ph.libs.np.random.choice(train_data['Date.time'].unique(), 50)
 test_sample_times = ph.libs.np.random.choice(train_data['Date.time'].unique(), 10)
+# randomly choose timestamps
 
 train_sample = train_data[train_data['Date.time'].isin(train_sample_times)]
 test_sample = test_data[test_data['Date.time'].isin(test_sample_times)]
+# select rows of the dataframe with those timestamps
+
+train_x = ph.libs.np.zeros(
+    len(train_sample_times)
+)
+train_y = ph.libs.np.zeros(
+    (len(train_sample_times), 6)
+)
+
+for i in range(len(train_sample_times)):
+    current_time = train_sample[train_sample['Date.time'] == train_sample_times[i]]
+    train_x[i] = current_time['Wind.speed.me']
+    for j in range(6):
+        if j+1 in current_time['turbine'].values:
+            train_y[i, j] = current_time[current_time['turbine'] == j+1]['Power.me']
 
 
-train_x = train_sample[train_sample['turbine'] == 1][input_cols].to_numpy()
-train_y = (
-    train_sample.groupby("turbine")["Power.me"]  # Group by the 'y' column, selecting 'x'
-    .apply(list)          # Convert each group into a list
-    .apply(ph.libs.pd.Series)     # Convert lists into separate Series
-    .T                    # Transpose to make 'y' values the columns
-).to_numpy()
+test_x = ph.libs.np.zeros(
+    len(test_sample_times)
+)
+test_y = ph.libs.np.zeros(
+    (len(test_sample_times), 6)
+)
 
+for i in range(len(test_sample_times)):
+    current_time = test_sample[test_sample['Date.time'] == test_sample_times[i]]
+    test_x[i] = current_time['Wind.speed.me']
+    for j in range(6):
+        if j+1 in current_time['turbine'].values:
+            train_y[i, j] = current_time[current_time['turbine'] == j+1]['Power.me']
+# test_y = (
+#     train_sample.groupby("turbine")["Power.me"]  # Group by the 'y' column, selecting 'x'
+#     .apply(list)          # Convert each group into a list
+#     .apply(ph.libs.pd.Series)     # Convert lists into separate Series
+#     .T                    # Transpose to make 'y' values the columns
+# ).to_numpy()
 
-test_x = test_sample[test_sample['turbine'] == 1][input_cols].to_numpy()
-test_y = (
-    train_sample.groupby("turbine")["Power.me"]  # Group by the 'y' column, selecting 'x'
-    .apply(list)          # Convert each group into a list
-    .apply(ph.libs.pd.Series)     # Convert lists into separate Series
-    .T                    # Transpose to make 'y' values the columns
-).to_numpy()
+train_indices = train_sample['index']
+test_indices = test_sample['index']
 
 
 model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices, input_cols, output_cols)
