@@ -14,25 +14,33 @@ model = WindFarmGPAR(model_params={},
                      existing=True,
                      model_index=0)
 
-input_cols = ['Wind.speed.me', 'turbine']
+input_cols = ['Wind.speed.me']
 output_cols = ['Power.me']
 
-sample_dict = WindFarmGPAR.sample_data(train_df=train_data,
-                                       test_df=test_data,
-                                       split_columns=['turbine'])
-train_sample = sample_dict['train']
-test_sample = sample_dict['test']
-train_indices, test_indices = [], []
+train_sample_times = ph.libs.np.random.choice(train_data['Date.time'].unique(), 50)
+test_sample_times = ph.libs.np.random.choice(train_data['Date.time'].unique(), 10)
 
-train_x, train_y, test_x, test_y = [ph.libs.np.array([])] * 4
+train_sample = train_data[train_data['Date.time'].isin(train_sample_times)]
+test_sample = test_data[test_data['Date.time'].isin(test_sample_times)]
 
-for i in range(len(train_sample)):
-    train_indices += train_sample[i]['index'].values.tolist()
-    test_indices += test_sample[i]['index'].values.tolist()
-    train_x = ph.libs.np.append(WindFarmGPAR.specify_data(train_sample[i], input_cols), train_x, axis=1)
-    train_y = ph.libs.np.append(WindFarmGPAR.specify_data(train_sample[i], input_cols), train_y, axis=1)
-    test_x = ph.libs.np.append(WindFarmGPAR.specify_data(train_sample[i], input_cols), test_x, axis=1)
-    test_y = ph.libs.np.append(WindFarmGPAR.specify_data(train_sample[i], input_cols), test_y, axis=1)
+
+train_x = train_sample[train_sample['turbine'] == 1][input_cols].to_numpy()
+train_y = (
+    train_sample.groupby("turbine")["Power.me"]  # Group by the 'y' column, selecting 'x'
+    .apply(list)          # Convert each group into a list
+    .apply(ph.libs.pd.Series)     # Convert lists into separate Series
+    .T                    # Transpose to make 'y' values the columns
+).to_numpy()
+
+
+test_x = test_sample[test_sample['turbine'] == 1][input_cols].to_numpy()
+test_y = (
+    train_sample.groupby("turbine")["Power.me"]  # Group by the 'y' column, selecting 'x'
+    .apply(list)          # Convert each group into a list
+    .apply(ph.libs.pd.Series)     # Convert lists into separate Series
+    .T                    # Transpose to make 'y' values the columns
+).to_numpy()
+
 
 model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices, input_cols, output_cols)
 

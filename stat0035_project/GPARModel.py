@@ -189,7 +189,7 @@ class WindFarmGPAR:
                 "test": test_sample}
 
     @staticmethod
-    def sample_data(train_df, test_df, split_columns, train_size=100, test_size=10):
+    def sample_split_data(train_df, test_df, split_columns, train_size=100, test_size=10):
 
         train_sample = []
         test_sample = []
