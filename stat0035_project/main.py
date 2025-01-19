@@ -10,12 +10,13 @@ test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityColl
 train_data = ph.read_pickle_as_dataframe(train_data_path)
 test_data = ph.read_pickle_as_dataframe(test_data_path)
 
+
 model = WindFarmGPAR(model_params={},
                      existing=True,
                      model_index=0)
 
-# input_cols = ['Wind.speed.me']
-# output_cols = ['Power.me']
+input_cols = ['Wind.speed.me']
+output_cols = ['Power.me']
 
 train_n = 100
 test_n = 25
@@ -37,28 +38,38 @@ test_y = ph.libs.np.full(
     ph.libs.np.nan
 )
 
-train_indices, test_indices = [], []
+train_times = ph.libs.np.random.choice(train_data['Date.time'].values, train_n)
+test_times = ph.libs.np.random.choice(test_data['Date.time'].values, test_n)
+
+train_sample = train_data[train_data['Date.time'].isin(train_times)]
+test_sample = test_data[test_data['Date.time'].isin(test_times)]
+
+train_indices = train_sample['index'].values.tolist()
+test_indices = test_sample['index'].values.tolist()
 
 for turbine in train_data['turbine'].unique():
-    train_df = train_data[train_data['turbine'] == turbine]
-    test_df = test_data[test_data['turbine'] == turbine]
-
-    train_sample = train_df.sample(train_n)
-    test_sample = test_df.sample(test_n)
-
-    train_indices += train_sample['index'].values.tolist()
-    test_indices += test_sample['index'].values.tolist()
-
     for i in range(train_n):
-        train_x[i, turbine - 1] = train_df.iloc[i]['Wind.speed.me']
-        train_y[i, turbine - 1] = train_df.iloc[i]['Power.me']
-        # have to do -1 for indexing
+        data_point = train_sample[train_sample['Date.time'] == train_times[i]]
+
+        if turbine in data_point['turbine'].values.tolist():
+            data_point = data_point[data_point['turbine'] == turbine]
+            # get a certain time's data for turbine i
+            train_x[i, turbine - 1] = data_point['Wind.speed.me'].values[0]
+            train_y[i, turbine - 1] = data_point['Power.me'].values[0]
+            # have to do -1 for indexing
 
     i = 0
 
     for i in range(test_n):
-        test_x[i, turbine - 1] = test_df.iloc[i]['Wind.speed.me']
-        test_y[i, turbine - 1] = test_df.iloc[i]['Power.me']
+        data_point = test_sample[test_sample['Date.time'] == test_times[i]]
+
+        if turbine in data_point['turbine'].values.tolist():
+            data_point = data_point[data_point['turbine'] == turbine]
+            # get a certain time's data for turbine i
+
+            test_x[i, turbine - 1] = data_point['Wind.speed.me'].values[0]
+            test_y[i, turbine - 1] = data_point['Power.me'].values[0]
+            # have to do -1 for indexing
 
 model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices,
                   input_columns=['Wind.speed.me'],
@@ -146,6 +157,6 @@ for i in range(1, 7):
                   colors=['black', 'green', 'red', 'blue'],
                   x_label='Mean Wind Speed (metres per second)',
                   y_label='Mean Power',
-                  title=f"Turbine {i} {result['Timestamp']}",
+                  title=f"{result['Timestamp']} Turbine {i}",
                   model_history_index=chosen_index,
                   save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
