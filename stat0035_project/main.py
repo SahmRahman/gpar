@@ -9,62 +9,60 @@ test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityColl
 
 train_data = ph.read_pickle_as_dataframe(train_data_path)
 test_data = ph.read_pickle_as_dataframe(test_data_path)
-
-model = WindFarmGPAR(model_params={},
-                     existing=True,
-                     model_index=0)
-
-input_cols = ['Wind.speed.me']
-output_cols = ['Power.me']
-
-train_sample_times = ph.libs.np.random.choice(train_data['Date.time'].unique(), 50)
-test_sample_times = ph.libs.np.random.choice(train_data['Date.time'].unique(), 10)
-# randomly choose timestamps
-
-train_sample = train_data[train_data['Date.time'].isin(train_sample_times)]
-test_sample = test_data[test_data['Date.time'].isin(test_sample_times)]
-# select rows of the dataframe with those timestamps
-
-train_x = ph.libs.np.zeros(
-    len(train_sample_times)
-)
-train_y = ph.libs.np.zeros(
-    (len(train_sample_times), 6)
-)
-
-for i in range(len(train_sample_times)):
-    current_time = train_sample[train_sample['Date.time'] == train_sample_times[i]]
-    train_x[i] = current_time['Wind.speed.me']
-    for j in range(6):
-        if j+1 in current_time['turbine'].values:
-            train_y[i, j] = current_time[current_time['turbine'] == j+1]['Power.me']
-
-
-test_x = ph.libs.np.zeros(
-    len(test_sample_times)
-)
-test_y = ph.libs.np.zeros(
-    (len(test_sample_times), 6)
-)
-
-for i in range(len(test_sample_times)):
-    current_time = test_sample[test_sample['Date.time'] == test_sample_times[i]]
-    test_x[i] = current_time['Wind.speed.me']
-    for j in range(6):
-        if j+1 in current_time['turbine'].values:
-            train_y[i, j] = current_time[current_time['turbine'] == j+1]['Power.me']
-# test_y = (
-#     train_sample.groupby("turbine")["Power.me"]  # Group by the 'y' column, selecting 'x'
-#     .apply(list)          # Convert each group into a list
-#     .apply(ph.libs.pd.Series)     # Convert lists into separate Series
-#     .T                    # Transpose to make 'y' values the columns
-# ).to_numpy()
-
-train_indices = train_sample['index']
-test_indices = test_sample['index']
-
-
-model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices, input_cols, output_cols)
+#
+# model = WindFarmGPAR(model_params={},
+#                      existing=True,
+#                      model_index=0)
+#
+# # input_cols = ['Wind.speed.me']
+# # output_cols = ['Power.me']
+#
+# train_n = 50
+# test_n = 10
+#
+# train_x = ph.libs.np.full(
+#     (train_n, 6),
+#     ph.libs.np.nan
+# )
+# train_y = ph.libs.np.full(
+#     (train_n, 6),
+#     ph.libs.np.nan
+# )
+# test_x = ph.libs.np.full(
+#     (test_n, 6),
+#     ph.libs.np.nan
+# )
+# test_y = ph.libs.np.full(
+#     (test_n, 6),
+#     ph.libs.np.nan
+# )
+#
+# train_indices, test_indices = [], []
+#
+# for turbine in train_data['turbine'].unique():
+#     train_df = train_data[train_data['turbine'] == turbine]
+#     test_df = test_data[test_data['turbine'] == turbine]
+#
+#     train_sample = train_df.sample(train_n)
+#     test_sample = test_df.sample(test_n)
+#
+#     train_indices += train_sample['index'].values.tolist()
+#     test_indices += test_sample['index'].values.tolist()
+#
+#     for i in range(train_n):
+#         train_x[i, turbine - 1] = train_df.iloc[i]['Wind.speed.me']
+#         train_y[i, turbine - 1] = train_df.iloc[i]['Power.me']
+#         # have to do -1 for indexing
+#
+#     i = 0
+#
+#     for i in range(test_n):
+#         test_x[i, turbine - 1] = test_df.iloc[i]['Wind.speed.me']
+#         test_y[i, turbine - 1] = test_df.iloc[i]['Power.me']
+#
+# model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices,
+#                   input_columns=['Wind.speed.me'],
+#                   output_columns=[f"Turbine {i}" for i in range(1, 7)])
 
 # input_cols = [
 #     'Wind.dir.std',
@@ -110,25 +108,17 @@ model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices,
 #     'Wind.dir.cos.max'
 # ]
 #
-# model = GPARModel.WindFarmGPAR(train_data_path=train_data_path,
-#                                test_data_path=test_data_path,
-#                                model_params={},
-#                                existing=True,
-#                                model_index=0,
-#                                train_size=250,
-#                                test_size=50)
-# model.train_model(input_columns=['Wind.speed.me'],
-#                   output_columns=['Power.me', 'Power.sd'])
+df = ph.read_pickle_as_dataframe(model_history)
+chosen_index = 21
+
+result = df.iloc[chosen_index]
+test_indices = result['Test Data Indices']
+# print(result['Means'])
 #
-# df = ph.read_pickle_as_dataframe(model_history)
-# chosen_index = 16
-#
-# test_indices = df.iloc[chosen_index]['Test Data Indices']
-# test_data = ph.read_pickle_as_dataframe(test_data_path)
+# test_indices = df.iloc[chosen_index]['Test Data Indices'].values
 # test_data = test_data[test_data['index'].isin(test_indices)]
 #
 # train_indices = df.iloc[chosen_index]['Training Data Indices']
-# train_data = ph.read_pickle_as_dataframe(train_data_path)
 # train_data = train_data[train_data['index'].isin(train_indices)]
 #
 # train_mean_power = ph.libs.np.mean(train_data['Power.me'])
@@ -139,21 +129,23 @@ model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices,
 #
 # print(f"Training Data distribution for Power: N({round(float(train_mean_power), 2)}, {round(float(train_sd_power), 2)}^2)")
 # print(f"Test Data distribution for Power: N({round(float(test_mean_power), 2)}, {round(float(test_sd_power), 2)}^2)")
-#
 
-# for col in ('Power.me', 'Power.sd'):
-#     x = test_data['Wind.speed.me'].values.tolist()
-#     y = [test_data[col].values.tolist(),
-#          df.iloc[chosen_index]['Means'][col],
-#          df.iloc[chosen_index]['Lowers'][col],
-#          df.iloc[chosen_index]['Uppers'][col]
-#          ]
-#
-#     gr.plot_graph(x=x,
-#                   y_list=y,
-#                   labels=['Observation', 'Means', 'Lower', 'Upper'],
-#                   colors=['black', 'green', 'red', 'blue'],
-#                   x_label='Mean Wind Speed (metres per second)',
-#                   y_label=col,
-#                   model_history_index=chosen_index,
-#                   save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
+test_data = test_data[test_data['index'].isin(test_indices)]
+for i in range(1, 7):
+
+    x = test_data[test_data['turbine'] == i]['Wind.speed.me'].values.tolist()
+    y = [test_data[test_data['turbine'] == i]['Power.me'].values.tolist(),
+         result['Means'][f"Turbine {i}"],
+         result['Lowers'][f"Turbine {i}"],
+         result['Uppers'][f"Turbine {i}"]
+         ]
+
+    gr.plot_graph(x=x,
+                  y_list=y,
+                  labels=['Observation', 'Means', 'Lower', 'Upper'],
+                  colors=['black', 'green', 'red', 'blue'],
+                  x_label='Mean Wind Speed (metres per second)',
+                  y_label='Mean Power',
+                  title=f"Turbine {i} {result['Timestamp']}",
+                  model_history_index=chosen_index,
+                  save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
