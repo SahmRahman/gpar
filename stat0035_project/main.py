@@ -9,60 +9,60 @@ test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityColl
 
 train_data = ph.read_pickle_as_dataframe(train_data_path)
 test_data = ph.read_pickle_as_dataframe(test_data_path)
-#
-# model = WindFarmGPAR(model_params={},
-#                      existing=True,
-#                      model_index=0)
-#
-# # input_cols = ['Wind.speed.me']
-# # output_cols = ['Power.me']
-#
-# train_n = 50
-# test_n = 10
-#
-# train_x = ph.libs.np.full(
-#     (train_n, 6),
-#     ph.libs.np.nan
-# )
-# train_y = ph.libs.np.full(
-#     (train_n, 6),
-#     ph.libs.np.nan
-# )
-# test_x = ph.libs.np.full(
-#     (test_n, 6),
-#     ph.libs.np.nan
-# )
-# test_y = ph.libs.np.full(
-#     (test_n, 6),
-#     ph.libs.np.nan
-# )
-#
-# train_indices, test_indices = [], []
-#
-# for turbine in train_data['turbine'].unique():
-#     train_df = train_data[train_data['turbine'] == turbine]
-#     test_df = test_data[test_data['turbine'] == turbine]
-#
-#     train_sample = train_df.sample(train_n)
-#     test_sample = test_df.sample(test_n)
-#
-#     train_indices += train_sample['index'].values.tolist()
-#     test_indices += test_sample['index'].values.tolist()
-#
-#     for i in range(train_n):
-#         train_x[i, turbine - 1] = train_df.iloc[i]['Wind.speed.me']
-#         train_y[i, turbine - 1] = train_df.iloc[i]['Power.me']
-#         # have to do -1 for indexing
-#
-#     i = 0
-#
-#     for i in range(test_n):
-#         test_x[i, turbine - 1] = test_df.iloc[i]['Wind.speed.me']
-#         test_y[i, turbine - 1] = test_df.iloc[i]['Power.me']
-#
-# model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices,
-#                   input_columns=['Wind.speed.me'],
-#                   output_columns=[f"Turbine {i}" for i in range(1, 7)])
+
+model = WindFarmGPAR(model_params={},
+                     existing=True,
+                     model_index=0)
+
+# input_cols = ['Wind.speed.me']
+# output_cols = ['Power.me']
+
+train_n = 100
+test_n = 25
+
+train_x = ph.libs.np.full(
+    (train_n, 6),
+    ph.libs.np.nan
+)
+train_y = ph.libs.np.full(
+    (train_n, 6),
+    ph.libs.np.nan
+)
+test_x = ph.libs.np.full(
+    (test_n, 6),
+    ph.libs.np.nan
+)
+test_y = ph.libs.np.full(
+    (test_n, 6),
+    ph.libs.np.nan
+)
+
+train_indices, test_indices = [], []
+
+for turbine in train_data['turbine'].unique():
+    train_df = train_data[train_data['turbine'] == turbine]
+    test_df = test_data[test_data['turbine'] == turbine]
+
+    train_sample = train_df.sample(train_n)
+    test_sample = test_df.sample(test_n)
+
+    train_indices += train_sample['index'].values.tolist()
+    test_indices += test_sample['index'].values.tolist()
+
+    for i in range(train_n):
+        train_x[i, turbine - 1] = train_df.iloc[i]['Wind.speed.me']
+        train_y[i, turbine - 1] = train_df.iloc[i]['Power.me']
+        # have to do -1 for indexing
+
+    i = 0
+
+    for i in range(test_n):
+        test_x[i, turbine - 1] = test_df.iloc[i]['Wind.speed.me']
+        test_y[i, turbine - 1] = test_df.iloc[i]['Power.me']
+
+model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices,
+                  input_columns=['Wind.speed.me'],
+                  output_columns=[f"Turbine {i}" for i in range(1, 7)])
 
 # input_cols = [
 #     'Wind.dir.std',
@@ -109,7 +109,7 @@ test_data = ph.read_pickle_as_dataframe(test_data_path)
 # ]
 #
 df = ph.read_pickle_as_dataframe(model_history)
-chosen_index = 21
+chosen_index = len(df) - 1
 
 result = df.iloc[chosen_index]
 test_indices = result['Test Data Indices']
