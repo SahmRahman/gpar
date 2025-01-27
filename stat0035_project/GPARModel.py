@@ -295,7 +295,7 @@ class WindFarmGPAR:
 
         # collect metadata
         means, lowers, uppers = self.model.predict(test_x,
-                                                   num_samples=25,
+                                                   num_samples=50,
                                                    credible_bounds=True)
 
         error = means - test_y

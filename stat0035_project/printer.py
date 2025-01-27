@@ -11,18 +11,21 @@ test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityColl
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
 
-complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
-complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
 
-data_by_turbine = {'train': [complete_train_data[complete_train_data['turbine'] == turbine] for turbine in range(1, 7)],
-                   'test': [complete_test_data[complete_test_data['turbine'] == turbine] for turbine in range(1, 7)]}
-print('...')
 
-# print("Modelling History")
-# df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
-# print(df_modelling_history.head())
-# print("...")
-# print(df_modelling_history.tail())
+print("Modelling History")
+df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
+
+train_data_indices = df_modelling_history.iloc[11]['Training Data Indices']
+train_data = ph.read_pickle_as_dataframe(train_data_path)
+train_data = train_data[train_data['index'].isin(train_data_indices)]
+
+gr.plot_graph(x=train_data['Wind.speed.me'].values.flatten(),
+              y_list=[train_data['Power.me'].values.flatten()],
+              model_history_index=11,
+              title='Test Data')
+
+# print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
 # df_models = ph.read_pickle_as_dataframe(file_path=models)
 # print(df_models.head())
@@ -31,8 +34,8 @@ print('...')
 # print("\n\n\n\n")
 
 # train_indices = df_modelling_history.iloc[20]['Training Data Indices'].values.tolist()
-# train_data = ph.read_pickle_as_dataframe(train_data_path)
-# train_data = train_data[train_data['index'].isin(train_indices)]
+# test_data_ = ph.read_pickle_as_dataframe(test_data__path)
+# test_data_ = test_data_[test_data_['index'].isin(train_indices)]
 # for turbine in range(1, 7):
 #     current_turbine_data = train_sample[train_sample['turbine'] == turbine]
 #     x = current_turbine_data['Wind.speed.me'].values.tolist()
@@ -42,7 +45,7 @@ print('...')
 
 
 # full_timestamps = []
-# train_df = ph.read_pickle_as_dataframe(train_data_path)
+# train_df = ph.read_pickle_as_dataframe(test_data__path)
 # test_df = ph.read_pickle_as_dataframe(test_data_path)
 # turbine_train_dfs = []
 # turbine_test_dfs = []
@@ -82,9 +85,9 @@ print('...')
 #         # incomplete data!
 #         train_indices_to_remove.append(index)
 #
-# complete_turbine_train_data_timestamps = train_timestamps.drop(train_indices_to_remove)
+# complete_turbine_test_data__timestamps = train_timestamps.drop(train_indices_to_remove)
 # # get the timestamps with complete data
-# complete_turbine_train_data = train_df[train_df['Date.time'].isin(complete_turbine_train_data_timestamps)]
+# complete_turbine_test_data_ = train_df[train_df['Date.time'].isin(complete_turbine_test_data__timestamps)]
 # # select rows from the original whole training dataframe with those timestamps
 #
 # # ------------------ SELECTING COMPLETE TEST DATA ------------------
@@ -101,5 +104,5 @@ print('...')
 # complete_turbine_test_data_timestamps = test_timestamps.drop(test_indices_to_remove)
 # complete_turbine_test_data = test_df[test_df['Date.time'].isin(complete_turbine_test_data_timestamps)]
 #
-# complete_turbine_train_data.to_pickle('Complete Training Data.pkl')
+# complete_turbine_test_data_.to_pickle('Complete Training Data.pkl')
 # complete_turbine_test_data.to_pickle('Complete Test Data.pkl')

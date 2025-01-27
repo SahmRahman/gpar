@@ -6,149 +6,206 @@ model_history = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityColle
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
+complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
+complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
 
 train_data = ph.read_pickle_as_dataframe(train_data_path)
 test_data = ph.read_pickle_as_dataframe(test_data_path)
 
+complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
+complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
 
-model = WindFarmGPAR(model_params={},
-                     existing=True,
-                     model_index=0)
+#
+# models = [WindFarmGPAR(model_params={},
+#                        existing=True,
+#                        model_index=0)] * 6
+#
+# input_cols = ['Wind.speed.me']
+# output_cols = ['Power.me']
+#
+# train_n = 2000
+# test_n = 50
+#
+# train_timestamps = complete_train_data['Date.time'].sample(n=train_n)
+# test_timestamps = complete_test_data['Date.time'].sample(n=test_n)
 
-input_cols = ['Wind.speed.me']
-output_cols = ['Power.me']
+"""
+USE A STRATIFIED SAMPLE INSTEAD
 
-train_n = 100
-test_n = 25
+pandas has a command for this
+"""
 
-train_x = ph.libs.np.full(
-    (train_n, 6),
-    ph.libs.np.nan
-)
-train_y = ph.libs.np.full(
-    (train_n, 6),
-    ph.libs.np.nan
-)
-test_x = ph.libs.np.full(
-    (test_n, 6),
-    ph.libs.np.nan
-)
-test_y = ph.libs.np.full(
-    (test_n, 6),
-    ph.libs.np.nan
-)
+#
+# train_x, train_y, test_x, test_y = [], [], [], []
+# train_indices, test_indices = [], []
+#
+# # ------------------- SELECT TRAINING VALUES -------------------
+#
+# for time in train_timestamps.values:
+#     current_data = complete_train_data[complete_train_data['Date.time'] == time]
+#     # get the data at timestamp 'time'
+#
+#     x, y = [], []
+#     for i in range(1, 7):
+#         turbine_data = current_data[current_data['turbine'] == i]
+#         # select turbine i data
+#
+#         x += turbine_data['Wind.speed.me'].values.tolist()
+#         y += turbine_data['Power.me'].values.tolist()
+#         train_indices += turbine_data['index'].values.tolist()
+#         # append what we need
+#         # --- the .values.tolist() cooouuullldd be overkill?
+#     train_x.append(x)
+#     train_y.append(y)
+#
+# # ------------------- SELECT TEST VALUES -------------------
+#
+# for time in test_timestamps.values:
+#     current_data = complete_test_data[complete_test_data['Date.time'] == time]
+#     x, y = [], []
+#     for i in range(1, 7):
+#         turbine_data = current_data[current_data['turbine'] == i]
+#         x += turbine_data['Wind.speed.me'].values.tolist()
+#         y += turbine_data['Power.me'].values.tolist()
+#         test_indices += turbine_data['index'].values.tolist()
+#     test_x.append(x)
+#     test_y.append(y)
+#
+# train_x = ph.libs.np.array(train_x)
+# train_y = ph.libs.np.array(train_y)
+# test_x = ph.libs.np.array(test_x)
+# test_y = ph.libs.np.array(test_y)
+#
+#
+# model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices,
+#                   input_columns=['Wind.speed.me'],
+#                   output_columns=[f"Turbine {i} Power" for i in range(1, 7)])
+#
+# # input_cols = [
+# #     'Wind.dir.std',
+# #     'Wind.speed.me',
+# #     'Wind.speed.sd',
+# #     'Wind.speed.min',
+# #     'Wind.speed.max',
+# #     'Front.bearing.temp.me',
+# #     'Front.bearing.temp.sd',
+# #     'Front.bearing.temp.min',
+# #     'Front.bearing.temp.max',
+# #     'Rear.bearing.temp.me',
+# #     'Rear.bearing.temp.sd',
+# #     'Rear.bearing.temp.min',
+# #     'Rear.bearing.temp.max',
+# #     'Stator1.temp.me',
+# #     'Nacelle.ambient.temp.me',
+# #     'Nacelle.temp.me',
+# #     'Transformer.temp.me',
+# #     'Gear.oil.inlet.temp.me',
+# #     'Gear.oil.temp.me',
+# #     'Top.box.temp.me',
+# #     'Hub.temp.me',
+# #     'Conv.Amb.temp.me',
+# #     'Rotor.bearing.temp.me',
+# #     'Transformer.cell.temp.me',
+# #     'Motor.axis1.temp.me',
+# #     'Motor.axis2.temp.me',
+# #     'CPU.temp.me',
+# #     'Blade.ang.pitch.pos.A.me',
+# #     'Blade.ang.pitch.pos.B.me',
+# #     'Blade.ang.pitch.pos.C.me',
+# #     'Gear.oil.inlet.press.me',
+# #     'Gear.oil.pump.press.me',
+# #     'Drive.train.acceleration.me',
+# #     'Tower.Acceleration.x',
+# #     'Tower.Acceleration.y',
+# #     'Wind.dir.sin.me',
+# #     'Wind.dir.cos.me',
+# #     'Wind.dir.sin.min',
+# #     'Wind.dir.cos.min',
+# #     'Wind.dir.sin.max',
+# #     'Wind.dir.cos.max'
+# # ]
 
-train_times = ph.libs.np.random.choice(train_data['Date.time'].values, train_n)
-test_times = ph.libs.np.random.choice(test_data['Date.time'].values, test_n)
+# train_data = complete_train_data.sample(n=200)
+# test_data = complete_test_data.sample(n=30)
+#
+# for i in range(1, 7):
+#     train_df = train_data[train_data['turbine'] == i]
+#     test_df = test_data[test_data['turbine'] == i]
+#
+#     train_x = train_df['Wind.speed.me'].values.flatten()
+#     train_y = train_df['Power.me'].values.flatten()
+#     test_x = test_df['Wind.speed.me'].values.flatten()
+#     test_y = test_df['Power.me'].values.flatten()
+#     train_indices = train_df['index'].values.tolist()
+#     test_indices = test_df['index'].values.tolist()
+#     input_columns = ['Wind Speed']
+#     output_columns = ['Power']
+#
+#     models[i - 1].train_model(train_x=train_x,
+#                               train_y=train_y,
+#                               test_x=test_x,
+#                               test_y=test_y,
+#                               train_indices=train_indices,
+#                               test_indices=test_indices,
+#                               input_columns=input_columns,
+#                               output_columns=output_columns)
 
-train_sample = train_data[train_data['Date.time'].isin(train_times)]
-test_sample = test_data[test_data['Date.time'].isin(test_times)]
+model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
 
+i = 6
+
+train_df = train_data[train_data['turbine'] == i]
+test_df = test_data[test_data['turbine'] == i]
+
+train_sample = train_df.sample(n=1000)
+test_sample = test_df.sample(n=100)
+#
+#
+# train_indices = result['Training Data Indices']
+# test_indices = result['Test Data Indices']
+
+# train_df = train_data[train_data['index'].isin(train_indices)]
+# test_df = test_data[test_data['index'].isin(test_indices)]
+
+train_x = train_sample['Wind.speed.me'].values.flatten()
+train_y = train_sample['Power.me'].values.flatten()
+gr.plot_graph(x=train_x,
+              y_list=[train_y],
+              model_history_index=-1,
+              title='Training Data')
+
+test_x = test_sample['Wind.speed.me'].values.flatten()
+test_y = test_sample['Power.me'].values.flatten()
+gr.plot_graph(x=test_x,
+              y_list=[test_y],
+              model_history_index=-1,
+              title='Test Data')
 train_indices = train_sample['index'].values.tolist()
 test_indices = test_sample['index'].values.tolist()
+input_columns = ['Wind Speed']
+output_columns = ['Power']
 
-for turbine in train_data['turbine'].unique():
-    for i in range(train_n):
-        data_point = train_sample[train_sample['Date.time'] == train_times[i]]
+model.train_model(train_x=train_x,
+                  train_y=train_y,
+                  test_x=test_x,
+                  test_y=test_y,
+                  train_indices=train_indices,
+                  test_indices=test_indices,
+                  input_columns=input_columns,
+                  output_columns=output_columns)
 
-        if turbine in data_point['turbine'].values.tolist():
-            data_point = data_point[data_point['turbine'] == turbine]
-            # get a certain time's data for turbine i
-            train_x[i, turbine - 1] = data_point['Wind.speed.me'].values[0]
-            train_y[i, turbine - 1] = data_point['Power.me'].values[0]
-            # have to do -1 for indexing
-
-    i = 0
-
-    for i in range(test_n):
-        data_point = test_sample[test_sample['Date.time'] == test_times[i]]
-
-        if turbine in data_point['turbine'].values.tolist():
-            data_point = data_point[data_point['turbine'] == turbine]
-            # get a certain time's data for turbine i
-
-            test_x[i, turbine - 1] = data_point['Wind.speed.me'].values[0]
-            test_y[i, turbine - 1] = data_point['Power.me'].values[0]
-            # have to do -1 for indexing
-
-model.train_model(train_x, train_y, test_x, test_y, train_indices, test_indices,
-                  input_columns=['Wind.speed.me'],
-                  output_columns=[f"Turbine {i}" for i in range(1, 7)])
-
-# input_cols = [
-#     'Wind.dir.std',
-#     'Wind.speed.me',
-#     'Wind.speed.sd',
-#     'Wind.speed.min',
-#     'Wind.speed.max',
-#     'Front.bearing.temp.me',
-#     'Front.bearing.temp.sd',
-#     'Front.bearing.temp.min',
-#     'Front.bearing.temp.max',
-#     'Rear.bearing.temp.me',
-#     'Rear.bearing.temp.sd',
-#     'Rear.bearing.temp.min',
-#     'Rear.bearing.temp.max',
-#     'Stator1.temp.me',
-#     'Nacelle.ambient.temp.me',
-#     'Nacelle.temp.me',
-#     'Transformer.temp.me',
-#     'Gear.oil.inlet.temp.me',
-#     'Gear.oil.temp.me',
-#     'Top.box.temp.me',
-#     'Hub.temp.me',
-#     'Conv.Amb.temp.me',
-#     'Rotor.bearing.temp.me',
-#     'Transformer.cell.temp.me',
-#     'Motor.axis1.temp.me',
-#     'Motor.axis2.temp.me',
-#     'CPU.temp.me',
-#     'Blade.ang.pitch.pos.A.me',
-#     'Blade.ang.pitch.pos.B.me',
-#     'Blade.ang.pitch.pos.C.me',
-#     'Gear.oil.inlet.press.me',
-#     'Gear.oil.pump.press.me',
-#     'Drive.train.acceleration.me',
-#     'Tower.Acceleration.x',
-#     'Tower.Acceleration.y',
-#     'Wind.dir.sin.me',
-#     'Wind.dir.cos.me',
-#     'Wind.dir.sin.min',
-#     'Wind.dir.cos.min',
-#     'Wind.dir.sin.max',
-#     'Wind.dir.cos.max'
-# ]
-#
 df = ph.read_pickle_as_dataframe(model_history)
 chosen_index = len(df) - 1
-
 result = df.iloc[chosen_index]
-test_indices = result['Test Data Indices']
-# print(result['Means'])
-#
-# test_indices = df.iloc[chosen_index]['Test Data Indices'].values
-# test_data = test_data[test_data['index'].isin(test_indices)]
-#
-# train_indices = df.iloc[chosen_index]['Training Data Indices']
-# train_data = train_data[train_data['index'].isin(train_indices)]
-#
-# train_mean_power = ph.libs.np.mean(train_data['Power.me'])
-# train_sd_power = ph.libs.np.std(train_data['Power.me'])
-#
-# test_mean_power = ph.libs.np.mean(test_data['Power.me'])
-# test_sd_power = ph.libs.np.std(test_data['Power.me'])
-#
-# print(f"Training Data distribution for Power: N({round(float(train_mean_power), 2)}, {round(float(train_sd_power), 2)}^2)")
-# print(f"Test Data distribution for Power: N({round(float(test_mean_power), 2)}, {round(float(test_sd_power), 2)}^2)")
 
-test_data = test_data[test_data['index'].isin(test_indices)]
-for i in range(1, 7):
+dfs = [test_sample]
 
-    x = test_data[test_data['turbine'] == i]['Wind.speed.me'].values.tolist()
-    y = [test_data[test_data['turbine'] == i]['Power.me'].values.tolist(),
-         result['Means'][f"Turbine {i}"],
-         result['Lowers'][f"Turbine {i}"],
-         result['Uppers'][f"Turbine {i}"]
+for df in dfs:
+    x = df['Wind.speed.me'].values.tolist()
+    y = [df['Power.me'].values.tolist(),
+         result['Means'][f"Power"],
+         result['Lowers'][f"Power"],
+         result['Uppers'][f"Power"]
          ]
 
     gr.plot_graph(x=x,
@@ -156,7 +213,6 @@ for i in range(1, 7):
                   labels=['Observation', 'Means', 'Lower', 'Upper'],
                   colors=['black', 'green', 'red', 'blue'],
                   x_label='Mean Wind Speed (metres per second)',
-                  y_label='Mean Power',
-                  title=f"{result['Timestamp']} Turbine {i}",
-                  model_history_index=chosen_index,
+                  y_label=f'Mean Power for Turbine {i}',
+                  model_history_index=str(chosen_index),
                   save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
