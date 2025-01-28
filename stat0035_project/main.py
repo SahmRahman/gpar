@@ -152,13 +152,16 @@ pandas has a command for this
 
 model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
 
-i = 6
+turbines = [1, 2]
+#
+train_df = complete_train_data
+test_df = complete_test_data
+#
+train_sample_times = train_df['Date.time'].sample(n=1000)
+test_sample_times = test_df['Date.time'].sample(n=100)
 
-train_df = train_data[train_data['turbine'] == i]
-test_df = test_data[test_data['turbine'] == i]
-
-train_sample = train_df.sample(n=1000)
-test_sample = test_df.sample(n=100)
+train_sample = train_df[train_df['Date.time'].isin(train_sample_times)]
+test_sample = test_df[test_df['Date.time'].isin(test_sample_times)]
 #
 #
 # train_indices = result['Training Data Indices']
@@ -167,19 +170,23 @@ test_sample = test_df.sample(n=100)
 # train_df = train_data[train_data['index'].isin(train_indices)]
 # test_df = test_data[test_data['index'].isin(test_indices)]
 
-train_x = train_sample['Wind.speed.me'].values.flatten()
-train_y = train_sample['Power.me'].values.flatten()
-gr.plot_graph(x=train_x,
-              y_list=[train_y],
-              model_history_index=-1,
-              title='Training Data')
+train_x = ph.libs.np.array([train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines])
+train_y = ph.libs.np.array([train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines])
+test_x = ph.libs.np.array([test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines])
+test_y = ph.libs.np.array([test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines])
+""" NEED TO TRANSPOSE THESE!! """
 
-test_x = test_sample['Wind.speed.me'].values.flatten()
-test_y = test_sample['Power.me'].values.flatten()
-gr.plot_graph(x=test_x,
-              y_list=[test_y],
-              model_history_index=-1,
-              title='Test Data')
+# for i in range(len(turbines)):
+#     gr.plot_graph(x=train_x[i],
+#                   y_list=[train_y[i]],
+#                   model_history_index=-1,
+#                   title='Training Data')
+#     gr.plot_graph(x=test_x[i],
+#                   y_list=[test_y[i]],
+#                   model_history_index=-1,
+#                   title='Test Data')
+
+
 train_indices = train_sample['index'].values.tolist()
 test_indices = test_sample['index'].values.tolist()
 input_columns = ['Wind Speed']
