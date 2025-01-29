@@ -13,17 +13,30 @@ complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Unive
 
 
 
-print("Modelling History")
+#print("Modelling History")
 df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 
-train_data_indices = df_modelling_history.iloc[11]['Training Data Indices']
-train_data = ph.read_pickle_as_dataframe(train_data_path)
-train_data = train_data[train_data['index'].isin(train_data_indices)]
+chosen_indices = [55, 56, 62]
 
-gr.plot_graph(x=train_data['Wind.speed.me'].values.flatten(),
-              y_list=[train_data['Power.me'].values.flatten()],
-              model_history_index=11,
-              title='Test Data')
+for chosen_index in chosen_indices:
+    print(f"Chosen Index: {chosen_index}")
+
+    result = df_modelling_history.iloc[chosen_index]
+
+    if chosen_index == 62:
+        turbines = [1, 2]
+        print('Double-turbine model')
+        for i in turbines:
+            error_dict = result['Error'][f'Turbine {i} Power']
+
+            print(f"\tTurbine {i} MSE: {ph.libs.np.mean(error_dict['Squared Error'])}")
+            print(f"\tTurbine {i} MAE: {ph.libs.np.mean(error_dict['Absolute Error'])}\n")
+    else:
+        print(f'Turbine {chosen_index-54} Data; Single-turbine model')
+        error = ph.libs.np.array(result['Error'][f'Power'])
+
+        print(f"\tMSE: {ph.libs.np.mean(error**2)}")
+        print(f"\tMAE: {ph.libs.np.mean(abs(error))}\n")
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")

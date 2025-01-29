@@ -1,3 +1,5 @@
+import numpy as np
+
 import libraries as libs
 
 
@@ -298,23 +300,32 @@ class WindFarmGPAR:
                                                    num_samples=50,
                                                    credible_bounds=True)
 
-        error = means - test_y
+        error = {"SE": (means - test_y)**2,
+                 "AE": np.absolute(means - test_y)}
+        # dictionary of errors
+        # first pair is ndarray of squared errors per prediction
+        # second pair is absolute error
 
         # ================ organise and log results ================
 
         metadata = {
             # uses dictionary comprehensions
-            # ---------- {key:value for key,value in iterable}
+            # ------- {key:  value                for key,value in iterable}
             "Means": [{name: means[:, i].tolist() for i, name in enumerate(output_columns)}],
             "Lowers": [{name: lowers[:, i].tolist() for i, name in enumerate(output_columns)}],
             "Uppers": [{name: uppers[:, i].tolist() for i, name in enumerate(output_columns)}],
-            "Error": [{name: error[:, i].tolist() for i, name in enumerate(output_columns)}]
+            "Error": [{name: {"Squared Error": error['SE'][:, i].tolist(),
+                              "Absolute Error": error['AE'][:, i].tolist()} for i, name in enumerate(output_columns)}]
         }
         # dictionary with list values (of one length),
         # each list consists of one dictionary where the output column
         #   is matched to its respective statistic list
         # e.g. metadata['Means'][0]['Power.me'] = list of sample means for Power.me
         # had to do additional list wrapping to not screw with dataframe element length
+
+        # ------ "Error"'s value is a bit ugly, but it's just storing the error dictionary (as defined ~25 lines above)
+        # ------ per output column
+
         #
         # train_indices = train_sample[['index']].values.flatten()
         # test_indices = test_sample[['index']].values.flatten()

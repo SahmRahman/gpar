@@ -170,11 +170,24 @@ test_sample = test_df[test_df['Date.time'].isin(test_sample_times)]
 # train_df = train_data[train_data['index'].isin(train_indices)]
 # test_df = test_data[test_data['index'].isin(test_indices)]
 
-train_x = ph.libs.np.array([train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines])
-train_y = ph.libs.np.array([train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines])
-test_x = ph.libs.np.array([test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines])
-test_y = ph.libs.np.array([test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines])
-""" NEED TO TRANSPOSE THESE!! """
+
+train_x = ph.libs.np.array(
+    [train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines]
+).T
+train_y = ph.libs.np.array(
+    [train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines]
+).T
+test_x = ph.libs.np.array(
+    [test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines]
+).T
+test_y = ph.libs.np.array(
+    [test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines]
+).T
+# for each ndarray, take turbine i's data (train or test) and return the x/y values (which are then reshaped to a
+# normal python list
+# the list comprehension returns the i x n 2-D python array
+# this is put into an ndarray, and then transposed (using .T) to be n x i (the necessary shape for GPAR functions)
+
 
 # for i in range(len(turbines)):
 #     gr.plot_graph(x=train_x[i],
@@ -190,29 +203,33 @@ test_y = ph.libs.np.array([test_sample[test_sample['turbine'] == i]['Power.me'].
 train_indices = train_sample['index'].values.tolist()
 test_indices = test_sample['index'].values.tolist()
 input_columns = ['Wind Speed']
-output_columns = ['Power']
+output_columns = [f'Turbine {i} Power' for i in turbines]
 
-model.train_model(train_x=train_x,
-                  train_y=train_y,
-                  test_x=test_x,
-                  test_y=test_y,
-                  train_indices=train_indices,
-                  test_indices=test_indices,
-                  input_columns=input_columns,
-                  output_columns=output_columns)
+# model.train_model(train_x=train_x,
+#                   train_y=train_y,
+#                   test_x=test_x,
+#                   test_y=test_y,
+#                   train_indices=train_indices,
+#                   test_indices=test_indices,
+#                   input_columns=input_columns,
+#                   output_columns=output_columns)
 
 df = ph.read_pickle_as_dataframe(model_history)
 chosen_index = len(df) - 1
 result = df.iloc[chosen_index]
+test_sample_indices = result['Test Data Indices']
 
-dfs = [test_sample]
+test_sample = test_df[test_df['index'].isin(test_sample_indices)]
 
-for df in dfs:
-    x = df['Wind.speed.me'].values.tolist()
-    y = [df['Power.me'].values.tolist(),
-         result['Means'][f"Power"],
-         result['Lowers'][f"Power"],
-         result['Uppers'][f"Power"]
+for i in turbines:
+
+    turbine_data = test_sample[test_sample['turbine'] == i]
+
+    x = turbine_data['Wind.speed.me'].values.tolist()
+    y = [turbine_data['Power.me'].values.tolist(),
+         result['Means'][output_columns[i-1]],  # need to do -1 because turbines are one based
+         result['Lowers'][output_columns[i-1]],
+         result['Uppers'][output_columns[i-1]]
          ]
 
     gr.plot_graph(x=x,
