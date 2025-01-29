@@ -152,7 +152,7 @@ pandas has a command for this
 
 model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
 
-turbines = [1, 2]
+turbines = [5, 6]
 #
 train_df = complete_train_data
 test_df = complete_test_data
@@ -205,14 +205,14 @@ test_indices = test_sample['index'].values.tolist()
 input_columns = ['Wind Speed']
 output_columns = [f'Turbine {i} Power' for i in turbines]
 
-# model.train_model(train_x=train_x,
-#                   train_y=train_y,
-#                   test_x=test_x,
-#                   test_y=test_y,
-#                   train_indices=train_indices,
-#                   test_indices=test_indices,
-#                   input_columns=input_columns,
-#                   output_columns=output_columns)
+model.train_model(train_x=train_x,
+                  train_y=train_y,
+                  test_x=test_x,
+                  test_y=test_y,
+                  train_indices=train_indices,
+                  test_indices=test_indices,
+                  input_columns=input_columns,
+                  output_columns=output_columns)
 
 df = ph.read_pickle_as_dataframe(model_history)
 chosen_index = len(df) - 1
@@ -227,9 +227,9 @@ for i in turbines:
 
     x = turbine_data['Wind.speed.me'].values.tolist()
     y = [turbine_data['Power.me'].values.tolist(),
-         result['Means'][output_columns[i-1]],  # need to do -1 because turbines are one based
-         result['Lowers'][output_columns[i-1]],
-         result['Uppers'][output_columns[i-1]]
+         result['Means'][output_columns[i-turbines[0]]],  # need to do -turbines[0] to offset i to be an index
+         result['Lowers'][output_columns[i-turbines[0]]],
+         result['Uppers'][output_columns[i-turbines[0]]]
          ]
 
     gr.plot_graph(x=x,

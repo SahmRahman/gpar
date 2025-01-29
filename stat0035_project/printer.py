@@ -16,15 +16,15 @@ complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Unive
 #print("Modelling History")
 df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 
-chosen_indices = [55, 56, 62]
+chosen_indices = [59, 60, 64]
 
 for chosen_index in chosen_indices:
     print(f"Chosen Index: {chosen_index}")
 
     result = df_modelling_history.iloc[chosen_index]
 
-    if chosen_index == 62:
-        turbines = [1, 2]
+    if chosen_index == 64:
+        turbines = [5, 6]
         print('Double-turbine model')
         for i in turbines:
             error_dict = result['Error'][f'Turbine {i} Power']
