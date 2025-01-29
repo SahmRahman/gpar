@@ -7,17 +7,26 @@ def contains_illegal_chars(value, name):
         raise ValueError(f"{name} contains illegal characters: {illegal_characters}")
 
 
-def plot_graph(x, y_list, model_history_index, labels=None, colors=None, x_label=None, y_label=None, title=None,
+def plot_graph(x, y_list, model_history_index,
+               intervals=False,
+               labels=None,
+               colors=None,
+               x_label=None,
+               y_label=None,
+               title=None,
                x_limits=None,
-               y_limits=None, save_path=None):
+               y_limits=None,
+               save_path=None):
     """
     Plots a graph using the given x values and multiple y datasets with optional customization.
 
     Parameters:
     - x: List or array-like, x-axis values
     - y_list: List of List or array-like, y-axis values for each dataset
-    - labels: List of str, optional, labels for each dataset
-    - colors: List of str, optional, colors for each dataset
+    - model_history_index: int, index in Modelling History.pkl where this data was pulled
+    - intervals: boolean, optional, will plot last two lists in y_list as an interval
+    - labels: List of str, optional, labels for each dataset (excluding confidence interval)
+    - colors: List of str, optional, colors for each dataset (excluding confidence interval)
     - x_label: str, optional, label for the x-axis
     - y_label: str, optional, label for the y-axis
     - title: str, optional, title of the graph
@@ -37,10 +46,27 @@ def plot_graph(x, y_list, model_history_index, labels=None, colors=None, x_label
     libs.plt.figure(figsize=(8, 6))
 
     # Plot each dataset
+
+#    if not intervals:  # no confidence intervals, just plot all points
     for i, y in enumerate(y_list):
         color = colors[i] if colors and i < len(colors) else None
         label = labels[i] if labels and i < len(labels) else None
         libs.plt.scatter(x, y, label=label, color=color, marker='o')
+    # else:  # confidence intervals, plot last two lists in y_list as intervals
+    #     for i, y in enumerate(y_list[:-2]):
+    #         color = colors[i] if colors and i < len(colors) else None
+    #         label = labels[i] if labels and i < len(labels) else None
+    #         libs.plt.scatter(x, y, label=label, color=color, marker='o')
+    #
+    #     uppers = y_list[-1].sort()
+    #     lowers = y_list[-2].sort()
+    #
+    #     libs.plt.plot(x, uppers, label="Uppers", color='blue')
+    #     libs.plt.plot(x, lowers, label="lowers", color='red')
+
+
+
+
 
     # Set labels and title if provided
     if x_label:

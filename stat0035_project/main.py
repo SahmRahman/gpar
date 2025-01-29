@@ -205,14 +205,14 @@ test_indices = test_sample['index'].values.tolist()
 input_columns = ['Wind Speed']
 output_columns = [f'Turbine {i} Power' for i in turbines]
 
-model.train_model(train_x=train_x,
-                  train_y=train_y,
-                  test_x=test_x,
-                  test_y=test_y,
-                  train_indices=train_indices,
-                  test_indices=test_indices,
-                  input_columns=input_columns,
-                  output_columns=output_columns)
+# model.train_model(train_x=train_x,
+#                   train_y=train_y,
+#                   test_x=test_x,
+#                   test_y=test_y,
+#                   train_indices=train_indices,
+#                   test_indices=test_indices,
+#                   input_columns=input_columns,
+#                   output_columns=output_columns)
 
 df = ph.read_pickle_as_dataframe(model_history)
 chosen_index = len(df) - 1
@@ -227,16 +227,17 @@ for i in turbines:
 
     x = turbine_data['Wind.speed.me'].values.tolist()
     y = [turbine_data['Power.me'].values.tolist(),
-         result['Means'][output_columns[i-turbines[0]]],  # need to do -turbines[0] to offset i to be an index
+         # result['Means'][output_columns[i-turbines[0]]],  # need to do -turbines[0] to offset i to be an index
          result['Lowers'][output_columns[i-turbines[0]]],
          result['Uppers'][output_columns[i-turbines[0]]]
          ]
 
     gr.plot_graph(x=x,
                   y_list=y,
-                  labels=['Observation', 'Means', 'Lower', 'Upper'],
-                  colors=['black', 'green', 'red', 'blue'],
+                  intervals=True,
+                  labels=['Observation', 'Lower', 'Upper'],
+                  colors=['black', 'red', 'blue'],
                   x_label='Mean Wind Speed (metres per second)',
                   y_label=f'Mean Power for Turbine {i}',
-                  model_history_index=str(chosen_index),
-                  save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
+                  model_history_index=str(chosen_index))
+                  #save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
