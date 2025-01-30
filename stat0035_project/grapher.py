@@ -114,10 +114,9 @@ def plot_graph(x, y_list, model_history_index,
         filename = ''
 
         if title:
-            filename = title.replace(" ", "_")
+            filename = title
         else:
-            filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}".replace(
-                " ", "_")
+            filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}"
         # replace "_" with " " if a title is given
         # otherwise just do "X vs. Y - Modelling History Index z - 1999-01-01_00-59.png"
 

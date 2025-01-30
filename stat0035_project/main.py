@@ -9,11 +9,14 @@ test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityColl
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
 
-train_data = ph.read_pickle_as_dataframe(train_data_path)
-test_data = ph.read_pickle_as_dataframe(test_data_path)
+# train_data = ph.read_pickle_as_dataframe(train_data_path)
+# test_data = ph.read_pickle_as_dataframe(test_data_path)
+#
+# complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
+# complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
 
-complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
-complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
+train_sample = ph.read_pickle_as_dataframe("/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Training Sample.pkl")
+test_sample = ph.read_pickle_as_dataframe("/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
 
 #
 # models = [WindFarmGPAR(model_params={},
@@ -152,16 +155,19 @@ pandas has a command for this
 
 model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
 
-turbines = [5, 6]
+turbines = [5,6]
+# #
+# train_df = complete_train_data
+# test_df = complete_test_data
+# #
+# train_sample_times = train_df['Date.time'].sample(n=1000)
+# test_sample_times = test_df['Date.time'].sample(n=100)
 #
-train_df = complete_train_data
-test_df = complete_test_data
+# train_sample = train_df[train_df['Date.time'].isin(train_sample_times)]
+# test_sample = test_df[test_df['Date.time'].isin(test_sample_times)]
 #
-train_sample_times = train_df['Date.time'].sample(n=1000)
-test_sample_times = test_df['Date.time'].sample(n=100)
-
-train_sample = train_df[train_df['Date.time'].isin(train_sample_times)]
-test_sample = test_df[test_df['Date.time'].isin(test_sample_times)]
+# train_sample.to_pickle("Training Sample.pkl")
+# test_sample.to_pickle("Test Sample.pkl")
 #
 #
 # train_indices = result['Training Data Indices']
@@ -170,19 +176,118 @@ test_sample = test_df[test_df['Date.time'].isin(test_sample_times)]
 # train_df = train_data[train_data['index'].isin(train_indices)]
 # test_df = test_data[test_data['index'].isin(test_indices)]
 
+if True:
+    train_x = ph.libs.np.array(
+        [train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines]
+    ).T
+    train_y = ph.libs.np.array(
+        [train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines]
+    ).T
+    test_x = ph.libs.np.array(
+        [test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines]
+    ).T
+    test_y = ph.libs.np.array(
+        [test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines]
+    ).T
 
-train_x = ph.libs.np.array(
-    [train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines]
-).T
-train_y = ph.libs.np.array(
-    [train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines]
-).T
-test_x = ph.libs.np.array(
-    [test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines]
-).T
-test_y = ph.libs.np.array(
-    [test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines]
-).T
+    train_indices = train_sample['index'].values.tolist()
+    test_indices = test_sample['index'].values.tolist()
+    input_columns = ['Wind Speed']
+    output_columns = [f'Turbine {i} Power' for i in turbines]
+
+    model.train_model(train_x=train_x,
+                      train_y=train_y,
+                      test_x=test_x,
+                      test_y=test_y,
+                      train_indices=train_indices,
+                      test_indices=test_indices,
+                      input_columns=input_columns,
+                      output_columns=output_columns)
+
+    df = ph.read_pickle_as_dataframe(model_history)
+    chosen_index = len(df) - 1
+    result = df.iloc[chosen_index]
+    # test_sample_indices = result['Test Data Indices']
+    #
+    # test_sample = tes[test_df['index'].isin(test_sample_indices)]
+
+    for i in turbines:
+        turbine_data = test_sample[test_sample['turbine'] == i]
+
+        x = turbine_data['Wind.speed.me'].values.tolist()
+        y = [turbine_data['Power.me'].values.tolist(),
+             # result['Means'][output_columns[i-turbines[0]]],  # need to do -turbines[0] to offset i to be an index
+             result['Lowers'][output_columns[i - turbines[0]]],
+             result['Uppers'][output_columns[i - turbines[0]]]
+             ]
+
+        gr.plot_graph(x=x,
+                      y_list=y,
+                      intervals=True,
+                      # labels=['Observation', 'Means', 'Lower', 'Upper'],
+                      labels=['Observation', 'Lower', 'Upper'],
+                      colors=['black', 'red', 'blue'],
+                      x_label='Mean Wind Speed (metres per second)',
+                      y_label=f'Mean Power for Turbine {i}',
+                      model_history_index=str(chosen_index),
+                      save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
+
+else:
+    for i in turbines:
+        train_x = ph.libs.np.array(
+            train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist()
+        ).T
+        train_y = ph.libs.np.array(
+            train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist()
+        ).T
+        test_x = ph.libs.np.array(
+            test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist()
+        ).T
+        test_y = ph.libs.np.array(
+            test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist()
+        ).T
+
+        train_indices = train_sample['index'].values.tolist()
+        test_indices = test_sample['index'].values.tolist()
+        input_columns = ['Wind Speed']
+        output_columns = [f'Turbine {i} Power']
+
+        model.train_model(train_x=train_x,
+                          train_y=train_y,
+                          test_x=test_x,
+                          test_y=test_y,
+                          train_indices=train_indices,
+                          test_indices=test_indices,
+                          input_columns=input_columns,
+                          output_columns=output_columns)
+
+        df = ph.read_pickle_as_dataframe(model_history)
+        chosen_index = len(df) - 1
+        result = df.iloc[chosen_index]
+        # test_sample_indices = result['Test Data Indices']
+        #
+        # test_sample = tes[test_df['index'].isin(test_sample_indices)]
+
+        turbine_data = test_sample[test_sample['turbine'] == i]
+
+        x = turbine_data['Wind.speed.me'].values.tolist()
+        y = [turbine_data['Power.me'].values.tolist(),
+             # result['Means'][output_columns[i-turbines[0]]],  # need to do -turbines[0] to offset i to be an index
+             result['Lowers'][output_columns[0]],
+             result['Uppers'][output_columns[0]]
+             ]
+
+        gr.plot_graph(x=x,
+                      y_list=y,
+                      intervals=True,
+                      # labels=['Observation', 'Means', 'Lower', 'Upper'],
+                      labels=['Observation', 'Lower', 'Upper'],
+                      colors=['black', 'red', 'blue'],
+                      x_label='Mean Wind Speed (metres per second)',
+                      y_label=f'Mean Power for Turbine {i}',
+                      model_history_index=str(chosen_index),
+                      save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
+
 # for each ndarray, take turbine i's data (train or test) and return the x/y values (which are then reshaped to a
 # normal python list
 # the list comprehension returns the i x n 2-D python array
@@ -200,45 +305,3 @@ test_y = ph.libs.np.array(
 #                   title='Test Data')
 
 
-train_indices = train_sample['index'].values.tolist()
-test_indices = test_sample['index'].values.tolist()
-input_columns = ['Wind Speed']
-output_columns = [f'Turbine {i} Power' for i in turbines]
-
-# model.train_model(train_x=train_x,
-#                   train_y=train_y,
-#                   test_x=test_x,
-#                   test_y=test_y,
-#                   train_indices=train_indices,
-#                   test_indices=test_indices,
-#                   input_columns=input_columns,
-#                   output_columns=output_columns)
-
-df = ph.read_pickle_as_dataframe(model_history)
-chosen_index = len(df) - 1
-result = df.iloc[chosen_index]
-test_sample_indices = result['Test Data Indices']
-
-test_sample = test_df[test_df['index'].isin(test_sample_indices)]
-
-for i in turbines:
-
-    turbine_data = test_sample[test_sample['turbine'] == i]
-
-    x = turbine_data['Wind.speed.me'].values.tolist()
-    y = [turbine_data['Power.me'].values.tolist(),
-         # result['Means'][output_columns[i-turbines[0]]],  # need to do -turbines[0] to offset i to be an index
-         result['Lowers'][output_columns[i-turbines[0]]],
-         result['Uppers'][output_columns[i-turbines[0]]]
-         ]
-
-    gr.plot_graph(x=x,
-                  y_list=y,
-                  intervals=True,
-                  # labels=['Observation', 'Means', 'Lower', 'Upper'],
-                  labels=['Observation', 'Lower', 'Upper'],
-                  colors=['black',  'red', 'blue'],
-                  x_label='Mean Wind Speed (metres per second)',
-                  y_label=f'Mean Power for Turbine {i}',
-                  model_history_index=str(chosen_index))
-#                  save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")

@@ -10,33 +10,63 @@ train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCol
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
-
+turbine_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Two Turbine Metadata.pkl'
 
 
 #print("Modelling History")
 df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 
-chosen_indices = [59, 60, 64]
+# ===================================== KEEP THIS =======================================
+# chosen_indices = [73, 74, 75]
+# turbines = [5, 6]
+#
+# for chosen_index in chosen_indices:
+#     i = chosen_index - 68
+#
+#     print(f"Chosen Index: {chosen_index}")
+#
+#     result = df_modelling_history.iloc[chosen_index]
+#
+#     if chosen_index == chosen_indices[-1]:
+#         print('Double-turbine model')
+#
+#         for t in turbines:
+#             error_dict = result['Error'][f'Turbine {t} Power']
+#
+#             MSE = ph.libs.np.mean(error_dict['Squared Error'])
+#             MAE = ph.libs.np.mean(error_dict['Absolute Error'])
+#
+#             print(f"\tTurbine {t} MSE: {MSE}")
+#             print(f"\tTurbine {t} MAE: {MAE}\n")
+#
+#             ph.append_to_pickle(file_path=turbine_metadata_path,
+#                                 new_row={"Turbine": t,
+#                                          "Model Type": 'Double',
+#                                          "History Index": chosen_index,
+#                                          "MSE": MSE,
+#                                          'MAE': MAE})
+#
+#     else:
+#         print(f'Turbine {i} Data; Single-turbine model')
+#
+#         error_dict = result['Error'][f'Turbine {i} Power']
+#
+#         MSE = ph.libs.np.mean(error_dict['Squared Error'])
+#         MAE = ph.libs.np.mean(error_dict['Absolute Error'])
+#
+#         print(f"\tTurbine {i} MSE: {MSE}")
+#         print(f"\tTurbine {i} MAE: {MAE}\n")
+#
+#         ph.append_to_pickle(file_path=turbine_metadata_path,
+#                             new_row={"Turbine": i,
+#                                      "Model Type": 'Single',
+#                                      "History Index": chosen_index,
+#                                      "MSE": MSE,
+#                                      'MAE': MAE})
+# ==========================================================================================
 
-for chosen_index in chosen_indices:
-    print(f"Chosen Index: {chosen_index}")
-
-    result = df_modelling_history.iloc[chosen_index]
-
-    if chosen_index == 64:
-        turbines = [5, 6]
-        print('Double-turbine model')
-        for i in turbines:
-            error_dict = result['Error'][f'Turbine {i} Power']
-
-            print(f"\tTurbine {i} MSE: {ph.libs.np.mean(error_dict['Squared Error'])}")
-            print(f"\tTurbine {i} MAE: {ph.libs.np.mean(error_dict['Absolute Error'])}\n")
-    else:
-        print(f'Turbine {chosen_index-54} Data; Single-turbine model')
-        error = ph.libs.np.array(result['Error'][f'Power'])
-
-        print(f"\tMSE: {ph.libs.np.mean(error**2)}")
-        print(f"\tMAE: {ph.libs.np.mean(abs(error))}\n")
+turbine_data = ph.read_pickle_as_dataframe(turbine_metadata_path)
+print('...')
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
