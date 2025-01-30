@@ -1,4 +1,4 @@
-import libraries as libs
+from libraries import plt, np, os, datetime
 
 
 def contains_illegal_chars(value, name):
@@ -43,51 +43,71 @@ def plot_graph(x, y_list, model_history_index,
     if y_label:
         contains_illegal_chars(y_label, "y_label")
 
-    libs.plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(12, 6))
 
     # Plot each dataset
 
-#    if not intervals:  # no confidence intervals, just plot all points
-    for i, y in enumerate(y_list):
-        color = colors[i] if colors and i < len(colors) else None
-        label = labels[i] if labels and i < len(labels) else None
-        libs.plt.scatter(x, y, label=label, color=color, marker='o')
-    # else:  # confidence intervals, plot last two lists in y_list as intervals
-    #     for i, y in enumerate(y_list[:-2]):
-    #         color = colors[i] if colors and i < len(colors) else None
-    #         label = labels[i] if labels and i < len(labels) else None
-    #         libs.plt.scatter(x, y, label=label, color=color, marker='o')
-    #
-    #     uppers = y_list[-1].sort()
-    #     lowers = y_list[-2].sort()
-    #
-    #     libs.plt.plot(x, uppers, label="Uppers", color='blue')
-    #     libs.plt.plot(x, lowers, label="lowers", color='red')
+    if not intervals:  # no confidence intervals, just plot all points
+        for i, y in enumerate(y_list):
+            color = colors[i] if colors and i < len(colors) else None
+            label = labels[i] if labels and i < len(labels) else None
+            plt.scatter(x, y, label=label, color=color, marker='o')
 
+    else:  # confidence intervals, plot last two lists in y_list as intervals
+        observations = y_list[0]
+        uppers = y_list[-1]
+        lowers = y_list[-2]
 
+        # --------- Plot observations and colour if outside CI ---------
+        inside_CI = np.array([True if uppers[i] > observations[i] > lowers[i] else False for i in range(len(observations))])
 
+        x = np.array(x)
+        observations = np.array(observations)
 
+        plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", c='black', marker='o', s=20)
+        plt.scatter(x[~inside_CI], observations[~inside_CI], label="Observations outside CI", c='red', marker='o', s=50)
+
+        # --------- take care of anything between observations and bounds ---------
+
+        for i, y in enumerate(y_list):
+            if 0 < i < len(y_list)-2:
+                color = colors[i] if colors and i < len(colors) else None
+                label = labels[i] if labels and i < len(labels) else None
+                plt.scatter(x, y, label=label, color=color, marker='o')
+
+        # --------- plot confidence interval ---------
+
+        uppers = np.array(uppers)
+        lowers = np.array(lowers)
+
+        sorted_indices = np.argsort(x)  # Get indices to sort x in ascending order
+        x_sorted = x[sorted_indices]  # Sort x-values
+        uppers_sorted = uppers[sorted_indices]  # Sort uppers values according to sorted x
+        lowers_sorted = lowers[sorted_indices]  # Sort lowers values according to sorted x
+
+        # Fill between uppers and lowers
+        plt.fill_between(x_sorted, uppers_sorted, lowers_sorted, color='lightblue', alpha=0.5, label='Confidence Interval')
 
     # Set labels and title if provided
     if x_label:
-        libs.plt.xlabel(x_label)
+        plt.xlabel(x_label)
     if y_label:
-        libs.plt.ylabel(y_label)
+        plt.ylabel(y_label)
     if title:
-        libs.plt.title(title)
+        plt.title(title)
     else:
-        libs.plt.title(f"{x_label} vs {y_label} - Modelling History Index {model_history_index}")
+        plt.title(f"{x_label} vs {y_label} - Modelling History Index {model_history_index}")
 
     # Set axis limits if provided
     if x_limits:
-        libs.plt.xlim(x_limits)
+        plt.xlim(x_limits)
     if y_limits:
-        libs.plt.ylim(y_limits)
+        plt.ylim(y_limits)
 
     if labels:
-        libs.plt.legend(loc='upper left')  # Add legend in the top-left corner if labels are provided
+        plt.legend(loc='lower right')  # Add legend in the top-left corner if labels are provided
 
-    libs.plt.grid(True)  # Add a grid for better readability
+    plt.grid(True)  # Add a grid for better readability
 
     # Save the figure if a directory is provided
     if save_path:
@@ -96,15 +116,15 @@ def plot_graph(x, y_list, model_history_index,
         if title:
             filename = title.replace(" ", "_")
         else:
-            filename = f"{libs.datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}".replace(
+            filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}".replace(
                 " ", "_")
         # replace "_" with " " if a title is given
         # otherwise just do "X vs. Y - Modelling History Index z - 1999-01-01_00-59.png"
 
-        full_path = libs.os.path.join(save_path, filename + '.png')
-        libs.plt.savefig(full_path)
+        full_path = os.path.join(save_path, filename + '.png')
+        plt.savefig(full_path)
         print(f"Figure saved at: {full_path}")
 
     else:
         # only show if not saving
-        libs.plt.show()
+        plt.show()

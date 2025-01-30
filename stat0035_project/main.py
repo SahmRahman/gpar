@@ -235,9 +235,10 @@ for i in turbines:
     gr.plot_graph(x=x,
                   y_list=y,
                   intervals=True,
+                  # labels=['Observation', 'Means', 'Lower', 'Upper'],
                   labels=['Observation', 'Lower', 'Upper'],
-                  colors=['black', 'red', 'blue'],
+                  colors=['black',  'red', 'blue'],
                   x_label='Mean Wind Speed (metres per second)',
                   y_label=f'Mean Power for Turbine {i}',
                   model_history_index=str(chosen_index))
-                  #save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
+#                  save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
