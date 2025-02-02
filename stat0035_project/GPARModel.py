@@ -1,11 +1,11 @@
-import numpy as np
-
 import libraries as libs
+from libraries import np
 
 
 class WindFarmGPAR:
     __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
     __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
+    __turbine_model_metadata_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
     def __init__(self, model_params, existing, model_index):
         """
@@ -199,7 +199,6 @@ class WindFarmGPAR:
         for col in split_columns:
             col_values = train_df[col].unique().tolist()
             for value in col_values:
-
                 selected_train_df = train_df[train_df[col] == value]
                 selected_test_df = test_df[test_df[col] == value]
 
@@ -228,7 +227,8 @@ class WindFarmGPAR:
         return df[columns].values
 
     @staticmethod
-    def log_results(results_df, input_cols, output_cols, training_indices, test_indices, model_index):
+    def log_results(results_df, input_cols, output_cols, training_indices, test_indices, model_index,
+                    turbine_permutation):
         """
         log the results of a model run
 
@@ -238,6 +238,7 @@ class WindFarmGPAR:
         :param training_indices: indices of the original training data dataframe, list of ints
         :param test_indices: indices of the original test data dataframe, list of ints
         :param model_index: model index, int
+        :param turbine_permutation: order of turbines in model, list of ints
         :return: NONE, simply saves results to pickle file and prints the filename
         """
 
@@ -259,10 +260,40 @@ class WindFarmGPAR:
         libs.pkl.append_to_pickle(file_path=WindFarmGPAR.__modelling_history_filepath,
                                   new_row=results_df)
 
+        for col in output_cols:
+
+            absolute_error = np.array(results_df['Error'].iloc[0][col]['Absolute Error'],
+                                      ndmin=2)
+            interval_half_width = (np.array(results_df['Uppers'].iloc[0][col], ndmin=2) - np.array(results_df['Lowers'].iloc[0][col], ndmin=2)) / 2
+
+            inside = absolute_error < interval_half_width
+            calibration = np.sum(inside, axis=1)[0] / inside.shape[1]
+            # sum along axis 1 (column) (for some reason, the ndmin forces it to be p x n instead of n x p)
+            # take the first element (np.sum() returns a ndarray of one value)
+            # then divide by n = shape[1]
+
+            MSE = np.sqrt(np.mean(results_df['Error'].iloc[0][col]['Squared Error']))
+            MAE = np.mean(results_df['Error'].iloc[0][col]['Absolute Error'])
+
+            df_modelling_history = libs.pkl.read_pickle_as_dataframe(file_path=WindFarmGPAR.__modelling_history_filepath)
+            model_metadata = {
+                'Turbine Count': len(turbine_permutation),
+                'Turbine Permutation': turbine_permutation,
+                'Modelling History Index': len(df_modelling_history) - 1,
+                'Model Index': model_index,
+                'Calibration': calibration,
+                'MSE': MSE,
+                'MAE': MAE
+            }
+
+            libs.pkl.append_to_pickle(file_path=WindFarmGPAR.__turbine_model_metadata_filepath,
+                                      new_row=model_metadata)
+
     def train_model(self, train_x, train_y,
                     test_x, test_y,
                     train_indices, test_indices,
-                    input_columns, output_columns):
+                    input_columns, output_columns,
+                    turbine_permutation=[]):
         """
         fit model to train data, draw samples from resulting posterior and log the results
         :param output_columns: names of outputs, list of strings
@@ -273,6 +304,7 @@ class WindFarmGPAR:
         :param test_y: test output data, ndarray
         :param train_indices: indices in the training pickle file used for this model, list of ints
         :param test_indices: indices in the test pickle file used for this model, list of ints
+        :param turbine_permutation: order of turbines in model, list of ints
         :return: NONE
         """
 
@@ -300,7 +332,7 @@ class WindFarmGPAR:
                                                    num_samples=50,
                                                    credible_bounds=True)
 
-        error = {"SE": (means - test_y)**2,
+        error = {"SE": (means - test_y) ** 2,
                  "AE": np.absolute(means - test_y)}
         # dictionary of errors
         # first pair is ndarray of squared errors per prediction
@@ -341,5 +373,6 @@ class WindFarmGPAR:
             output_cols=output_columns,
             training_indices=train_indices,
             test_indices=test_indices,
-            model_index=self.model_index
+            model_index=self.model_index,
+            turbine_permutation=turbine_permutation
         )

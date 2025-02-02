@@ -1,3 +1,4 @@
+from libraries import np
 import pickle_helper as ph
 import grapher as gr
 
@@ -13,15 +14,18 @@ complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Unive
 turbine_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Two Turbine Metadata.pkl'
 
 
+
 #print("Modelling History")
 df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 
+# print(df_modelling_history.tail(15))
+
 # ===================================== KEEP THIS =======================================
-# chosen_indices = [73, 74, 75]
+# chosen_indices = [82, 83, 84]
 # turbines = [5, 6]
 #
 # for chosen_index in chosen_indices:
-#     i = chosen_index - 68
+#     i = chosen_index - 77
 #
 #     print(f"Chosen Index: {chosen_index}")
 #
@@ -33,8 +37,8 @@ df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 #         for t in turbines:
 #             error_dict = result['Error'][f'Turbine {t} Power']
 #
-#             MSE = ph.libs.np.mean(error_dict['Squared Error'])
-#             MAE = ph.libs.np.mean(error_dict['Absolute Error'])
+#             MSE = np.sqrt(np.mean(error_dict['Squared Error']))
+#             MAE = np.mean(error_dict['Absolute Error'])
 #
 #             print(f"\tTurbine {t} MSE: {MSE}")
 #             print(f"\tTurbine {t} MAE: {MAE}\n")
@@ -51,8 +55,8 @@ df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 #
 #         error_dict = result['Error'][f'Turbine {i} Power']
 #
-#         MSE = ph.libs.np.mean(error_dict['Squared Error'])
-#         MAE = ph.libs.np.mean(error_dict['Absolute Error'])
+#         MSE = np.sqrt(np.mean(error_dict['Squared Error']))
+#         MAE = np.mean(error_dict['Absolute Error'])
 #
 #         print(f"\tTurbine {i} MSE: {MSE}")
 #         print(f"\tTurbine {i} MAE: {MAE}\n")
@@ -66,7 +70,7 @@ df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 # ==========================================================================================
 
 turbine_data = ph.read_pickle_as_dataframe(turbine_metadata_path)
-print('...')
+print(turbine_data)
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")

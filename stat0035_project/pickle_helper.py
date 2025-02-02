@@ -135,3 +135,6 @@ def append_to_pickle(file_path, new_row):
 #     'normalise_y': libs.pd.Series(dtype='bool'),
 #     'transform_y': libs.pd.Series(dtype='object')  # Using 'object' for tuples
 # }
+
+# turbine model metadata columns
+# ['Turbine Count', 'Turbine Permutation', 'Modelling History Index', 'Model Index', 'Calibration', 'MSE', 'MAE']
