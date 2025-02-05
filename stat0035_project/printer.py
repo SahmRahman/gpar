@@ -3,7 +3,7 @@ import pickle_helper as ph
 import grapher as gr
 
 # Set option to display max number of columns
-ph.libs.pd.set_option('display.max_columns', 6)
+ph.libs.pd.set_option('display.max_columns', None)
 
 model_history = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
@@ -11,8 +11,7 @@ train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCol
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
-turbine_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Two Turbine Metadata.pkl'
-
+model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
 
 #print("Modelling History")
@@ -69,8 +68,11 @@ df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 #                                      'MAE': MAE})
 # ==========================================================================================
 
-turbine_data = ph.read_pickle_as_dataframe(turbine_metadata_path)
-print(turbine_data)
+model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+print(model_metadata)
+
+indices = [10,11,12,13]
+gr.plot_model_metadata(indices)
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")

@@ -137,4 +137,6 @@ def append_to_pickle(file_path, new_row):
 # }
 
 # turbine model metadata columns
-# ['Turbine Count', 'Turbine Permutation', 'Modelling History Index', 'Model Index', 'Calibration', 'MSE', 'MAE']
+#columns=['Turbine Count', 'Turbine Permutation', 'Turbine', 'Modelling History Index', 'Model Index', 'Calibration', 'MSE', 'MAE'])
+
+

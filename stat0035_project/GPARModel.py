@@ -23,7 +23,7 @@ class WindFarmGPAR:
         if model_index > -1:
             self.model_index = model_index
         else:
-            self.model_index = len(libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)) - 1
+            self.model_index = len(libs.ph.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)) - 1
             # need to have - 1 even if it's a new model b/c after the create_model() call,
             # it would have been added to the Models.pkl file
 
@@ -41,7 +41,7 @@ class WindFarmGPAR:
         if existing and model_index > -1:
             # model exists, pull from pickle file @ given index
 
-            models_df = libs.pkl.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)
+            models_df = libs.ph.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)
             model_params = models_df.iloc[model_index]
 
             model_params = model_params[model_params.notna()]
@@ -52,7 +52,7 @@ class WindFarmGPAR:
             # need to make from scratch using model_params
 
             # add new model to our models file
-            libs.pkl.append_to_pickle(WindFarmGPAR.__models_filepath, model_params)
+            libs.ph.append_to_pickle(WindFarmGPAR.__models_filepath, model_params)
 
         model = libs.GPARRegressor(**model_params)
         # ** is python's way of unpacking a dictionary as parameters
@@ -257,7 +257,7 @@ class WindFarmGPAR:
 
         # Save the DataFrame as a Pickle file
 
-        libs.pkl.append_to_pickle(file_path=WindFarmGPAR.__modelling_history_filepath,
+        libs.ph.append_to_pickle(file_path=WindFarmGPAR.__modelling_history_filepath,
                                   new_row=results_df)
 
         for col in output_cols:
@@ -275,10 +275,12 @@ class WindFarmGPAR:
             MSE = np.sqrt(np.mean(results_df['Error'].iloc[0][col]['Squared Error']))
             MAE = np.mean(results_df['Error'].iloc[0][col]['Absolute Error'])
 
-            df_modelling_history = libs.pkl.read_pickle_as_dataframe(file_path=WindFarmGPAR.__modelling_history_filepath)
+            df_modelling_history = libs.ph.read_pickle_as_dataframe(file_path=WindFarmGPAR.__modelling_history_filepath)
+            turbine_num = int(col.split(' ')[1])
             model_metadata = {
                 'Turbine Count': len(turbine_permutation),
                 'Turbine Permutation': turbine_permutation,
+                'Turbine': turbine_num,
                 'Modelling History Index': len(df_modelling_history) - 1,
                 'Model Index': model_index,
                 'Calibration': calibration,
@@ -286,7 +288,7 @@ class WindFarmGPAR:
                 'MAE': MAE
             }
 
-            libs.pkl.append_to_pickle(file_path=WindFarmGPAR.__turbine_model_metadata_filepath,
+            libs.ph.append_to_pickle(file_path=WindFarmGPAR.__turbine_model_metadata_filepath,
                                       new_row=model_metadata)
 
     def train_model(self, train_x, train_y,

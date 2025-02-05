@@ -3,12 +3,13 @@ import pickle_helper as ph
 import grapher as gr
 from libraries import np
 
-model_history = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
-models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
+model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
+models_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
+model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
 # train_data = ph.read_pickle_as_dataframe(train_data_path)
 # test_data = ph.read_pickle_as_dataframe(test_data_path)
@@ -22,7 +23,7 @@ test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
 
 #
-# models = [WindFarmGPAR(model_params={},
+# models_path = [WindFarmGPAR(model_params={},
 #                        existing=True,
 #                        model_index=0)] * 6
 #
@@ -154,7 +155,7 @@ more covariates
 #     input_columns = ['Wind Speed']
 #     output_columns = ['Power']
 #
-#     models[i - 1].train_model(train_x=train_x,
+#     models_path[i - 1].train_model(train_x=train_x,
 #                               train_y=train_y,
 #                               test_x=test_x,
 #                               test_y=test_y,
@@ -221,19 +222,20 @@ for i in turbines:
                       output_columns=output_columns,
                       turbine_permutation=[i])
 
-    df = ph.read_pickle_as_dataframe(model_history)
-    chosen_index = len(df) - 1
-    result = df.iloc[chosen_index]
-    # test_sample_indices = result['Test Data Indices']
-    #
-    # test_sample = tes[test_df['index'].isin(test_sample_indices)]
+    df_model_history = ph.read_pickle_as_dataframe(model_history_path)
+    chosen_index = len(df_model_history) - 1
+    result = df_model_history.iloc[chosen_index]
+
+    df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+
+    current_metadata = df_model_metadata[df_model_metadata['Modelling History Index'] == chosen_index]
 
     turbine_data = test_sample[test_sample['turbine'] == i]
 
     x = turbine_data['Wind.speed.me'].values.tolist()
     y = [turbine_data['Power.me'].values.tolist(),
-         # result['Means'][output_columns[i-turbines[0]]],  # need to do -turbines[0] to offset i to be an index
-         result['Lowers'][output_columns[0]],
+         # result['Means'][output_columns[i-turbines[0]]], have excluded means here since it just clogs up the graph
+         result['Lowers'][output_columns[0]],  # need to do -turbines[0] to offset i to be an index
          result['Uppers'][output_columns[0]]
          ]
 
@@ -242,6 +244,7 @@ for i in turbines:
                   intervals=True,
                   # labels=['Observation', 'Means', 'Lower', 'Upper'],
                   labels=['Observation', 'Lower', 'Upper'],
+                  calibration=float(current_metadata['Calibration'].iloc[0]),
                   colors=['black', 'red', 'blue'],
                   x_label='Mean Wind Speed (metres per second)',
                   y_label=f'Mean Power for Turbine {i}',
@@ -282,20 +285,25 @@ model.train_model(train_x=train_x,
                   output_columns=output_columns,
                   turbine_permutation=turbines)
 
-df = ph.read_pickle_as_dataframe(model_history)
-chosen_index = len(df) - 1
-result = df.iloc[chosen_index]
+df_model_history = ph.read_pickle_as_dataframe(model_history_path)
+chosen_index = len(df_model_history) - 1
+result = df_model_history.iloc[chosen_index]
 # test_sample_indices = result['Test Data Indices']
 #
 # test_sample = tes[test_df['index'].isin(test_sample_indices)]
+
+df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+print(df_model_metadata)
+
+current_metadata = df_model_metadata[df_model_metadata['Modelling History Index'] == chosen_index]
 
 for i in turbines:
     turbine_data = test_sample[test_sample['turbine'] == i]
 
     x = turbine_data['Wind.speed.me'].values.tolist()
     y = [turbine_data['Power.me'].values.tolist(),
-         # result['Means'][output_columns[i-turbines[0]]],  # need to do -turbines[0] to offset i to be an index
-         result['Lowers'][output_columns[i - turbines[0]]],
+         # result['Means'][output_columns[i-turbines[0]]], have excluded means here since it just clogs up the graph
+         result['Lowers'][output_columns[i - turbines[0]]],  # need to do -turbines[0] to offset i to be an index
          result['Uppers'][output_columns[i - turbines[0]]]
          ]
 
@@ -303,6 +311,7 @@ for i in turbines:
                   y_list=y,
                   intervals=True,
                   # labels=['Observation', 'Means', 'Lower', 'Upper'],
+                  calibration=float(current_metadata['Calibration'].iloc[0]),
                   labels=['Observation', 'Lower', 'Upper'],
                   colors=['black', 'red', 'blue'],
                   x_label='Mean Wind Speed (metres per second)',

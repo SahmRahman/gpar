@@ -1,4 +1,6 @@
-from libraries import plt, np, os, datetime
+from libraries import plt, np, os, datetime, ph, pd
+
+model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
 
 def contains_illegal_chars(value, name):
@@ -9,6 +11,7 @@ def contains_illegal_chars(value, name):
 
 def plot_graph(x, y_list, model_history_index,
                intervals=False,
+               calibration=0,
                labels=None,
                colors=None,
                x_label=None,
@@ -25,6 +28,7 @@ def plot_graph(x, y_list, model_history_index,
     - y_list: List of List or array-like, y-axis values for each dataset
     - model_history_index: int, index in Modelling History.pkl where this data was pulled
     - intervals: boolean, optional, will plot last two lists in y_list as an interval
+    - calibration: float (between 0 and 1), optional, proportion of test data captured by intervals
     - labels: List of str, optional, labels for each dataset (excluding confidence interval)
     - colors: List of str, optional, colors for each dataset (excluding confidence interval)
     - x_label: str, optional, label for the x-axis
@@ -59,7 +63,8 @@ def plot_graph(x, y_list, model_history_index,
         lowers = y_list[-2]
 
         # --------- Plot observations and colour if outside CI ---------
-        inside_CI = np.array([True if uppers[i] > observations[i] > lowers[i] else False for i in range(len(observations))])
+        inside_CI = np.array(
+            [True if uppers[i] > observations[i] > lowers[i] else False for i in range(len(observations))])
 
         x = np.array(x)
         observations = np.array(observations)
@@ -70,7 +75,7 @@ def plot_graph(x, y_list, model_history_index,
         # --------- take care of anything between observations and bounds ---------
 
         for i, y in enumerate(y_list):
-            if 0 < i < len(y_list)-2:
+            if 0 < i < len(y_list) - 2:
                 color = colors[i] if colors and i < len(colors) else None
                 label = labels[i] if labels and i < len(labels) else None
                 plt.scatter(x, y, label=label, color=color, marker='o')
@@ -86,7 +91,8 @@ def plot_graph(x, y_list, model_history_index,
         lowers_sorted = lowers[sorted_indices]  # Sort lowers values according to sorted x
 
         # Fill between uppers and lowers
-        plt.fill_between(x_sorted, uppers_sorted, lowers_sorted, color='lightblue', alpha=0.5, label='Confidence Interval')
+        plt.fill_between(x_sorted, uppers_sorted, lowers_sorted, color='lightblue', alpha=0.5,
+                         label='95% Confidence Interval')
 
     # Set labels and title if provided
     if x_label:
@@ -105,7 +111,19 @@ def plot_graph(x, y_list, model_history_index,
         plt.ylim(y_limits)
 
     if labels:
-        plt.legend(loc='lower right')  # Add legend in the top-left corner if labels are provided
+        if calibration > 0:
+            # Get the existing legend handles and labels
+            handles, labels = plt.gca().get_legend_handles_labels()
+
+            # Add a dummy handle for the custom text
+            handles.append(plt.Line2D([0], [0], linestyle="none"))  # Invisible handle
+            labels.append(f"Calibration {round(calibration * 100, 2)}%")  # Custom text to add
+
+            # Update the legend with the new entry
+            plt.legend(handles, labels, loc="lower right")
+
+        else:  # no calibration, just make the legend as normal
+            plt.legend(loc='lower right')  # Add legend in the top-left corner if labels are provided
 
     plt.grid(True)  # Add a grid for better readability
 
@@ -127,3 +145,70 @@ def plot_graph(x, y_list, model_history_index,
     else:
         # only show if not saving
         plt.show()
+
+
+def plot_model_metadata(indices=[], save_path=''):
+    df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+    selected_metadata = df_model_metadata.iloc[indices]
+
+    turbines = []
+    indices_by_permutation_size = {1: [],
+                                   2: [],
+                                   3: [],
+                                   4: [],
+                                   5: [],
+                                   6: []}
+
+    for index, row in selected_metadata.iterrows():
+
+        permutation = row['Turbine Permutation']
+
+        indices_by_permutation_size[len(permutation)].append(index)
+
+        for turbine in permutation:
+            if turbine not in turbines:
+                turbines.append(turbine)
+
+    for turbine in turbines:
+        plt.figure(figsize=(8, 6))
+        plt.xlabel('Turbine Permutation Size')
+        plt.ylabel('Error')
+        plt.title(f'Model Metadata for Turbine {turbine}')
+
+        markers = ['o', 's', '^', 'D', 'p', '*']
+        i = 0
+
+        for perm_size, indices in indices_by_permutation_size.values():
+
+            if indices:
+                # non-empty index list
+                # i.e. we actually have data for this perm_size and turbine
+
+                current_data = selected_metadata.iloc[indices]
+
+                MSE = current_data['MSE']
+                MAE = current_data['MAE']
+
+                plt.scatter(x=perm_size,
+                            y=MSE,
+                            label=f'MSE; {perm_size} Turbines',
+                            color='black',
+                            marker=markers[i])
+
+                plt.scatter(x=perm_size,
+                            y=MAE,
+                            label=f'MAE; {perm_size} Turbines',
+                            color='blue',
+                            marker=markers[i])
+
+                i += 1
+
+        if save_path:
+            filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} Model Metadata for " \
+                       f"Turbine {turbine} at Indices {indices}"
+
+            full_path = os.path.join(save_path, filename + '.png')
+            plt.savefig(full_path)
+            print(f"Figure saved at: {full_path}")
+        else:
+            plt.show()
