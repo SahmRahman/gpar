@@ -1,4 +1,4 @@
-from libraries import np
+from libraries import np, pickle, pd
 import pickle_helper as ph
 import grapher as gr
 
@@ -69,9 +69,10 @@ df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 # ==========================================================================================
 
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+print(model_metadata.tail(20))
 
 indices = [i for i in range(4, len(model_metadata))]
-gr.plot_model_metadata(indices, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
+#gr.plot_model_metadata(indices, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")

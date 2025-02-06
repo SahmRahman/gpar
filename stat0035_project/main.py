@@ -181,8 +181,9 @@ def generate_permutations(lst, min_length=1, max_length=6):
 
     return result
 
+butt = 5
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=3, max_length=3)
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=butt, max_length=butt)
 
 # #
 # train_df = complete_train_data
@@ -283,39 +284,39 @@ turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=3, max_
 
 
 # ----------------- MULTI-TURBINE MODEL -----------------
+if True:  # left this here just so i don't run everything all over again
+    for turbines in turbine_perms:
+        train_x = np.array(
+            [train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
+            ndmin=2
+        ).T
+        train_y = np.array(
+            [train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
+            ndmin=2
+        ).T
+        test_x = np.array(
+            [test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
+            ndmin=2
+        ).T
+        test_y = np.array(
+            [test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
+            ndmin=2
+        ).T
 
-for turbines in turbine_perms:
-    train_x = np.array(
-        [train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
-        ndmin=2
-    ).T
-    train_y = np.array(
-        [train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
-        ndmin=2
-    ).T
-    test_x = np.array(
-        [test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
-        ndmin=2
-    ).T
-    test_y = np.array(
-        [test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
-        ndmin=2
-    ).T
+        train_indices = train_sample['index'].values.tolist()
+        test_indices = test_sample['index'].values.tolist()
+        input_columns = ['Wind Speed']
+        output_columns = [f'Turbine {i} Power' for i in turbines]
 
-    train_indices = train_sample['index'].values.tolist()
-    test_indices = test_sample['index'].values.tolist()
-    input_columns = ['Wind Speed']
-    output_columns = [f'Turbine {i} Power' for i in turbines]
-
-    model.train_model(train_x=train_x,
-                      train_y=train_y,
-                      test_x=test_x,
-                      test_y=test_y,
-                      train_indices=train_indices,
-                      test_indices=test_indices,
-                      input_columns=input_columns,
-                      output_columns=output_columns,
-                      turbine_permutation=turbines)
+        model.train_model(train_x=train_x,
+                          train_y=train_y,
+                          test_x=test_x,
+                          test_y=test_y,
+                          train_indices=train_indices,
+                          test_indices=test_indices,
+                          input_columns=input_columns,
+                          output_columns=output_columns,
+                          turbine_permutation=turbines)
 
     # df_model_history = ph.read_pickle_as_dataframe(model_history_path)
     # chosen_index = len(df_model_history) - 1
