@@ -69,9 +69,8 @@ df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
 # ==========================================================================================
 
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-print(model_metadata)
 
-indices = [10,11,12,13]
+indices = [i for i in range(4, len(model_metadata))]
 gr.plot_model_metadata(indices)
 
 # print(df_modelling_history.tail(10))

@@ -2,6 +2,7 @@ from GPARModel import WindFarmGPAR
 import pickle_helper as ph
 import grapher as gr
 from libraries import np
+import itertools
 
 model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
 models_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
@@ -166,7 +167,23 @@ more covariates
 
 model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
 
-turbines = [5, 6]
+
+def generate_permutations(lst, min_length=1, max_length=6):
+    if min_length > max_length:
+        print("Invalid lengths")
+        return None
+
+    result = []
+    max_length = max_length or len(lst)  # Default max_length to full length of list
+
+    for length in range(min_length, max_length + 1):
+        result.extend(itertools.permutations(lst, length))
+
+    return result
+
+
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=3, max_length=3)
+
 # #
 # train_df = complete_train_data
 # test_df = complete_test_data
@@ -187,30 +204,108 @@ turbines = [5, 6]
 # train_df = train_data[train_data['index'].isin(train_indices)]
 # test_df = test_data[test_data['index'].isin(test_indices)]
 
-# ----------------- SINGLE TURBINE MODEL -----------------
 
-for i in turbines:
+
+
+
+
+
+
+# ----------------- SINGLE TURBINE MODEL -----------------
+#
+# for i in turbines:
+#     train_x = np.array(
+#         train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values,
+#         ndmin=2
+#     ).T
+#     train_y = np.array(
+#         train_sample[train_sample['turbine'] == i]['Power.me'].values,
+#         ndmin=2
+#     ).T
+#     test_x = np.array(
+#         test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values,
+#         ndmin=2
+#     ).T
+#     test_y = np.array(
+#         test_sample[test_sample['turbine'] == i]['Power.me'].values,
+#         ndmin=2
+#     ).T
+#
+#     train_indices = train_sample['index'].values.tolist()
+#     test_indices = test_sample['index'].values.tolist()
+#     input_columns = ['Wind Speed']
+#     output_columns = [f'Turbine {i} Power']
+#
+#     model.train_model(train_x=train_x,
+#                       train_y=train_y,
+#                       test_x=test_x,
+#                       test_y=test_y,
+#                       train_indices=train_indices,
+#                       test_indices=test_indices,
+#                       input_columns=input_columns,
+#                       output_columns=output_columns,
+#                       turbine_permutation=[i])
+#
+#     df_model_history = ph.read_pickle_as_dataframe(model_history_path)
+#     chosen_index = len(df_model_history) - 1
+#     result = df_model_history.iloc[chosen_index]
+#
+#     df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+#
+#     current_metadata = df_model_metadata[df_model_metadata['Modelling History Index'] == chosen_index]
+#
+#     turbine_data = test_sample[test_sample['turbine'] == i]
+#
+#     x = turbine_data['Wind.speed.me'].values.tolist()
+#     y = [turbine_data['Power.me'].values.tolist(),
+#          # result['Means'][output_columns[i-turbines[0]]], have excluded means here since it just clogs up the graph
+#          result['Lowers'][output_columns[0]],  # need to do -turbines[0] to offset i to be an index
+#          result['Uppers'][output_columns[0]]
+#          ]
+#
+#     gr.plot_graph(x=x,
+#                   y_list=y,
+#                   intervals=True,
+#                   # labels=['Observation', 'Means', 'Lower', 'Upper'],
+#                   labels=['Observation', 'Lower', 'Upper'],
+#                   calibration=float(current_metadata['Calibration'].iloc[0]),
+#                   colors=['black', 'red', 'blue'],
+#                   x_label='Mean Wind Speed (metres per second)',
+#                   y_label=f'Mean Power for Turbine {i}',
+#                   model_history_index=str(chosen_index))  # ,
+#     # save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
+
+
+
+
+
+
+
+
+# ----------------- MULTI-TURBINE MODEL -----------------
+
+for turbines in turbine_perms:
     train_x = np.array(
-        train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values,
+        [train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
         ndmin=2
     ).T
     train_y = np.array(
-        train_sample[train_sample['turbine'] == i]['Power.me'].values,
+        [train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
         ndmin=2
     ).T
     test_x = np.array(
-        test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values,
+        [test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
         ndmin=2
     ).T
     test_y = np.array(
-        test_sample[test_sample['turbine'] == i]['Power.me'].values,
+        [test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
         ndmin=2
     ).T
 
     train_indices = train_sample['index'].values.tolist()
     test_indices = test_sample['index'].values.tolist()
     input_columns = ['Wind Speed']
-    output_columns = [f'Turbine {i} Power']
+    output_columns = [f'Turbine {i} Power' for i in turbines]
 
     model.train_model(train_x=train_x,
                       train_y=train_y,
@@ -220,104 +315,40 @@ for i in turbines:
                       test_indices=test_indices,
                       input_columns=input_columns,
                       output_columns=output_columns,
-                      turbine_permutation=[i])
+                      turbine_permutation=turbines)
 
-    df_model_history = ph.read_pickle_as_dataframe(model_history_path)
-    chosen_index = len(df_model_history) - 1
-    result = df_model_history.iloc[chosen_index]
-
-    df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-
-    current_metadata = df_model_metadata[df_model_metadata['Modelling History Index'] == chosen_index]
-
-    turbine_data = test_sample[test_sample['turbine'] == i]
-
-    x = turbine_data['Wind.speed.me'].values.tolist()
-    y = [turbine_data['Power.me'].values.tolist(),
-         # result['Means'][output_columns[i-turbines[0]]], have excluded means here since it just clogs up the graph
-         result['Lowers'][output_columns[0]],  # need to do -turbines[0] to offset i to be an index
-         result['Uppers'][output_columns[0]]
-         ]
-
-    gr.plot_graph(x=x,
-                  y_list=y,
-                  intervals=True,
-                  # labels=['Observation', 'Means', 'Lower', 'Upper'],
-                  labels=['Observation', 'Lower', 'Upper'],
-                  calibration=float(current_metadata['Calibration'].iloc[0]),
-                  colors=['black', 'red', 'blue'],
-                  x_label='Mean Wind Speed (metres per second)',
-                  y_label=f'Mean Power for Turbine {i}',
-                  model_history_index=str(chosen_index))  # ,
-    # save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
-
-# ----------------- DOUBLE TURBINE MODEL -----------------
-
-train_x = np.array(
-    [train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
-    ndmin=2
-).T
-train_y = np.array(
-    [train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
-    ndmin=2
-).T
-test_x = np.array(
-    [test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
-    ndmin=2
-).T
-test_y = np.array(
-    [test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
-    ndmin=2
-).T
-
-train_indices = train_sample['index'].values.tolist()
-test_indices = test_sample['index'].values.tolist()
-input_columns = ['Wind Speed']
-output_columns = [f'Turbine {i} Power' for i in turbines]
-
-model.train_model(train_x=train_x,
-                  train_y=train_y,
-                  test_x=test_x,
-                  test_y=test_y,
-                  train_indices=train_indices,
-                  test_indices=test_indices,
-                  input_columns=input_columns,
-                  output_columns=output_columns,
-                  turbine_permutation=turbines)
-
-df_model_history = ph.read_pickle_as_dataframe(model_history_path)
-chosen_index = len(df_model_history) - 1
-result = df_model_history.iloc[chosen_index]
-# test_sample_indices = result['Test Data Indices']
-#
-# test_sample = tes[test_df['index'].isin(test_sample_indices)]
-
-df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-print(df_model_metadata)
-
-current_metadata = df_model_metadata[df_model_metadata['Modelling History Index'] == chosen_index]
-
-for i in turbines:
-    turbine_data = test_sample[test_sample['turbine'] == i]
-
-    x = turbine_data['Wind.speed.me'].values.tolist()
-    y = [turbine_data['Power.me'].values.tolist(),
-         # result['Means'][output_columns[i-turbines[0]]], have excluded means here since it just clogs up the graph
-         result['Lowers'][output_columns[i - turbines[0]]],  # need to do -turbines[0] to offset i to be an index
-         result['Uppers'][output_columns[i - turbines[0]]]
-         ]
-
-    gr.plot_graph(x=x,
-                  y_list=y,
-                  intervals=True,
-                  # labels=['Observation', 'Means', 'Lower', 'Upper'],
-                  calibration=float(current_metadata['Calibration'].iloc[0]),
-                  labels=['Observation', 'Lower', 'Upper'],
-                  colors=['black', 'red', 'blue'],
-                  x_label='Mean Wind Speed (metres per second)',
-                  y_label=f'Mean Power for Turbine {i}',
-                  model_history_index=str(chosen_index))  # ,
-    # save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
+    # df_model_history = ph.read_pickle_as_dataframe(model_history_path)
+    # chosen_index = len(df_model_history) - 1
+    # result = df_model_history.iloc[chosen_index]
+    # # test_sample_indices = result['Test Data Indices']
+    # #
+    # # test_sample = tes[test_df['index'].isin(test_sample_indices)]
+    #
+    # df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+    #
+    # current_metadata = df_model_metadata[df_model_metadata['Modelling History Index'] == chosen_index]
+    #
+    # for i in turbines:
+    #     turbine_data = test_sample[test_sample['turbine'] == i]
+    #
+    #     x = turbine_data['Wind.speed.me'].values.tolist()
+    #     y = [turbine_data['Power.me'].values.tolist(),
+    #          # result['Means'][output_columns[i-turbines[0]]], have excluded means here since it just clogs up the graph
+    #          result['Lowers'][output_columns[i - turbines[0]]],  # need to do -turbines[0] to offset i to be an index
+    #          result['Uppers'][output_columns[i - turbines[0]]]
+    #          ]
+    #
+    #     gr.plot_graph(x=x,
+    #                   y_list=y,
+    #                   intervals=True,
+    #                   # labels=['Observation', 'Means', 'Lower', 'Upper'],
+    #                   calibration=float(current_metadata['Calibration'].iloc[0]),
+    #                   labels=['Observation', 'Lower', 'Upper'],
+    #                   colors=['black', 'red', 'blue'],
+    #                   x_label='Mean Wind Speed (metres per second)',
+    #                   y_label=f'Mean Power for Turbine {i}',
+    #                   model_history_index=str(chosen_index))  # ,
+    #     save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
 
 # for each ndarray, take turbine i's data (train or test) and return the x/y values (which are then reshaped to a
 # normal python list

@@ -152,7 +152,7 @@ def plot_model_metadata(indices=[], save_path=''):
     selected_metadata = df_model_metadata.iloc[indices]
 
     turbines = []
-    indices_by_permutation_size = {1: [],
+    entries_by_permutation_size = {1: [],
                                    2: [],
                                    3: [],
                                    4: [],
@@ -163,45 +163,50 @@ def plot_model_metadata(indices=[], save_path=''):
 
         permutation = row['Turbine Permutation']
 
-        indices_by_permutation_size[len(permutation)].append(index)
+        entries_by_permutation_size[len(permutation)].append(row)
 
         for turbine in permutation:
             if turbine not in turbines:
                 turbines.append(turbine)
+
+    for i in range(1, 7):
+        entries_by_permutation_size[i] = pd.DataFrame(entries_by_permutation_size[i])
+        # convert each list of DataFrame rows to one full DataFrame
 
     for turbine in turbines:
         plt.figure(figsize=(8, 6))
         plt.xlabel('Turbine Permutation Size')
         plt.ylabel('Error')
         plt.title(f'Model Metadata for Turbine {turbine}')
+        plt.xlim((0, 7))
 
-        markers = ['o', 's', '^', 'D', 'p', '*']
-        i = 0
+        for perm_size, perm_data in entries_by_permutation_size.items():
 
-        for perm_size, indices in indices_by_permutation_size.values():
-
-            if indices:
-                # non-empty index list
-                # i.e. we actually have data for this perm_size and turbine
-
-                current_data = selected_metadata.iloc[indices]
+            if not perm_data.empty:
+                current_data = perm_data[perm_data['Turbine'] == turbine]
+                # choose the current turbines data of these entries
 
                 MSE = current_data['MSE']
                 MAE = current_data['MAE']
 
-                plt.scatter(x=perm_size,
+                x = np.array([perm_size] * len(MSE)) + np.random.uniform(-0.2, 0.2, size=len(MSE))
+
+                plt.scatter(x=x,
                             y=MSE,
-                            label=f'MSE; {perm_size} Turbines',
                             color='black',
-                            marker=markers[i])
+                            marker='o')
 
-                plt.scatter(x=perm_size,
+                plt.scatter(x=x,
                             y=MAE,
-                            label=f'MAE; {perm_size} Turbines',
                             color='blue',
-                            marker=markers[i])
+                            marker='o')
 
-                i += 1
+        plt.scatter([], [], color='black', marker='o', label='MSE')
+        plt.scatter([], [], color='blue', marker='o', label='MAE')
+        # had to add these dummy plots for the legend so they wouldn't repeat each loop
+
+        plt.legend(loc='upper right')
+        plt.grid(True)
 
         if save_path:
             filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} Model Metadata for " \
