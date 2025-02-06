@@ -209,8 +209,7 @@ def plot_model_metadata(indices=[], save_path=''):
         plt.grid(True)
 
         if save_path:
-            filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} Model Metadata for " \
-                       f"Turbine {turbine} at Indices {indices}"
+            filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} Model Metadata for Turbine {turbine}"
 
             full_path = os.path.join(save_path, filename + '.png')
             plt.savefig(full_path)
