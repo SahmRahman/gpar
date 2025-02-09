@@ -26,7 +26,7 @@ def plot_graph(x, y_list, model_history_index,
     Parameters:
     - x: List or array-like, x-axis values
     - y_list: List of List or array-like, y-axis values for each dataset
-    - model_history_index: int, index in Modelling History.pkl where this data was pulled
+    - model_history_index: int, index in Modelling History X.pkl where this data was pulled
     - intervals: boolean, optional, will plot last two lists in y_list as an interval
     - calibration: float (between 0 and 1), optional, proportion of test data captured by intervals
     - labels: List of str, optional, labels for each dataset (excluding confidence interval)
@@ -173,46 +173,30 @@ def plot_model_metadata(indices=[], save_path=''):
         entries_by_permutation_size[i] = pd.DataFrame(entries_by_permutation_size[i])
         # convert each list of DataFrame rows to one full DataFrame
 
-    for turbine in turbines:
-        plt.figure(figsize=(8, 6))
-        plt.xlabel('Turbine Permutation Size')
-        plt.ylabel('Error')
-        plt.title(f'Model Metadata for Turbine {turbine}')
-        plt.xlim((0, 7))
+    for metadata_val, y_lims in zip(['MSE', 'MAE', 'Calibration'], [(50, 100), (35, 70), (.7, 1)]):
+        for turbine in turbines:
 
-        for perm_size, perm_data in entries_by_permutation_size.items():
+            plt.figure(figsize=(8, 6))
+            plt.xlabel('Turbine Permutation Size')
+            plt.ylabel(metadata_val)
+            title = f'Model {metadata_val} for Turbine {turbine} by Permutation Size'
+            plt.title(title)
+            plt.xlim((0, 7))
+            plt.ylim(y_lims)
 
-            if not perm_data.empty:
-                current_data = perm_data[perm_data['Turbine'] == turbine]
-                # choose the current turbines data of these entries
+            metadata = [entries_by_permutation_size[i][entries_by_permutation_size[i]['Turbine'] == turbine][metadata_val]
+                        for i in entries_by_permutation_size.keys()]
 
-                MSE = current_data['MSE']
-                MAE = current_data['MAE']
+            plt.boxplot(x=metadata)
 
-                x = np.array([perm_size] * len(MSE)) + np.random.uniform(-0.2, 0.2, size=len(MSE))
+            # plt.legend(loc='upper right')  didn't end up needing a legend for boxplot
+            plt.grid(True)
 
-                plt.scatter(x=x,
-                            y=MSE,
-                            color='black',
-                            marker='o')
+            if save_path:
+                filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')}" + title
 
-                plt.scatter(x=x,
-                            y=MAE,
-                            color='blue',
-                            marker='o')
-
-        plt.scatter([], [], color='black', marker='o', label='MSE')
-        plt.scatter([], [], color='blue', marker='o', label='MAE')
-        # had to add these dummy plots for the legend so they wouldn't repeat each loop
-
-        plt.legend(loc='upper right')
-        plt.grid(True)
-
-        if save_path:
-            filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} Model Metadata for Turbine {turbine}"
-
-            full_path = os.path.join(save_path, filename + '.png')
-            plt.savefig(full_path)
-            print(f"Figure saved at: {full_path}")
-        else:
-            plt.show()
+                full_path = os.path.join(save_path, filename + '.png')
+                plt.savefig(full_path)
+                print(f"Figure saved at: {full_path}")
+            else:
+                plt.show()

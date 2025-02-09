@@ -1,3 +1,5 @@
+import pandas as pd
+
 import libraries as libs
 
 
@@ -137,6 +139,7 @@ def append_to_pickle(file_path, new_row):
 # }
 
 # turbine model metadata columns
-#columns=['Turbine Count', 'Turbine Permutation', 'Turbine', 'Modelling History Index', 'Model Index', 'Calibration', 'MSE', 'MAE'])
-
+columns = ['Turbine Count', 'Turbine Permutation', 'Turbine', 'Modelling History Index', 'Model Index', 'Calibration', 'MSE', 'MAE']
+df = pd.DataFrame(columns=columns)
+df.to_pickle('model_metadata_v2.pkl')
 

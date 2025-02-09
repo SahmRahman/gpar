@@ -4,7 +4,7 @@ import grapher as gr
 from libraries import np
 import itertools
 
-model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
+model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
 models_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -181,9 +181,9 @@ def generate_permutations(lst, min_length=1, max_length=6):
 
     return result
 
-butt = 5
+butt = 6
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=butt, max_length=butt)
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=butt, max_length=butt)[-2:]
 
 # #
 # train_df = complete_train_data

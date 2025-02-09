@@ -5,7 +5,8 @@ import grapher as gr
 # Set option to display max number of columns
 ph.libs.pd.set_option('display.max_columns', None)
 
-model_history = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History.pkl'
+model_history_1 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 1.pkl'
+model_history_2 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -14,65 +15,51 @@ complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Unive
 model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
 
-#print("Modelling History")
-df_modelling_history = ph.read_pickle_as_dataframe(file_path=model_history)
+df_1 = ph.read_pickle_as_dataframe(model_history_1)
+df_2 = ph.read_pickle_as_dataframe(model_history_2)
+print('...')
+# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 
-# print(df_modelling_history.tail(15))
+# for i in model_metadata['Turbine Count'].unique():
+#     data = model_metadata[model_metadata['Turbine Count'] == i]
+#     df = data.sort_values(by='MSE')
+#     print('...')
+#     df = data.sort_values(by='MAE')
+#     print('...')
 
-# ===================================== KEEP THIS =======================================
-# chosen_indices = [82, 83, 84]
-# turbines = [5, 6]
-#
-# for chosen_index in chosen_indices:
-#     i = chosen_index - 77
-#
-#     print(f"Chosen Index: {chosen_index}")
-#
-#     result = df_modelling_history.iloc[chosen_index]
-#
-#     if chosen_index == chosen_indices[-1]:
-#         print('Double-turbine model')
-#
-#         for t in turbines:
-#             error_dict = result['Error'][f'Turbine {t} Power']
-#
-#             MSE = np.sqrt(np.mean(error_dict['Squared Error']))
-#             MAE = np.mean(error_dict['Absolute Error'])
-#
-#             print(f"\tTurbine {t} MSE: {MSE}")
-#             print(f"\tTurbine {t} MAE: {MAE}\n")
-#
-#             ph.append_to_pickle(file_path=turbine_metadata_path,
-#                                 new_row={"Turbine": t,
-#                                          "Model Type": 'Double',
-#                                          "History Index": chosen_index,
-#                                          "MSE": MSE,
-#                                          'MAE': MAE})
-#
-#     else:
-#         print(f'Turbine {i} Data; Single-turbine model')
-#
-#         error_dict = result['Error'][f'Turbine {i} Power']
-#
-#         MSE = np.sqrt(np.mean(error_dict['Squared Error']))
-#         MAE = np.mean(error_dict['Absolute Error'])
-#
-#         print(f"\tTurbine {i} MSE: {MSE}")
-#         print(f"\tTurbine {i} MAE: {MAE}\n")
-#
-#         ph.append_to_pickle(file_path=turbine_metadata_path,
-#                             new_row={"Turbine": i,
-#                                      "Model Type": 'Single',
-#                                      "History Index": chosen_index,
-#                                      "MSE": MSE,
-#                                      'MAE': MAE})
-# ==========================================================================================
+    # REALLY weird findings!!
+    # MSE and MAE tend to get bigger as turbine goes from 6,4,5,3,2,1
 
-model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-print(model_metadata.tail(20))
+# for turbine_size in range(1, 7):
+#     print(f"----------------- {turbine_size} Turbine(s) -----------------")
+#     data = model_metadata[model_metadata['Turbine Count'] == turbine_size]
+#     print("\t\tMean:\t|\tSD:")
+#     MSE = data['MSE']
+#     MAE = data['MAE']
+#     print(f"MSE:\t{round(float(np.mean(MSE)), 3)}\t|\t{round(float(np.std(MSE)), 3)}")
+#     print(f"MAE:\t{round(float(np.mean(MAE)), 3)}\t|\t{round(float(np.std(MAE)), 3)}\n")
+#
+#
+# indices = [i for i in range(len(model_metadata))]
+# gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
 
-indices = [i for i in range(4, len(model_metadata))]
-#gr.plot_model_metadata(indices, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
