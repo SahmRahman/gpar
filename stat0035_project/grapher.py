@@ -208,14 +208,14 @@ def print_model_metadata(indices=[]):
 
     columns = ['Turbine',
                'Permutation Size',
-               'Mean MSE', 'MSE Std. Dev.', 'Best Perm. by MSE', 'Worst Perm. by MSE',
-               'Mean MAE', 'MAE Std. Dev.', 'Best Perm. by MAE', 'Worst Perm. by MAE',
-               'Mean Calib.', 'Calib. Std. Dev.', 'Best Perm. by Calib.', 'Worst Perm. by Calib.']
+               'Mean MSE', 'MSE Std. Dev.', 'Max MSE', 'Max MSE Perm.', 'Min MSE', 'Min MSE Perm.',
+               'Mean MAE', 'MAE Std. Dev.', 'Max MAE', 'Max MAE Perm.', 'Min MAE', 'Min MAE Perm.',
+               'Mean Calib.', 'Calib. Std. Dev.', 'Max Calib.', 'Max Calib. Perm.', 'Min Calib.', 'Min Calib. Perm.']
 
     # df = pd.DataFrame(columns=columns)
 
     # Calculate the column width based on the longest element in list1
-    column_width = max(len(str(col)) for col in columns) + 2
+    column_width = max(len(str(col)) for col in columns) + 6
 
     print()
     for col in columns:
@@ -235,8 +235,12 @@ def print_model_metadata(indices=[]):
                 metadata_values = current_data[metadata_metric].values.tolist()
                 mean = round(np.mean(metadata_values), 3)
                 std = round(np.std(metadata_values), 3)
-                max_perm = current_data[current_data[metadata_metric] == np.max(metadata_values)]['Turbine Permutation'].values[0]
-                min_perm = current_data[current_data[metadata_metric] == np.min(metadata_values)]['Turbine Permutation'].values[0]
+                max_index = current_data[metadata_metric].idxmax()
+                min_index = current_data[metadata_metric].idxmin()
+                max_val = round(current_data.loc[max_index][metadata_metric], 3)
+                min_val = round(current_data.loc[min_index][metadata_metric], 3)
+                max_perm = current_data.loc[max_index]['Turbine Permutation']
+                min_perm = current_data.loc[min_index]['Turbine Permutation']
 
                 # -------------- Figured I'd keep this if I want to save this as a DataFrame --------------
                 # data_to_append[f'Mean {metadata_metric}'] = mean
@@ -244,7 +248,7 @@ def print_model_metadata(indices=[]):
                 # data_to_append[f'Best Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == max]['Turbine Permutation']
                 # data_to_append[f'Worst Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == min]['Turbine Permutation']
 
-                row += [mean, std, max_perm, min_perm]
+                row += [mean, std, max_val, max_perm, min_val, min_perm]
 
             for element in row:
                 print(f"{str(element):<{column_width}}", end="")
