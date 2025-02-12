@@ -15,11 +15,8 @@ complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Unive
 model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
 
-df_1 = ph.read_pickle_as_dataframe(model_history_1)
-df_2 = ph.read_pickle_as_dataframe(model_history_2)
-print('...')
-# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 
+model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 # for i in model_metadata['Turbine Count'].unique():
 #     data = model_metadata[model_metadata['Turbine Count'] == i]
 #     df = data.sort_values(by='MSE')
@@ -40,9 +37,9 @@ print('...')
 #     print(f"MAE:\t{round(float(np.mean(MAE)), 3)}\t|\t{round(float(np.std(MAE)), 3)}\n")
 #
 #
-# indices = [i for i in range(len(model_metadata))]
-# gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
-
+indices = [i for i in range(len(model_metadata))]
+# gr.plot_model_metadata(indices, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
+gr.print_model_metadata(indices)
 
 
 

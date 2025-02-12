@@ -193,10 +193,63 @@ def plot_model_metadata(indices=[], save_path=''):
             plt.grid(True)
 
             if save_path:
-                filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')}" + title
+                filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M') }" + title
 
                 full_path = os.path.join(save_path, filename + '.png')
                 plt.savefig(full_path)
                 print(f"Figure saved at: {full_path}")
             else:
                 plt.show()
+
+
+def print_model_metadata(indices=[]):
+    df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+    selected_metadata = df_model_metadata.iloc[indices]
+
+    columns = ['Turbine',
+               'Permutation Size',
+               'Mean MSE', 'MSE Std. Dev.', 'Best Perm. by MSE', 'Worst Perm. by MSE',
+               'Mean MAE', 'MAE Std. Dev.', 'Best Perm. by MAE', 'Worst Perm. by MAE',
+               'Mean Calib.', 'Calib. Std. Dev.', 'Best Perm. by Calib.', 'Worst Perm. by Calib.']
+
+    # df = pd.DataFrame(columns=columns)
+
+    # Calculate the column width based on the longest element in list1
+    column_width = max(len(str(col)) for col in columns) + 2
+
+    print()
+    for col in columns:
+        print(f"{col:<{column_width}}", end="")
+    print()
+    print('-'*column_width*len(columns)) # add a line of "----" for formatting
+
+    for turbine in range(1, 7):
+        for perm_size in range(1, 7):
+
+            row = [turbine, perm_size]
+            current_data = selected_metadata[selected_metadata['Turbine'] == turbine]
+            current_data = current_data[current_data['Turbine Count'] == perm_size]
+
+            for metadata_metric in ('MSE', 'MAE', 'Calibration'):
+
+                metadata_values = current_data[metadata_metric].values.tolist()
+                mean = round(np.mean(metadata_values), 3)
+                std = round(np.std(metadata_values), 3)
+                max_perm = current_data[current_data[metadata_metric] == np.max(metadata_values)]['Turbine Permutation'].values[0]
+                min_perm = current_data[current_data[metadata_metric] == np.min(metadata_values)]['Turbine Permutation'].values[0]
+
+                # -------------- Figured I'd keep this if I want to save this as a DataFrame --------------
+                # data_to_append[f'Mean {metadata_metric}'] = mean
+                # data_to_append[f'{metadata_metric} Std. Dev.'] = std
+                # data_to_append[f'Best Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == max]['Turbine Permutation']
+                # data_to_append[f'Worst Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == min]['Turbine Permutation']
+
+                row += [mean, std, max_perm, min_perm]
+
+            for element in row:
+                print(f"{str(element):<{column_width}}", end="")
+            print()  # Move to the next row after each iteration
+
+        print()  # just to have a blank line to break up the turbines
+
+
