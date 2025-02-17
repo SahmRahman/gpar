@@ -3,7 +3,7 @@ import pickle_helper as ph
 import grapher as gr
 
 # Set option to display max number of columns
-ph.libs.pd.set_option('display.max_columns', None)
+ph.libs.pd.set_option('display.max_columns', 4)
 
 model_history_1 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 1.pkl'
 model_history_2 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
@@ -15,64 +15,26 @@ complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Univ
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
 model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
-
-
-# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-# print(model_metadata[model_metadata['Turbine Count'] == 1])
-history_2 = ph.read_pickle_as_dataframe(file_path=model_history_2)
-history_2_ = ph.read_pickle_as_dataframe(file_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History_2.pkl")
-history_3 = ph.read_pickle_as_dataframe(file_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl")
-print("o.g.")
-print(history_2.head(5))
-print(history_2.tail(5))
-
-print('pt 1')
-print(history_2_.head(5))
-print(history_2_.tail(5))
-
-print('pt 2')
-print(history_3.head(5))
-print(history_3.tail(5))
-# for i in model_metadata['Turbine Count'].unique():
-#     data = model_metadata[model_metadata['Turbine Count'] == i]
-#     df = data.sort_values(by='MSE')
-#     print('...')
-#     df = data.sort_values(by='MAE')
-#     print('...')
-
-    # REALLY weird findings!!
-    # MSE and MAE tend to get bigger as turbine goes from 6,4,5,3,2,1
-
-# for turbine_size in range(1, 7):
-#     print(f"----------------- {turbine_size} Turbine(s) -----------------")
-#     data = model_metadata[model_metadata['Turbine Count'] == turbine_size]
-#     print("\t\tMean:\t|\tSD:")
-#     MSE = data['MSE']
-#     MAE = data['MAE']
-#     print(f"MSE:\t{round(float(np.mean(MSE)), 3)}\t|\t{round(float(np.std(MSE)), 3)}")
-#     print(f"MAE:\t{round(float(np.mean(MAE)), 3)}\t|\t{round(float(np.std(MAE)), 3)}\n")
-#
-#
 # indices = [i for i in range(9780, len(model_metadata))]
 # gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
 # gr.print_model_metadata(indices)
 
+# Define the reference timestamp
+reference_timestamp = '2025-02-13_17-46'
+# -------------- THIS IS THE TIMESTAMP FOR WHEN I RAN WIND SPEED AND SIN/COS OF DIRECTION --------------
 
+df = pd.concat([ph.read_pickle_as_dataframe(model_history_1),
+                ph.read_pickle_as_dataframe(model_history_2),
+                ph.read_pickle_as_dataframe(model_history_3)])
 
+# Convert reference timestamp to datetime
+reference_datetime = pd.to_datetime(reference_timestamp, format='%Y-%m-%d_%H-%M')
 
+# Filter rows where the timestamp is greater than or equal to the reference
+filtered_rows = df[df['Timestamp'].apply(lambda x: pd.to_datetime(x, format='%Y-%m-%d_%H-%M') >= reference_datetime)]
 
-
-
-
-
-
-
-
-
-
-
-
-
+# Display the result
+print(filtered_rows)
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
