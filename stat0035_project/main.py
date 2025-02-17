@@ -1,10 +1,12 @@
+import pandas as pd
+
 from GPARModel import WindFarmGPAR
 import pickle_helper as ph
 import grapher as gr
 from libraries import np
 import itertools
 
-model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
+model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl'
 models_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -165,8 +167,6 @@ more covariates
 #                               input_columns=input_columns,
 #                               output_columns=output_columns)
 
-model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
-
 
 def generate_permutations(lst, min_length=1, max_length=6):
     if min_length > max_length:
@@ -181,9 +181,9 @@ def generate_permutations(lst, min_length=1, max_length=6):
 
     return result
 
-butt = 6
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=butt, max_length=butt)[-2:]
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=4)
+
 
 # #
 # train_df = complete_train_data
@@ -284,29 +284,39 @@ turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=butt, m
 
 
 # ----------------- MULTI-TURBINE MODEL -----------------
+input_col_names = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 if True:  # left this here just so i don't run everything all over again
     for turbines in turbine_perms:
-        train_x = np.array(
-            [train_sample[train_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
-            ndmin=2
-        ).T
-        train_y = np.array(
-            [train_sample[train_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
-            ndmin=2
-        ).T
-        test_x = np.array(
-            [test_sample[test_sample['turbine'] == i]['Wind.speed.me'].values.tolist() for i in turbines],
-            ndmin=2
-        ).T
-        test_y = np.array(
-            [test_sample[test_sample['turbine'] == i]['Power.me'].values.tolist() for i in turbines],
-            ndmin=2
-        ).T
+
+        train_x = pd.concat(
+            [train_sample[train_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
+            axis=1
+        ).to_numpy()
+        # gather the input columns into a dataframe per turbine,
+        # then join them together column-wise into one big numpy ndarray
+
+        train_y = pd.concat(
+            [train_sample[train_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],
+            axis=1
+        ).to_numpy()
+
+        test_x = pd.concat(
+            [test_sample[test_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
+            axis=1
+        ).to_numpy()
+
+        test_y = pd.concat(
+            [test_sample[test_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],
+            axis=1
+        ).to_numpy()
 
         train_indices = train_sample['index'].values.tolist()
         test_indices = test_sample['index'].values.tolist()
-        input_columns = ['Wind Speed']
+        input_columns = ['Wind Speed', 'Sine of Wind Direction', 'Cosine of Wind Direction']
         output_columns = [f'Turbine {i} Power' for i in turbines]
+
+        model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
+        # have to create a fresh model for every run, it was retraining from previous runs
 
         model.train_model(train_x=train_x,
                           train_y=train_y,
@@ -317,6 +327,8 @@ if True:  # left this here just so i don't run everything all over again
                           input_columns=input_columns,
                           output_columns=output_columns,
                           turbine_permutation=turbines)
+        del model
+        # deleting it just to be sure it'll be fresh for the next run
 
     # df_model_history = ph.read_pickle_as_dataframe(model_history_path)
     # chosen_index = len(df_model_history) - 1

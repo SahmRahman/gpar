@@ -173,7 +173,8 @@ def plot_model_metadata(indices=[], save_path=''):
         entries_by_permutation_size[i] = pd.DataFrame(entries_by_permutation_size[i])
         # convert each list of DataFrame rows to one full DataFrame
 
-    for metadata_val, y_lims in zip(['MSE', 'MAE', 'Calibration'], [(50, 100), (35, 70), (.7, 1)]):
+    for metadata_val, y_lims in zip(['MSE', 'MAE', 'Calibration'],
+                                    [(50, 100), (35, 70), (.7, 1)]):
         for turbine in turbines:
 
             plt.figure(figsize=(8, 6))
@@ -221,7 +222,7 @@ def print_model_metadata(indices=[]):
     for col in columns:
         print(f"{col:<{column_width}}", end="")
     print()
-    print('-'*column_width*len(columns)) # add a line of "----" for formatting
+    print('-'*column_width*len(columns))  # add a line of "----" for formatting
 
     for turbine in range(1, 7):
         for perm_size in range(1, 7):
@@ -247,6 +248,8 @@ def print_model_metadata(indices=[]):
                 # data_to_append[f'{metadata_metric} Std. Dev.'] = std
                 # data_to_append[f'Best Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == max]['Turbine Permutation']
                 # data_to_append[f'Worst Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == min]['Turbine Permutation']
+
+                # actually I shouldn't need this, I can just zip the columns and row together
 
                 row += [mean, std, max_val, max_perm, min_val, min_perm]
 

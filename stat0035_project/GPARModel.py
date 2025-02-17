@@ -3,7 +3,7 @@ from libraries import np
 
 
 class WindFarmGPAR:
-    __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
+    __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl'
     __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
     __turbine_model_metadata_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
@@ -331,7 +331,7 @@ class WindFarmGPAR:
 
         # collect metadata
         means, lowers, uppers = self.model.predict(test_x,
-                                                   num_samples=250,
+                                                   num_samples=150,
                                                    credible_bounds=True)
 
         error = {"SE": (means - test_y) ** 2,

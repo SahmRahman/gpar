@@ -7,6 +7,7 @@ ph.libs.pd.set_option('display.max_columns', None)
 
 model_history_1 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 1.pkl'
 model_history_2 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
+model_history_3 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl'
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -16,7 +17,22 @@ model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Universit
 
 
 
-model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+# print(model_metadata[model_metadata['Turbine Count'] == 1])
+history_2 = ph.read_pickle_as_dataframe(file_path=model_history_2)
+history_2_ = ph.read_pickle_as_dataframe(file_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History_2.pkl")
+history_3 = ph.read_pickle_as_dataframe(file_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl")
+print("o.g.")
+print(history_2.head(5))
+print(history_2.tail(5))
+
+print('pt 1')
+print(history_2_.head(5))
+print(history_2_.tail(5))
+
+print('pt 2')
+print(history_3.head(5))
+print(history_3.tail(5))
 # for i in model_metadata['Turbine Count'].unique():
 #     data = model_metadata[model_metadata['Turbine Count'] == i]
 #     df = data.sort_values(by='MSE')
@@ -37,9 +53,9 @@ model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 #     print(f"MAE:\t{round(float(np.mean(MAE)), 3)}\t|\t{round(float(np.std(MAE)), 3)}\n")
 #
 #
-indices = [i for i in range(len(model_metadata))]
-# gr.plot_model_metadata(indices, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
-gr.print_model_metadata(indices)
+# indices = [i for i in range(9780, len(model_metadata))]
+# gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
+# gr.print_model_metadata(indices)
 
 
 
