@@ -24,9 +24,10 @@ history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_his
                                                                        model_history_2,
                                                                        model_history_3]])
 
-gr.plot_model_metadata(indices=[i for i in range(9780, 19566)],
-                       save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Input Multi-Turbine Model')
-gr.print_model_metadata(indices=[i for i in range(9780, 19566)])
+# -------------- SINGLE INPUT INDICES IN METADATA DATAFRAME: 311 up to 9780 --------------
+# -------------- MULTI INPUT INDICES IN METADATA DATAFRAME: 9780 up to 19566 --------------
+
+
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
