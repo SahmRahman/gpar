@@ -23,19 +23,12 @@ model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Universit
 reference_timestamp = '2025-02-13_17-46'
 # -------------- THIS IS THE TIMESTAMP FOR WHEN I RAN WIND SPEED AND SIN/COS OF DIRECTION --------------
 
-df = pd.concat([ph.read_pickle_as_dataframe(model_history_1),
-                ph.read_pickle_as_dataframe(model_history_2),
-                ph.read_pickle_as_dataframe(model_history_3)])
+metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
+selected = metadata_df[metadata_df['Turbine Permutation'].apply(lambda x: len(x) == 2)]
 
-# Convert reference timestamp to datetime
-reference_datetime = pd.to_datetime(reference_timestamp, format='%Y-%m-%d_%H-%M')
+history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1, model_history_2, model_history_3]])
 
-# Filter rows where the timestamp is greater than or equal to the reference
-filtered_rows = df[df['Timestamp'].apply(lambda x: pd.to_datetime(x, format='%Y-%m-%d_%H-%M') >= reference_datetime)]
-
-# Display the result
-print(filtered_rows)
-
+print(history_df['Output Columns'].apply(lambda x: x[:].split(" ")[1]))
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
 # df_models = ph.read_pickle_as_dataframe(file_path=models)

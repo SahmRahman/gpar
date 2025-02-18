@@ -149,7 +149,7 @@ def plot_graph(x, y_list, model_history_index,
 
 def plot_model_metadata(indices=[], save_path=''):
     df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-    selected_metadata = df_model_metadata.iloc[indices]
+    selected_metadata = df_model_metadata.loc[indices]
 
     turbines = []
     entries_by_permutation_size = {1: [],
@@ -205,7 +205,7 @@ def plot_model_metadata(indices=[], save_path=''):
 
 def print_model_metadata(indices=[]):
     df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-    selected_metadata = df_model_metadata.iloc[indices]
+    selected_metadata = df_model_metadata.loc[indices]
 
     columns = ['Turbine',
                'Permutation Size',
