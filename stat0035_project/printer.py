@@ -19,16 +19,8 @@ model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Universit
 # gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
 # gr.print_model_metadata(indices)
 
-# Define the reference timestamp
-reference_timestamp = '2025-02-13_17-46'
-# -------------- THIS IS THE TIMESTAMP FOR WHEN I RAN WIND SPEED AND SIN/COS OF DIRECTION --------------
-
 metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
-selected = metadata_df[metadata_df['Turbine Permutation'].apply(lambda x: len(x) == 2)]
 
-history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1, model_history_2, model_history_3]])
-
-print(history_df['Output Columns'].apply(lambda x: x[:].split(" ")[1]))
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
 # df_models = ph.read_pickle_as_dataframe(file_path=models)
