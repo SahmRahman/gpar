@@ -3,7 +3,7 @@ import pickle_helper as ph
 import grapher as gr
 
 # Set option to display max number of columns
-ph.libs.pd.set_option('display.max_columns', 4)
+ph.libs.pd.set_option('display.max_columns', None)
 
 model_history_1 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 1.pkl'
 model_history_2 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
@@ -20,11 +20,13 @@ model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Universit
 # gr.print_model_metadata(indices)
 
 metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
+history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1,
+                                                                       model_history_2,
+                                                                       model_history_3]])
 
-multi_input_metadata = metadata_df[metadata_df['Input Columns'].apply(
-    lambda x: x == ['Wind Speed', 'Sine of Wind Direction', 'Cosine of Wind Direction']
-)]
-print('...')
+gr.plot_model_metadata(indices=[i for i in range(9780, 19566)],
+                       save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Input Multi-Turbine Model')
+gr.print_model_metadata(indices=[i for i in range(9780, 19566)])
 
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
