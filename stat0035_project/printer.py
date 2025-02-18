@@ -21,6 +21,11 @@ model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Universit
 
 metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
 
+multi_input_metadata = metadata_df[metadata_df['Input Columns'].apply(
+    lambda x: x == ['Wind Speed', 'Sine of Wind Direction', 'Cosine of Wind Direction']
+)]
+print('...')
+
 # print(df_modelling_history.tail(10))
 # print("\n\n\n\nModels")
 # df_models = ph.read_pickle_as_dataframe(file_path=models)
