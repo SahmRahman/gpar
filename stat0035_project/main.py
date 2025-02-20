@@ -98,49 +98,49 @@ more covariates
 #                   input_columns=['Wind.speed.me'],
 #                   output_columns=[f"Turbine {i} Power" for i in range(1, 7)])
 #
-# # input_cols = [
-# #     'Wind.dir.std',
-# #     'Wind.speed.me',
-# #     'Wind.speed.sd',
-# #     'Wind.speed.min',
-# #     'Wind.speed.max',
-# #     'Front.bearing.temp.me',
-# #     'Front.bearing.temp.sd',
-# #     'Front.bearing.temp.min',
-# #     'Front.bearing.temp.max',
-# #     'Rear.bearing.temp.me',
-# #     'Rear.bearing.temp.sd',
-# #     'Rear.bearing.temp.min',
-# #     'Rear.bearing.temp.max',
-# #     'Stator1.temp.me',
-# #     'Nacelle.ambient.temp.me',
-# #     'Nacelle.temp.me',
-# #     'Transformer.temp.me',
-# #     'Gear.oil.inlet.temp.me',
-# #     'Gear.oil.temp.me',
-# #     'Top.box.temp.me',
-# #     'Hub.temp.me',
-# #     'Conv.Amb.temp.me',
-# #     'Rotor.bearing.temp.me',
-# #     'Transformer.cell.temp.me',
-# #     'Motor.axis1.temp.me',
-# #     'Motor.axis2.temp.me',
-# #     'CPU.temp.me',
-# #     'Blade.ang.pitch.pos.A.me',
-# #     'Blade.ang.pitch.pos.B.me',
-# #     'Blade.ang.pitch.pos.C.me',
-# #     'Gear.oil.inlet.press.me',
-# #     'Gear.oil.pump.press.me',
-# #     'Drive.train.acceleration.me',
-# #     'Tower.Acceleration.x',
-# #     'Tower.Acceleration.y',
-# #     'Wind.dir.sin.me',
-# #     'Wind.dir.cos.me',
-# #     'Wind.dir.sin.min',
-# #     'Wind.dir.cos.min',
-# #     'Wind.dir.sin.max',
-# #     'Wind.dir.cos.max'
-# # ]
+input_cols = [
+    'Wind.dir.std',
+    'Wind.speed.me',
+    'Wind.speed.sd',
+    'Wind.speed.min',
+    'Wind.speed.max',
+    'Front.bearing.temp.me',
+    'Front.bearing.temp.sd',
+    'Front.bearing.temp.min',
+    'Front.bearing.temp.max',
+    'Rear.bearing.temp.me',
+    'Rear.bearing.temp.sd',
+    'Rear.bearing.temp.min',
+    'Rear.bearing.temp.max',
+    'Stator1.temp.me',
+    'Nacelle.ambient.temp.me',
+    'Nacelle.temp.me',
+    'Transformer.temp.me',
+    'Gear.oil.inlet.temp.me',
+    'Gear.oil.temp.me',
+    'Top.box.temp.me',
+    'Hub.temp.me',
+    'Conv.Amb.temp.me',
+    'Rotor.bearing.temp.me',
+    'Transformer.cell.temp.me',
+    'Motor.axis1.temp.me',
+    'Motor.axis2.temp.me',
+    'CPU.temp.me',
+    'Blade.ang.pitch.pos.A.me',
+    'Blade.ang.pitch.pos.B.me',
+    'Blade.ang.pitch.pos.C.me',
+    'Gear.oil.inlet.press.me',
+    'Gear.oil.pump.press.me',
+    'Drive.train.acceleration.me',
+    'Tower.Acceleration.x',
+    'Tower.Acceleration.y',
+    'Wind.dir.sin.me',
+    'Wind.dir.cos.me',
+    'Wind.dir.sin.min',
+    'Wind.dir.cos.min',
+    'Wind.dir.sin.max',
+    'Wind.dir.cos.max'
+]
 
 # train_data = complete_train_data.sample(n=200)
 # test_data = complete_test_data.sample(n=30)
@@ -182,7 +182,7 @@ def generate_permutations(lst, min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=4)
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6])
 
 
 # #
@@ -284,7 +284,7 @@ turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=4)
 
 
 # ----------------- MULTI-TURBINE MODEL -----------------
-input_col_names = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
+input_col_names = input_cols
 if True:  # left this here just so i don't run everything all over again
     for turbines in turbine_perms:
 
@@ -312,7 +312,7 @@ if True:  # left this here just so i don't run everything all over again
 
         train_indices = train_sample['index'].values.tolist()
         test_indices = test_sample['index'].values.tolist()
-        input_columns = ['Wind Speed', 'Sine of Wind Direction', 'Cosine of Wind Direction']
+        input_columns = input_cols
         output_columns = [f'Turbine {i} Power' for i in turbines]
 
         model = WindFarmGPAR(model_params={}, existing=True, model_index=0)

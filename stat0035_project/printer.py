@@ -8,6 +8,7 @@ ph.libs.pd.set_option('display.max_columns', None)
 model_history_1 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 1.pkl'
 model_history_2 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
 model_history_3 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl'
+model_history_4 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 4.pkl'
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -19,10 +20,10 @@ model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Universit
 # gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
 # gr.print_model_metadata(indices)
 
-metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
-history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1,
-                                                                       model_history_2,
-                                                                       model_history_3]])
+# metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
+# history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1,
+#                                                                        model_history_2,
+#                                                                        model_history_3]])
 
 # -------------- SINGLE INPUT INDICES IN METADATA DATAFRAME: 311 up to 9780 --------------
 # -------------- MULTI INPUT INDICES IN METADATA DATAFRAME: 9780 up to 19566 --------------
