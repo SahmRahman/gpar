@@ -57,9 +57,6 @@ input_cols = [
 ]
 
 # thirty_inputs = history[history['Input Columns'].apply(lambda x: x == input_cols)]
-for history in [ph.read_pickle_as_dataframe(f'/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History {i}.pkl') for i in range(1, 5)]:
-    print(history.iloc[:10])
-    print("next dataframe")
 
 # indices = [i for i in range(9780, len(model_metadata))]
 # gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
