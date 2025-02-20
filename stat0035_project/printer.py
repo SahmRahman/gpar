@@ -5,16 +5,61 @@ import grapher as gr
 # Set option to display max number of columns
 ph.libs.pd.set_option('display.max_columns', None)
 
-model_history_1 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 1.pkl'
-model_history_2 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 2.pkl'
-model_history_3 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl'
-model_history_4 = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 4.pkl'
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
 model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
+
+input_cols = [
+    'Wind.dir.std',
+    'Wind.speed.me',
+    'Wind.speed.sd',
+    'Wind.speed.min',
+    'Wind.speed.max',
+    'Front.bearing.temp.me',
+    'Front.bearing.temp.sd',
+    'Front.bearing.temp.min',
+    'Front.bearing.temp.max',
+    'Rear.bearing.temp.me',
+    'Rear.bearing.temp.sd',
+    'Rear.bearing.temp.min',
+    'Rear.bearing.temp.max',
+    'Stator1.temp.me',
+    'Nacelle.ambient.temp.me',
+    'Nacelle.temp.me',
+    'Transformer.temp.me',
+    'Gear.oil.inlet.temp.me',
+    'Gear.oil.temp.me',
+    'Top.box.temp.me',
+    'Hub.temp.me',
+    'Conv.Amb.temp.me',
+    'Rotor.bearing.temp.me',
+    'Transformer.cell.temp.me',
+    'Motor.axis1.temp.me',
+    'Motor.axis2.temp.me',
+    'CPU.temp.me',
+    'Blade.ang.pitch.pos.A.me',
+    'Blade.ang.pitch.pos.B.me',
+    'Blade.ang.pitch.pos.C.me',
+    'Gear.oil.inlet.press.me',
+    'Gear.oil.pump.press.me',
+    'Drive.train.acceleration.me',
+    'Tower.Acceleration.x',
+    'Tower.Acceleration.y',
+    'Wind.dir.sin.me',
+    'Wind.dir.cos.me',
+    'Wind.dir.sin.min',
+    'Wind.dir.cos.min',
+    'Wind.dir.sin.max',
+    'Wind.dir.cos.max'
+]
+
+# thirty_inputs = history[history['Input Columns'].apply(lambda x: x == input_cols)]
+for history in [ph.read_pickle_as_dataframe(f'/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History {i}.pkl') for i in range(1, 5)]:
+    print(history.iloc[:10])
+    print("next dataframe")
 
 # indices = [i for i in range(9780, len(model_metadata))]
 # gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')

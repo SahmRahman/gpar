@@ -3,7 +3,6 @@ from libraries import np
 
 
 class WindFarmGPAR:
-    __modelling_history_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl'
     __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
     __turbine_model_metadata_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
@@ -228,7 +227,7 @@ class WindFarmGPAR:
 
     @staticmethod
     def log_results(results_df, input_cols, output_cols, training_indices, test_indices, model_index,
-                    turbine_permutation):
+                    turbine_permutation, modelling_history_path):
         """
         log the results of a model run
 
@@ -239,6 +238,7 @@ class WindFarmGPAR:
         :param test_indices: indices of the original test data dataframe, list of ints
         :param model_index: model index, int
         :param turbine_permutation: order of turbines in model, list of ints
+        :param modelling_history_path: path to modelling history pickle file to append to, string
         :return: NONE, simply saves results to pickle file and prints the filename
         """
 
@@ -257,7 +257,7 @@ class WindFarmGPAR:
 
         # Save the DataFrame as a Pickle file
 
-        libs.ph.append_to_pickle(file_path=WindFarmGPAR.__modelling_history_filepath,
+        libs.ph.append_to_pickle(file_path=modelling_history_path,
                                   new_row=results_df)
 
         for col in output_cols:
@@ -275,7 +275,7 @@ class WindFarmGPAR:
             MSE = np.sqrt(np.mean(results_df['Error'].iloc[0][col]['Squared Error']))
             MAE = np.mean(results_df['Error'].iloc[0][col]['Absolute Error'])
 
-            df_modelling_history = libs.ph.read_pickle_as_dataframe(file_path=WindFarmGPAR.__modelling_history_filepath)
+            df_modelling_history = libs.ph.read_pickle_as_dataframe(file_path=modelling_history_path)
             turbine_num = int(col.split(' ')[1])
             model_metadata = {
                 'Turbine Count': len(turbine_permutation),
@@ -295,6 +295,7 @@ class WindFarmGPAR:
                     test_x, test_y,
                     train_indices, test_indices,
                     input_columns, output_columns,
+                    modelling_history_path,
                     turbine_permutation=[]):
         """
         fit model to train data, draw samples from resulting posterior and log the results
@@ -307,6 +308,7 @@ class WindFarmGPAR:
         :param train_indices: indices in the training pickle file used for this model, list of ints
         :param test_indices: indices in the test pickle file used for this model, list of ints
         :param turbine_permutation: order of turbines in model, list of ints
+        :param modelling_history_path: path to modelling history pickle file to append to, string
         :return: NONE
         """
 
@@ -376,5 +378,6 @@ class WindFarmGPAR:
             training_indices=train_indices,
             test_indices=test_indices,
             model_index=self.model_index,
-            turbine_permutation=turbine_permutation
+            turbine_permutation=turbine_permutation,
+            modelling_history_path=modelling_history_path
         )

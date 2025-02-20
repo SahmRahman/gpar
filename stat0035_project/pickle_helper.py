@@ -138,8 +138,10 @@ def append_to_pickle(file_path, new_row):
 #     'transform_y': libs.pd.Series(dtype='object')  # Using 'object' for tuples
 # }
 
-# turbine model metadata columns
-columns = ['Turbine Count', 'Turbine Permutation', 'Turbine', 'Modelling History Index', 'Model Index', 'Calibration', 'MSE', 'MAE']
-df = pd.DataFrame(columns=columns)
-df.to_pickle('model_metadata_v2.pkl')
+
+
+def get_model_history():
+    model_history_paths = [f'/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History {i}.pkl' for i in range(1, 5)]
+    df = pd.concat([read_pickle_as_dataframe(path) for path in model_history_paths])
+    return df
 
