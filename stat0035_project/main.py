@@ -6,13 +6,14 @@ import grapher as gr
 from libraries import np
 import itertools
 
-model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 3.pkl'
+model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 4.pkl'
 models_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
 model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
+
 
 # train_data = ph.read_pickle_as_dataframe(train_data_path)
 # test_data = ph.read_pickle_as_dataframe(test_data_path)
@@ -27,14 +28,11 @@ def sample_complete_training_data(n=1000):
     sample = complete_df[complete_df['Date.time'].isin(sample_times)]
     return sample
 
+
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Training Sample.pkl")
+    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Biggest Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
-
-sample_complete_training_data(n=2500).to_pickle('Big Training Sample.pkl')
-sample_complete_training_data(n=5000).to_pickle('Bigger Training Sample.pkl')
-sample_complete_training_data(n=10000).to_pickle('Biggest Training Sample.pkl')
 
 #
 # models_path = [WindFarmGPAR(model_params={},
@@ -153,6 +151,7 @@ input_cols = [
     'Wind.dir.cos.max'
 ]
 
+
 # train_data = complete_train_data.sample(n=200)
 # test_data = complete_test_data.sample(n=30)
 #
@@ -195,7 +194,6 @@ def generate_permutations(lst, min_length=1, max_length=6):
 
 turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=2)
 
-
 # #
 # train_df = complete_train_data
 # test_df = complete_test_data
@@ -215,12 +213,6 @@ turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=2)
 
 # train_df = train_data[train_data['index'].isin(train_indices)]
 # test_df = test_data[test_data['index'].isin(test_indices)]
-
-
-
-
-
-
 
 
 # ----------------- SINGLE TURBINE MODEL -----------------
@@ -288,17 +280,10 @@ turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=2)
 #     # save_path="/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs")
 
 
-
-
-
-
-
-
 # ----------------- MULTI-TURBINE MODEL -----------------
 input_col_names = input_cols
-if False:  # left this here just so i don't run everything all over again
+if True:  # left this here just so i don't run everything all over again
     for turbines in turbine_perms:
-
         train_x = pd.concat(
             [train_sample[train_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
             axis=1
@@ -337,7 +322,8 @@ if False:  # left this here just so i don't run everything all over again
                           test_indices=test_indices,
                           input_columns=input_columns,
                           output_columns=output_columns,
-                          turbine_permutation=turbines)
+                          turbine_permutation=turbines,
+                          modelling_history_path=model_history_path)
         del model
         # deleting it just to be sure it'll be fresh for the next run
 
