@@ -20,10 +20,21 @@ model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Universit
 # complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
 # complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
 
+
+def sample_complete_training_data(n=1000):
+    complete_df = ph.read_pickle_as_dataframe(complete_train_data_path)
+    sample_times = pd.Series(complete_df['Date.time'].unique()).sample(n)
+    sample = complete_df[complete_df['Date.time'].isin(sample_times)]
+    return sample
+
 train_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
+
+sample_complete_training_data(n=2500).to_pickle('Big Training Sample.pkl')
+sample_complete_training_data(n=5000).to_pickle('Bigger Training Sample.pkl')
+sample_complete_training_data(n=10000).to_pickle('Biggest Training Sample.pkl')
 
 #
 # models_path = [WindFarmGPAR(model_params={},
@@ -182,7 +193,7 @@ def generate_permutations(lst, min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6])
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=2)
 
 
 # #
@@ -285,7 +296,7 @@ turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6])
 
 # ----------------- MULTI-TURBINE MODEL -----------------
 input_col_names = input_cols
-if True:  # left this here just so i don't run everything all over again
+if False:  # left this here just so i don't run everything all over again
     for turbines in turbine_perms:
 
         train_x = pd.concat(

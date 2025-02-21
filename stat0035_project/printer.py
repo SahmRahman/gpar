@@ -56,6 +56,7 @@ input_cols = [
     'Wind.dir.cos.max'
 ]
 
+
 # thirty_inputs = history[history['Input Columns'].apply(lambda x: x == input_cols)]
 
 # indices = [i for i in range(9780, len(model_metadata))]
