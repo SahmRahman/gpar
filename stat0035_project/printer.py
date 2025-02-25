@@ -61,8 +61,6 @@ input_cols = [
     'Wind.dir.cos.max'
 ]
 
-yeet = ph.read_pickle_as_dataframe('/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Prelim Analysis/Correlation Plot of Further Selected Mean Covariates.pkl')
-#
 # model_metadata = ph.read_pickle_as_dataframe(model_metadata_path).tail(10)
 # print(metadata)
 
@@ -71,6 +69,11 @@ model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 # print(model_metadata.loc[29358:])
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
+
+history_4 = ph.read_pickle_as_dataframe('/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 4.pkl')
+history_4.index += 5400
+print(history_4)
+history_4.to_pickle('/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 4.pkl')
 
 # for turbine in range(1, 7):
 #     data = history.iloc[turbine-1]
@@ -83,8 +86,6 @@ test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 #                   calibration=model_metadata.iloc[29351+turbine]['Calibration'],
 #                   title=f"Wind Speed vs Power for Turbine {turbine} (Single-output with 10000 rows of input)",
 #                   save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Input Single-Turbine Model/All relevant covariates')
-
-selected_data = ph.read_pickle_as_dataframe('/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Prelim Analysis/Correlation Plot of Covariates.pkl')
 
 useful_covariates = [
     "Wind.speed.me",

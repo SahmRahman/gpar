@@ -30,7 +30,7 @@ def sample_complete_training_data(n=1000):
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Biggest Training Sample.pkl")
+    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Big Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
 
@@ -107,49 +107,51 @@ more covariates
 #                   input_columns=['Wind.speed.me'],
 #                   output_columns=[f"Turbine {i} Power" for i in range(1, 7)])
 #
-input_cols = [
-    'Wind.dir.std',
-    'Wind.speed.me',
-    'Wind.speed.sd',
-    'Wind.speed.min',
-    'Wind.speed.max',
-    'Front.bearing.temp.me',
-    'Front.bearing.temp.sd',
-    'Front.bearing.temp.min',
-    'Front.bearing.temp.max',
-    'Rear.bearing.temp.me',
-    'Rear.bearing.temp.sd',
-    'Rear.bearing.temp.min',
-    'Rear.bearing.temp.max',
-    'Stator1.temp.me',
-    'Nacelle.ambient.temp.me',
-    'Nacelle.temp.me',
-    'Transformer.temp.me',
-    'Gear.oil.inlet.temp.me',
-    'Gear.oil.temp.me',
-    'Top.box.temp.me',
-    'Hub.temp.me',
-    'Conv.Amb.temp.me',
-    'Rotor.bearing.temp.me',
-    'Transformer.cell.temp.me',
-    'Motor.axis1.temp.me',
-    'Motor.axis2.temp.me',
-    'CPU.temp.me',
-    'Blade.ang.pitch.pos.A.me',
-    'Blade.ang.pitch.pos.B.me',
-    'Blade.ang.pitch.pos.C.me',
-    'Gear.oil.inlet.press.me',
-    'Gear.oil.pump.press.me',
-    'Drive.train.acceleration.me',
-    'Tower.Acceleration.x',
-    'Tower.Acceleration.y',
-    'Wind.dir.sin.me',
-    'Wind.dir.cos.me',
-    'Wind.dir.sin.min',
-    'Wind.dir.cos.min',
-    'Wind.dir.sin.max',
-    'Wind.dir.cos.max'
-]
+input_cols = ph.read_pickle_as_dataframe("/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Prelim Analysis/Correlation Plot of Mean Covariates.pkl").columns
+
+#     [
+#     'Wind.dir.std',
+#     'Wind.speed.me',
+#     'Wind.speed.sd',
+#     'Wind.speed.min',
+#     'Wind.speed.max',
+#     'Front.bearing.temp.me',
+#     'Front.bearing.temp.sd',
+#     'Front.bearing.temp.min',
+#     'Front.bearing.temp.max',
+#     'Rear.bearing.temp.me',
+#     'Rear.bearing.temp.sd',
+#     'Rear.bearing.temp.min',
+#     'Rear.bearing.temp.max',
+#     'Stator1.temp.me',
+#     'Nacelle.ambient.temp.me',
+#     'Nacelle.temp.me',
+#     'Transformer.temp.me',
+#     'Gear.oil.inlet.temp.me',
+#     'Gear.oil.temp.me',
+#     'Top.box.temp.me',
+#     'Hub.temp.me',
+#     'Conv.Amb.temp.me',
+#     'Rotor.bearing.temp.me',
+#     'Transformer.cell.temp.me',
+#     'Motor.axis1.temp.me',
+#     'Motor.axis2.temp.me',
+#     'CPU.temp.me',
+#     'Blade.ang.pitch.pos.A.me',
+#     'Blade.ang.pitch.pos.B.me',
+#     'Blade.ang.pitch.pos.C.me',
+#     'Gear.oil.inlet.press.me',
+#     'Gear.oil.pump.press.me',
+#     'Drive.train.acceleration.me',
+#     'Tower.Acceleration.x',
+#     'Tower.Acceleration.y',
+#     'Wind.dir.sin.me',
+#     'Wind.dir.cos.me',
+#     'Wind.dir.sin.min',
+#     'Wind.dir.cos.min',
+#     'Wind.dir.sin.max',
+#     'Wind.dir.cos.max'
+# ]
 
 
 # train_data = complete_train_data.sample(n=200)
@@ -192,7 +194,7 @@ def generate_permutations(lst, min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=2)
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=3)
 
 # #
 # train_df = complete_train_data
