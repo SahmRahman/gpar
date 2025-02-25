@@ -70,10 +70,7 @@ model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 
-history_4 = ph.read_pickle_as_dataframe('/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 4.pkl')
-history_4.index += 5400
-print(history_4)
-history_4.to_pickle('/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 4.pkl')
+print(ph.get_model_history())
 
 # for turbine in range(1, 7):
 #     data = history.iloc[turbine-1]
