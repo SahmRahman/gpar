@@ -72,7 +72,7 @@ test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 selected_metadata = model_metadata[model_metadata['Modelling History Index'] > 6177]
 selected_indices = selected_metadata.index
 
-gr.print_model_metadata(indices=selected_indices)
+gr.plot_model_metadata(indices=selected_indices)
 
 # for turbine in range(1, 7):
 #     data = history.iloc[turbine-1]

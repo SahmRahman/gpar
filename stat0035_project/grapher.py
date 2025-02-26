@@ -152,29 +152,27 @@ def plot_model_metadata(indices=[], save_path=''):
     selected_metadata = df_model_metadata.loc[indices]
 
     turbines = []
-    entries_by_permutation_size = {1: [],
-                                   2: [],
-                                   3: [],
-                                   4: [],
-                                   5: [],
-                                   6: []}
+    entries_by_permutation_size = {}
 
     for index, row in selected_metadata.iterrows():
 
         permutation = row['Turbine Permutation']
 
-        entries_by_permutation_size[len(permutation)].append(row)
+        if str(len(permutation)) in entries_by_permutation_size.keys():
+            entries_by_permutation_size[str(len(permutation))].append(row)
+        else:
+            entries_by_permutation_size[str(len(permutation))] = [row]
 
         for turbine in permutation:
             if turbine not in turbines:
                 turbines.append(turbine)
 
-    for i in range(1, 7):
+    for i in entries_by_permutation_size.keys():
         entries_by_permutation_size[i] = pd.DataFrame(entries_by_permutation_size[i])
         # convert each list of DataFrame rows to one full DataFrame
 
     for metadata_val, y_lims in zip(['MSE', 'MAE', 'Calibration'],
-                                    [(50, 100), (35, 70), (.7, 1)]):
+                                    [(30, 100), (25, 70), (.7, 1)]):
         for turbine in turbines:
 
             plt.figure(figsize=(8, 6))

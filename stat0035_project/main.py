@@ -30,7 +30,7 @@ def sample_complete_training_data(n=1000):
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Big Training Sample.pkl")
+    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Bigger Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
 
@@ -194,7 +194,7 @@ def generate_permutations(lst, min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=3)
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=2)
 
 # #
 # train_df = complete_train_data
