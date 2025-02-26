@@ -31,7 +31,7 @@ def sample_complete_training_data(n=1000):
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Big Training Sample.pkl")
+    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
 
@@ -149,7 +149,7 @@ if True:  # left this here just so i don't run everything all over again
         input_columns = input_cols
         output_columns = [f'Turbine {i} Power' for i in turbines]
 
-        model = WindFarmGPAR(model_params={}, existing=True, model_index=8)
+        model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
         # have to create a fresh model for every run, it was retraining from previous runs
 
         model.train_model(train_x=train_x,

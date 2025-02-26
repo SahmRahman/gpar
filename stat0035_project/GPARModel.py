@@ -227,7 +227,7 @@ class WindFarmGPAR:
 
     @staticmethod
     def log_results(results_df, input_cols, output_cols, training_indices, test_indices, model_index,
-                    turbine_permutation, modelling_history_path):
+                    turbine_permutation, modelling_history_path, vs):
         """
         log the results of a model run
 
@@ -239,6 +239,7 @@ class WindFarmGPAR:
         :param model_index: model index, int
         :param turbine_permutation: order of turbines in model, list of ints
         :param modelling_history_path: path to modelling history pickle file to append to, string
+        :param vs: GPARRegressor's object that contains the estimated parameters
         :return: NONE, simply saves results to pickle file and prints the filename
         """
 
@@ -253,18 +254,19 @@ class WindFarmGPAR:
         # (rather than multiple entries of the same column)
 
         results_df['Model Index'] = model_index
+        results_df['Estimated Parameters'] = [dict(zip(vs.names, vs.vars))]
         results_df['Timestamp'] = timestamp
 
         # Save the DataFrame as a Pickle file
 
         libs.ph.append_to_pickle(file_path=modelling_history_path,
-                                  new_row=results_df)
+                                 new_row=results_df)
 
         for col in output_cols:
-
             absolute_error = np.array(results_df['Error'].iloc[0][col]['Absolute Error'],
                                       ndmin=2)
-            interval_half_width = (np.array(results_df['Uppers'].iloc[0][col], ndmin=2) - np.array(results_df['Lowers'].iloc[0][col], ndmin=2)) / 2
+            interval_half_width = (np.array(results_df['Uppers'].iloc[0][col], ndmin=2) - np.array(
+                results_df['Lowers'].iloc[0][col], ndmin=2)) / 2
 
             inside = absolute_error < interval_half_width
             calibration = np.sum(inside, axis=1)[0] / inside.shape[1]
@@ -289,7 +291,7 @@ class WindFarmGPAR:
             }
 
             libs.ph.append_to_pickle(file_path=WindFarmGPAR.__turbine_model_metadata_filepath,
-                                      new_row=model_metadata)
+                                     new_row=model_metadata)
 
     def train_model(self, train_x, train_y,
                     test_x, test_y,
@@ -334,7 +336,7 @@ class WindFarmGPAR:
         self.model.fit(train_x, train_y)
 
         end = datetime.now()
-        elapsed = end-start
+        elapsed = end - start
 
         print(f"Elapsed Training Time: {elapsed.seconds}.{elapsed.microseconds} seconds")
 
@@ -390,5 +392,6 @@ class WindFarmGPAR:
             test_indices=test_indices,
             model_index=self.model_index,
             turbine_permutation=turbine_permutation,
-            modelling_history_path=modelling_history_path
+            modelling_history_path=modelling_history_path,
+            vs=self.model.vs
         )

@@ -62,13 +62,13 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
-input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', ]
+input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
 # model_metadata = ph.read_pickle_as_dataframe(model_metadata_path).tail(10)
 # print(metadata)
 
-model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-# history = ph.get_model_history()
+# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+print(ph.get_model_history().tail(10))
 # print(history.tail(1)['Input Columns'])
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
@@ -116,13 +116,6 @@ useful_covariates = [
 # gr.plot_model_metadata(indices=selected_indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
 # gr.print_model_metadata(indices=selected_indices)
 
-df = ph.get_model_history()
-df['Estimated Parameters'] = pd.NA
-
-df.iloc[:1800].to_pickle('Modelling History 1.pkl')
-df.iloc[1800:3600].to_pickle('Modelling History 2.pkl')
-df.iloc[3600:5400].to_pickle('Modelling History 3.pkl')
-df.iloc[5400:].to_pickle('Modelling History 4.pkl')
 
 # metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
 # history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1,
