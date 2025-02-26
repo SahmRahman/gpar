@@ -30,7 +30,7 @@ def sample_complete_training_data(n=1000):
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Bigger Training Sample.pkl")
+    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Big Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
 
@@ -107,8 +107,23 @@ more covariates
 #                   input_columns=['Wind.speed.me'],
 #                   output_columns=[f"Turbine {i} Power" for i in range(1, 7)])
 #
-input_cols = ph.read_pickle_as_dataframe("/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Prelim Analysis/Correlation Plot of Mean Covariates.pkl").columns
-
+input_cols = [
+    "Wind.speed.me",
+    "Wind.speed.min",
+    "Wind.speed.max",
+    'Wind.speed.sd',
+    "Transformer.temp.me",
+    "Gear.oil.inlet.press.me",
+    "Gear.oil.pump.press.me",
+    "Drive.train.acceleration.me",
+    "Tower.Acceleration.y",
+    'CPU.temp.me',
+    'Gear.oil.pump.press.me',
+    'Nacelle.temp.me',
+    'Top.box.temp.me',
+    'Wind.dir.sin.me',
+    'Wind.dir.cos.me',
+]
 #     [
 #     'Wind.dir.std',
 #     'Wind.speed.me',
@@ -291,7 +306,7 @@ if True:  # left this here just so i don't run everything all over again
             axis=1
         ).to_numpy()
         # gather the input columns into a dataframe per turbine,
-        # then join them together column-wise into one big numpy ndarray
+        # then append them together column-wise and convert into one big numpy ndarray
 
         train_y = pd.concat(
             [train_sample[train_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],

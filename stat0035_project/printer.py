@@ -3,7 +3,7 @@ import pickle_helper as ph
 import grapher as gr
 
 # Set option to display max number of columns
-ph.libs.pd.set_option('display.max_columns', 4)
+ph.libs.pd.set_option('display.max_columns', None)
 
 models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
@@ -17,7 +17,7 @@ bigger_train_sample_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Univ
 biggest_train_sample_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Biggest Training Sample.pkl'
 test_sample_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl'
 
-input_cols = [
+all_input_cols = [
     'Wind.dir.std',
     'Wind.speed.me',
     'Wind.speed.sd',
@@ -61,20 +61,23 @@ input_cols = [
     'Wind.dir.cos.max'
 ]
 
+input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', ]
+
 # model_metadata = ph.read_pickle_as_dataframe(model_metadata_path).tail(10)
 # print(metadata)
 
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-# print(model_metadata.loc[29358:])
+# history = ph.get_model_history()
+# print(history.tail(1)['Input Columns'])
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 
-selected_metadata = model_metadata[model_metadata['Modelling History Index'] > 6270]
+selected_metadata = model_metadata[model_metadata['Modelling History Index'] > 6296]
 selected_indices = selected_metadata.index
 
-# print(ph.get_model_history().tail(27))
+#print(selected_metadata.iloc[0].)
 
-gr.print_model_metadata(indices=selected_indices)
+# print(ph.get_model_history().tail(27))
 
 # for turbine in range(1, 7):
 #     data = history.iloc[turbine-1]
@@ -92,38 +95,25 @@ useful_covariates = [
     "Wind.speed.me",
     "Wind.speed.min",
     "Wind.speed.max",
+    'Wind.speed.sd',
     "Transformer.temp.me",
     "Gear.oil.inlet.press.me",
     "Gear.oil.pump.press.me",
     "Drive.train.acceleration.me",
-    "Tower.Acceleration.y"
+    "Tower.Acceleration.y",
+    'CPU.temp.me',
+    'Gear.oil.pump.press.me',
+    'Nacelle.temp.me',
+    'Top.box.temp.me',
+    'Wind.dir.sin.me',
+    'Wind.dir.cos.me',
 ]
 
-for col in useful_covariates:
-    # gr.plot_graph(
-    #     x=test_sample[col].values,
-    #     y_list=[test_sample['Power.me'].values],
-    #     intervals=False,
-    #     model_history_index=-1,
-    #     x_label=col,
-    #     y_label='Power'
-    # )
-    pass
 
-''' USEFUL COVARIATES:
-Wind.speed.me
-Wind.speed.min
-Wind.speed.max
-Transformer.temp.me
-Gear.oil.inlet.press.me
-Gear.oil.pump.press.me
-Drive.train.acceleration.me
-Tower.Acceleration.y
-'''
 
 # indices = [i for i in range(29352, len(model_metadata))]
-# gr.plot_model_metadata(indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
-# gr.print_model_metadata(indices)
+# gr.plot_model_metadata(indices=selected_indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
+gr.print_model_metadata(indices=selected_indices)
 
 # metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
 # history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1,
