@@ -194,7 +194,7 @@ def generate_permutations(lst, min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], max_length=2)
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=2, max_length=2)
 
 # #
 # train_df = complete_train_data
