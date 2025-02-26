@@ -233,25 +233,28 @@ def print_model_metadata(indices=[]):
 
             for metadata_metric in ('MSE', 'MAE', 'Calibration'):
 
-                metadata_values = current_data[metadata_metric].values.tolist()
-                mean = round(np.mean(metadata_values), 3)
-                std = round(np.std(metadata_values), 3)
-                max_index = current_data[metadata_metric].idxmax()
-                min_index = current_data[metadata_metric].idxmin()
-                max_val = round(current_data.loc[max_index][metadata_metric], 3)
-                min_val = round(current_data.loc[min_index][metadata_metric], 3)
-                max_perm = current_data.loc[max_index]['Turbine Permutation']
-                min_perm = current_data.loc[min_index]['Turbine Permutation']
+                if not current_data.empty:
 
-                # -------------- Figured I'd keep this if I want to save this as a DataFrame --------------
-                # data_to_append[f'Mean {metadata_metric}'] = mean
-                # data_to_append[f'{metadata_metric} Std. Dev.'] = std
-                # data_to_append[f'Best Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == max]['Turbine Permutation']
-                # data_to_append[f'Worst Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == min]['Turbine Permutation']
+                    metadata_values = current_data[metadata_metric].values.tolist()
+                    mean = round(np.mean(metadata_values), 3)
+                    std = round(np.std(metadata_values), 3)
+                    max_index = current_data[metadata_metric].idxmax()
+                    min_index = current_data[metadata_metric].idxmin()
+                    max_val = round(current_data.loc[max_index][metadata_metric], 3)
+                    min_val = round(current_data.loc[min_index][metadata_metric], 3)
+                    max_perm = current_data.loc[max_index]['Turbine Permutation']
+                    min_perm = current_data.loc[min_index]['Turbine Permutation']
 
-                # actually I shouldn't need this, I can just zip the columns and row together
+                    # -------------- Figured I'd keep this if I want to save this as a DataFrame --------------
+                    # data_to_append[f'Mean {metadata_metric}'] = mean
+                    # data_to_append[f'{metadata_metric} Std. Dev.'] = std
+                    # data_to_append[f'Best Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == max]['Turbine Permutation']
+                    # data_to_append[f'Worst Permutation by {metadata_metric}'] = current_data[current_data[metadata_metric] == min]['Turbine Permutation']
 
-                row += [mean, std, max_val, max_perm, min_val, min_perm]
+                    # actually I shouldn't need this, I can just zip the columns and row together
+
+                    row += [mean, std, max_val, max_perm, min_val, min_perm]
+
 
             for element in row:
                 print(f"{str(element):<{column_width}}", end="")

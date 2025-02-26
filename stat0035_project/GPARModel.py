@@ -275,7 +275,7 @@ class WindFarmGPAR:
             MSE = np.sqrt(np.mean(results_df['Error'].iloc[0][col]['Squared Error']))
             MAE = np.mean(results_df['Error'].iloc[0][col]['Absolute Error'])
 
-            df_modelling_history = libs.ph.read_pickle_as_dataframe(file_path=modelling_history_path)
+            df_modelling_history = libs.ph.get_model_history()
             turbine_num = int(col.split(' ')[1])
             model_metadata = {
                 'Turbine Count': len(turbine_permutation),

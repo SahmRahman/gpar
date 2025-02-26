@@ -64,13 +64,15 @@ input_cols = [
 # model_metadata = ph.read_pickle_as_dataframe(model_metadata_path).tail(10)
 # print(metadata)
 
-history = ph.get_model_history().iloc[5400+778:5400+784]
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 # print(model_metadata.loc[29358:])
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 
-print(ph.get_model_history())
+selected_metadata = model_metadata[model_metadata['Modelling History Index'] > 6177]
+selected_indices = selected_metadata.index
+
+gr.print_model_metadata(indices=selected_indices)
 
 # for turbine in range(1, 7):
 #     data = history.iloc[turbine-1]
