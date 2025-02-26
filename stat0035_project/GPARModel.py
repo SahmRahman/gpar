@@ -1,5 +1,5 @@
 import libraries as libs
-from libraries import np
+from libraries import np, datetime
 
 
 class WindFarmGPAR:
@@ -328,8 +328,19 @@ class WindFarmGPAR:
         # test_input = WindFarmGPAR.specify_data(test_sample, input_columns)
         # test_output = WindFarmGPAR.specify_data(test_sample, output_columns)
 
+        start = datetime.now()
+
         # train model
         self.model.fit(train_x, train_y)
+
+        end = datetime.now()
+        elapsed = end-start
+
+        print(f"Elapsed Training Time: {elapsed.seconds}.{elapsed.microseconds} seconds")
+
+        # ================ DELETE WHEN DONE ================
+
+        [print(f"{self.model.vs.names[i]}: {self.model.vs.vars[i]}") for i in range(len(self.model.vs.names))]
 
         # collect metadata
         means, lowers, uppers = self.model.predict(test_x,

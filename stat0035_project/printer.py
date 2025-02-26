@@ -1,6 +1,7 @@
 from libraries import np, pickle, pd
 import pickle_helper as ph
 import grapher as gr
+from GPARModel import WindFarmGPAR
 
 # Set option to display max number of columns
 ph.libs.pd.set_option('display.max_columns', None)
@@ -113,7 +114,15 @@ useful_covariates = [
 
 # indices = [i for i in range(29352, len(model_metadata))]
 # gr.plot_model_metadata(indices=selected_indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
-gr.print_model_metadata(indices=selected_indices)
+# gr.print_model_metadata(indices=selected_indices)
+
+df = ph.get_model_history()
+df['Estimated Parameters'] = pd.NA
+
+df.iloc[:1800].to_pickle('Modelling History 1.pkl')
+df.iloc[1800:3600].to_pickle('Modelling History 2.pkl')
+df.iloc[3600:5400].to_pickle('Modelling History 3.pkl')
+df.iloc[5400:].to_pickle('Modelling History 4.pkl')
 
 # metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
 # history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1,
