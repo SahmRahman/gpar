@@ -1,6 +1,7 @@
 from libraries import plt, np, os, datetime, ph, pd
+from GPARModel import WindFarmGPAR
 
-model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
+model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
 
 
 def contains_illegal_chars(value, name):

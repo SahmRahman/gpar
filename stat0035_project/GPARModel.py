@@ -3,8 +3,8 @@ from libraries import np, datetime
 
 
 class WindFarmGPAR:
-    __models_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
-    __turbine_model_metadata_filepath = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
+    models_filepath = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Models.pkl'
+    turbine_model_metadata_filepath = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Turbine Model Metadata.pkl'
 
     def __init__(self, model_params, existing, model_index):
         """
@@ -22,7 +22,7 @@ class WindFarmGPAR:
         if model_index > -1:
             self.model_index = model_index
         else:
-            self.model_index = len(libs.ph.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)) - 1
+            self.model_index = len(libs.ph.read_pickle_as_dataframe(WindFarmGPAR.models_filepath)) - 1
             # need to have - 1 even if it's a new model b/c after the create_model() call,
             # it would have been added to the Models.pkl file
 
@@ -40,7 +40,7 @@ class WindFarmGPAR:
         if existing and model_index > -1:
             # model exists, pull from pickle file @ given index
 
-            models_df = libs.ph.read_pickle_as_dataframe(WindFarmGPAR.__models_filepath)
+            models_df = libs.ph.read_pickle_as_dataframe(WindFarmGPAR.models_filepath)
             model_params = models_df.iloc[model_index]
 
             model_params = model_params[model_params.notna()]
@@ -51,7 +51,7 @@ class WindFarmGPAR:
             # need to make from scratch using model_params
 
             # add new model to our models file
-            libs.ph.append_to_pickle(WindFarmGPAR.__models_filepath, model_params)
+            libs.ph.append_to_pickle(WindFarmGPAR.models_filepath, model_params)
 
         model = libs.GPARRegressor(**model_params)
         # ** is python's way of unpacking a dictionary as parameters
@@ -176,6 +176,30 @@ class WindFarmGPAR:
         return model
 
     @staticmethod
+    def store_posterior_model(history_index):
+        est_params = libs.ph.get_model_history().iloc[history_index]['Estimated Parameters']
+        name_to_parameter = {"scales": 'scale',
+                             'noise': 'noise'}
+        new_model_row = {}
+        for name, value in est_params.items():
+
+            name = name.split('/')[-1]
+
+            if name in name_to_parameter.keys():
+                parameter = name_to_parameter[name]
+                new_model_row[parameter] = value * -1
+
+            else:
+                user_continue = input(f"Parameter name {name} not found in 'name_to_parameter' dictionary.\nDo you wish to continue without storing {name}? (Y/N)").upper()
+                if user_continue == 'N':
+                    libs.sys.exit(0)
+
+        libs.ph.append_to_pickle(file_path=WindFarmGPAR.models_filepath,
+                                 new_row=new_model_row)
+
+
+
+    @staticmethod
     def sample_data(train_df, test_df, train_size=100, test_size=10):
         train_indices = libs.np.random.choice(train_df[['index']].values.flatten(), train_size)
         test_indices = libs.np.random.choice(test_df[['index']].values.flatten(), test_size)
@@ -227,7 +251,7 @@ class WindFarmGPAR:
 
     @staticmethod
     def log_results(results_df, input_cols, output_cols, training_indices, test_indices, model_index,
-                    turbine_permutation, modelling_history_path, vs):
+                    turbine_permutation, modelling_history_path, vs, store_posterior):
         """
         log the results of a model run
 
@@ -240,6 +264,7 @@ class WindFarmGPAR:
         :param turbine_permutation: order of turbines in model, list of ints
         :param modelling_history_path: path to modelling history pickle file to append to, string
         :param vs: GPARRegressor's object that contains the estimated parameters
+        :param store_posterior: boolean, store estimated posterior parameters as a new model in Models.pkl
         :return: NONE, simply saves results to pickle file and prints the filename
         """
 
@@ -261,6 +286,9 @@ class WindFarmGPAR:
 
         libs.ph.append_to_pickle(file_path=modelling_history_path,
                                  new_row=results_df)
+
+        if store_posterior:
+            WindFarmGPAR.store_posterior_model(history_index=(len(libs.ph.get_model_history()) - 1))
 
         for col in output_cols:
             absolute_error = np.array(results_df['Error'].iloc[0][col]['Absolute Error'],
@@ -290,7 +318,7 @@ class WindFarmGPAR:
                 'MAE': MAE
             }
 
-            libs.ph.append_to_pickle(file_path=WindFarmGPAR.__turbine_model_metadata_filepath,
+            libs.ph.append_to_pickle(file_path=WindFarmGPAR.turbine_model_metadata_filepath,
                                      new_row=model_metadata)
 
     def train_model(self, train_x, train_y,
@@ -298,6 +326,7 @@ class WindFarmGPAR:
                     train_indices, test_indices,
                     input_columns, output_columns,
                     modelling_history_path,
+                    store_posterior,
                     turbine_permutation=[]):
         """
         fit model to train data, draw samples from resulting posterior and log the results
@@ -311,6 +340,7 @@ class WindFarmGPAR:
         :param test_indices: indices in the test pickle file used for this model, list of ints
         :param turbine_permutation: order of turbines in model, list of ints
         :param modelling_history_path: path to modelling history pickle file to append to, string
+        :param store_posterior: boolean, store estimated posterior parameters as a new model in Models.pkl
         :return: NONE
         """
 
@@ -393,5 +423,6 @@ class WindFarmGPAR:
             model_index=self.model_index,
             turbine_permutation=turbine_permutation,
             modelling_history_path=modelling_history_path,
-            vs=self.model.vs
+            vs=self.model.vs,
+            store_posterior=store_posterior
         )

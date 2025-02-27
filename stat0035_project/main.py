@@ -7,13 +7,13 @@ from libraries import np
 from libraries import datetime
 import itertools
 
-model_history_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Modelling History 4.pkl'
-models_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
+model_history_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History 4.pkl'
+models_path = WindFarmGPAR.models_filepath
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
-model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
+model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
 
 
 # train_data = ph.read_pickle_as_dataframe(train_data_path)
@@ -31,9 +31,9 @@ def sample_complete_training_data(n=1000):
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Training Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
 
 
 input_cols = ['Wind.speed.me']
@@ -119,7 +119,8 @@ def generate_permutations(lst, min_length=1, max_length=6):
 
 turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=1)
 
-input_col_names = useful_covariates
+
+input_col_names = ['Wind.speed.me']# useful_covariates
 if True:  # left this here just so i don't run everything all over again
     for turbines in turbine_perms:
         train_x = pd.concat(
@@ -161,7 +162,8 @@ if True:  # left this here just so i don't run everything all over again
                           input_columns=input_columns,
                           output_columns=output_columns,
                           turbine_permutation=turbines,
-                          modelling_history_path=model_history_path)
+                          modelling_history_path=model_history_path,
+                          store_posterior=True)
 
         print()
 
