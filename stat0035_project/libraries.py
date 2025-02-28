@@ -10,6 +10,9 @@ from gpar.regression import GPARRegressor
 import sys
 from datetime import datetime
 import pickle_helper as ph
+import warnings
+warnings.simplefilter("ignore", category=DeprecationWarning)
+
 
 print('Libraries imported successfully')
 

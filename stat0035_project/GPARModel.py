@@ -177,27 +177,47 @@ class WindFarmGPAR:
 
     @staticmethod
     def store_posterior_model(history_index, ask_missing_param_name=False):
-        est_params = libs.ph.get_model_history().iloc[history_index]['Estimated Parameters']
-        name_to_parameter = {"scales": 'scale',
-                             'noise': 'noise'}
-        new_model_row = {}
-        for name, value in est_params.items():
 
-            name = name.split('/')[-1]
+        history_row = libs.ph.get_model_history().iloc[history_index]
+        est_params = history_row['Estimated Parameters']
+        prior_model_index = history_row['Model Index']
+        models = libs.ph.read_pickle_as_dataframe(WindFarmGPAR.models_filepath)
+        new_model_row = {}
+
+        name_to_parameter = {
+                            "/input/scales": 'scale',
+                            "/input/per/var": 'per',
+                            "/input/per/pers": 'per_period',
+                            "/input/per/scales": 'per_scale',
+                            "/input/per/decay": 'per_decay',
+                            "/output/nonlin/var": 'nonlinear',
+                            "/output/nonlin/scales": 'nonlinear_scale',
+                            "/noise": 'noise'
+                            }
+
+        for name, value in est_params.items():
+            name = name[1:]  # excludes dimension term
 
             if name in name_to_parameter.keys():
-
                 parameter = name_to_parameter[name]
-                value_squeezed = np.squeeze(value)
-                if np.ndim(value_squeezed) == 0 and np.ndim(value) == 1:
-                    new_model_row[parameter] = value_squeezed * -1
-                else:
-                    new_model_row[parameter] = value * -1
+                new_model_row[parameter] = value * -1
+
+            if name == '/input/var':
+                new_model_row[name] = value * -1
 
             elif ask_missing_param_name:
                 user_continue = input(f"Parameter name \"{name}\" not found in 'name_to_parameter' dictionary.\nDo you wish to continue without storing \"{name}\"? (Y/N)").upper()
                 if user_continue == 'N':
                     libs.sys.exit(0)
+
+
+        other_parameters = ['replace', 'impute', 'scale_tie', 'input_linear', 'linear', 'rq', 'markov', 'x_ind',
+                            'normalise_y', 'transform_y']
+
+        for param in other_parameters:
+            new_model_row[param] = models.iloc[prior_model_index][param]
+            # re-use the boolean/other parameters as before
+
 
         libs.ph.append_to_pickle(file_path=WindFarmGPAR.models_filepath,
                                  new_row=new_model_row)
@@ -376,8 +396,6 @@ class WindFarmGPAR:
         print(f"Elapsed Training Time: {elapsed.seconds}.{elapsed.microseconds} seconds")
 
         # ================ DELETE WHEN DONE ================
-
-        [print(f"{self.model.vs.names[i]}: {self.model.vs.vars[i]}") for i in range(len(self.model.vs.names))]
 
         # collect metadata
         means, lowers, uppers = self.model.predict(test_x,

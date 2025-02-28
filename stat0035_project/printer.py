@@ -4,7 +4,7 @@ import grapher as gr
 from GPARModel import WindFarmGPAR
 
 # Set option to display max number of columns
-ph.libs.pd.set_option('display.max_columns', None)
+ph.libs.pd.set_option('display.max_columns', 4)
 
 models_path = WindFarmGPAR.models_filepath
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
@@ -64,13 +64,17 @@ all_input_cols = [
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
-# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path).tail(10)
+print(ph.get_model_history().tail(5))
+
+model_metadata = ph.read_pickle_as_dataframe(model_metadata_path).tail(10)
+print(model_metadata.tail(5))
 # print(metadata)
 
 # model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 
+ph.libs.pd.set_option('display.max_columns', None)
 models = ph.read_pickle_as_dataframe(models_path)
-print(models)
+print(models.columns)
 
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
