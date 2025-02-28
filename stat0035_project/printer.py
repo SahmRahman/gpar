@@ -74,7 +74,7 @@ print(model_metadata.tail(5))
 
 ph.libs.pd.set_option('display.max_columns', None)
 models = ph.read_pickle_as_dataframe(models_path)
-print(models.columns)
+print(models.tail(5))
 
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)

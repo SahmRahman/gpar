@@ -117,7 +117,7 @@ def generate_permutations(lst, min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=3)
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=2)
 
 
 input_col_names = ['Wind.speed.me']  # useful_covariates
@@ -150,7 +150,7 @@ if True:  # left this here just so I don't run everything all over again
         input_columns = input_cols
         output_columns = [f'Turbine {i} Power' for i in turbines]
 
-        model = WindFarmGPAR(model_params={'linear':True}, existing=False, model_index=-1)
+        model = WindFarmGPAR(model_params={}, existing=True, model_index=57)
         # have to create a fresh model for every run, it was retraining from previous runs
 
         model.train_model(train_x=train_x,
