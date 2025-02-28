@@ -34,12 +34,15 @@ def _vector_from_init(init, length):
         return init * np.ones(length)
 
     # Multiple values are given. Check that enough values are available.
-    init_squeezed = np.squeeze(init)
-    if np.ndim(init_squeezed) != 1:
+
+    # init_squeezed = np.squeeze(init)
+    # if np.ndim(init_squeezed) != 1:
+
+    if np.ndim(init) != 1:
         raise ValueError(
             "Incorrect shape {} of hyperparameters." "".format(np.shape(init))
         )
-    if np.size(init_squeezed) < length:  # Squeezed doesn't change size.
+    if np.size(init) < length:
         raise ValueError("Not enough hyperparameters specified.")
 
     # Return initialisation.
