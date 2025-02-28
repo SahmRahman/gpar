@@ -176,7 +176,7 @@ class WindFarmGPAR:
         return model
 
     @staticmethod
-    def store_posterior_model(history_index):
+    def store_posterior_model(history_index, ask_missing_param_name=False):
         est_params = libs.ph.get_model_history().iloc[history_index]['Estimated Parameters']
         name_to_parameter = {"scales": 'scale',
                              'noise': 'noise'}
@@ -186,11 +186,16 @@ class WindFarmGPAR:
             name = name.split('/')[-1]
 
             if name in name_to_parameter.keys():
-                parameter = name_to_parameter[name]
-                new_model_row[parameter] = value * -1
 
-            else:
-                user_continue = input(f"Parameter name {name} not found in 'name_to_parameter' dictionary.\nDo you wish to continue without storing {name}? (Y/N)").upper()
+                parameter = name_to_parameter[name]
+                value_squeezed = np.squeeze(value)
+                if np.ndim(value_squeezed) == 0 and np.ndim(value) == 1:
+                    new_model_row[parameter] = value_squeezed * -1
+                else:
+                    new_model_row[parameter] = value * -1
+
+            elif ask_missing_param_name:
+                user_continue = input(f"Parameter name \"{name}\" not found in 'name_to_parameter' dictionary.\nDo you wish to continue without storing \"{name}\"? (Y/N)").upper()
                 if user_continue == 'N':
                     libs.sys.exit(0)
 
@@ -280,7 +285,6 @@ class WindFarmGPAR:
 
         results_df['Model Index'] = model_index
         results_df['Estimated Parameters'] = [dict(zip(vs.names, vs.vars))]
-        results_df['Timestamp'] = timestamp
 
         # Save the DataFrame as a Pickle file
 
@@ -288,7 +292,8 @@ class WindFarmGPAR:
                                  new_row=results_df)
 
         if store_posterior:
-            WindFarmGPAR.store_posterior_model(history_index=(len(libs.ph.get_model_history()) - 1))
+            WindFarmGPAR.store_posterior_model(history_index=(len(libs.ph.get_model_history()) - 1),
+                                               ask_missing_param_name=False)
 
         for col in output_cols:
             absolute_error = np.array(results_df['Error'].iloc[0][col]['Absolute Error'],

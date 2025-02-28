@@ -68,8 +68,10 @@ input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 # print(metadata)
 
 # model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-print(ph.get_model_history().tail(1))
-# print(history.tail(1)['Input Columns'])
+
+models = ph.read_pickle_as_dataframe(models_path)
+print(models)
+
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 

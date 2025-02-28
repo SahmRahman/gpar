@@ -150,7 +150,7 @@ if True:  # left this here just so i don't run everything all over again
         input_columns = input_cols
         output_columns = [f'Turbine {i} Power' for i in turbines]
 
-        model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
+        model = WindFarmGPAR(model_params={}, existing=True, model_index=8+turbines[0])
         # have to create a fresh model for every run, it was retraining from previous runs
 
         model.train_model(train_x=train_x,
