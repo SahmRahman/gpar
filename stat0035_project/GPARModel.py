@@ -194,6 +194,7 @@ class WindFarmGPAR:
                             "/output/nonlin/scales": 'nonlinear_scale',
                             "/noise": 'noise'
                             }
+        # ----- I ignored /input/var on purpose because GPARRegressor always uses initial value 1.0 -----
 
         for name, value in est_params.items():
             name = name[1:]  # excludes dimension term
@@ -201,9 +202,6 @@ class WindFarmGPAR:
             if name in name_to_parameter.keys():
                 parameter = name_to_parameter[name]
                 new_model_row[parameter] = value * -1
-
-            if name == '/input/var':
-                new_model_row[name] = value * -1
 
             elif ask_missing_param_name:
                 user_continue = input(f"Parameter name \"{name}\" not found in 'name_to_parameter' dictionary.\nDo you wish to continue without storing \"{name}\"? (Y/N)").upper()

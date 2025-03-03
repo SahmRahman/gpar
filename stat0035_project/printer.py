@@ -4,7 +4,7 @@ import grapher as gr
 from GPARModel import WindFarmGPAR
 
 # Set option to display max number of columns
-ph.libs.pd.set_option('display.max_columns', 4)
+ph.libs.pd.set_option('display.max_columns', None)
 
 models_path = WindFarmGPAR.models_filepath
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
@@ -64,17 +64,23 @@ all_input_cols = [
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
-print(ph.get_model_history().tail(5))
+history = ph.get_model_history()
+# print(history.tail(5))
+speed_and_dir_indices = history[history['Input Columns'].apply(lambda x: len(x) == 3)].index
 
-model_metadata = ph.read_pickle_as_dataframe(model_metadata_path).tail(10)
-print(model_metadata.tail(5))
+model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+print(model_metadata.tail(4))
+selected_metadata = model_metadata[model_metadata['Modelling History Index'].isin(speed_and_dir_indices)]
+# gr.plot_model_metadata(selected_metadata.index)
+# gr.print_model_metadata(selected_metadata.index)
+
 # print(metadata)
 
 # model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 
 ph.libs.pd.set_option('display.max_columns', None)
 models = ph.read_pickle_as_dataframe(models_path)
-print(models.tail(5))
+print(models.iloc[120])
 
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
