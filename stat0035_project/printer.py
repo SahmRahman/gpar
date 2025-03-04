@@ -68,10 +68,10 @@ input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 test = model_metadata.tail(12)
-print(test)
-# selected_metadata = model_metadata[model_metadata['Modelling History Index'].isin(speed_and_dir_indices)]
-# gr.plot_model_metadata(selected_metadata.index)
-# gr.print_model_metadata(selected_metadata.index)
+# print(test)
+selected_metadata_indices = model_metadata.iloc[30120:].index
+gr.plot_model_metadata(selected_metadata_indices)
+gr.print_model_metadata(selected_metadata_indices)
 
 # print(metadata)
 
@@ -81,7 +81,7 @@ ph.libs.pd.set_option('display.max_columns', None)
 models = ph.read_pickle_as_dataframe(models_path)
 
 # print(models.columns)
-# print(models.iloc[120])
+print(models.tail())
 
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)

@@ -31,7 +31,7 @@ def sample_complete_training_data(n=1000):
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Big Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
 
@@ -117,7 +117,7 @@ def generate_permutations(lst, min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=2, max_length=2)
+turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=2)
 
 
 input_col_names = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']  # useful_covariates
@@ -150,7 +150,7 @@ if True:  # left this here just so I don't run everything all over again
         input_columns = input_col_names
         output_columns = [f'Turbine {i} Power' for i in turbines]
 
-        model = WindFarmGPAR(model_params={}, existing=True, model_index=41)
+        model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
         # have to create a fresh model for every run, it was retraining from previous runs
 
         model.train_model(train_x=train_x,
