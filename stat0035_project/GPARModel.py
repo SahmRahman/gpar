@@ -302,6 +302,7 @@ class WindFarmGPAR:
         # (rather than multiple entries of the same column)
 
         results_df['Model Index'] = model_index
+        results_df['Timestamp'] = timestamp
         results_df['Estimated Parameters'] = [dict(zip(vs.names, vs.vars))]
 
         # Save the DataFrame as a Pickle file
