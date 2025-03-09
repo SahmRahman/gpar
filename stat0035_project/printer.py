@@ -6,17 +6,17 @@ from GPARModel import WindFarmGPAR
 # Set option to display max number of columns
 ph.libs.pd.set_option('display.max_columns', None)
 
-models = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Models.pkl'
+models_path = WindFarmGPAR.models_filepath
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
-model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
-train_sample_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Training Sample.pkl'
-big_train_sample_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Big Training Sample.pkl'
-bigger_train_sample_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Bigger Training Sample.pkl'
-biggest_train_sample_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Biggest Training Sample.pkl'
-test_sample_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Test Sample.pkl'
+model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
+train_sample_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl'
+big_train_sample_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Big Training Sample.pkl'
+bigger_train_sample_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Bigger Training Sample.pkl'
+biggest_train_sample_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Biggest Training Sample.pkl'
+test_sample_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl'
 
 all_input_cols = [
     'Wind.dir.std',
@@ -62,19 +62,50 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
-# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path).tail(10)
+df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on only Wind Speed.pkl")
+df1 = df.iloc[:len(df)//2]
+df2 = df.iloc[len(df)//2:]
+print('...')
+
+# history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on only Wind Speed.pkl")
+# selected_indices = history.index
+
+# print(wind_speed_history.tail(5))
+
+# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+# selected_metadata = model_metadata[model_metadata['Modelling History Index'].isin(selected_indices)]
+# print("========================================== N = 1000 ==========================================")
+# gr.print_model_metadata(selected_metadata.index)
+# gr.plot_model_metadata(selected_metadata.index, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=1000")
+
+# test = model_metadata[model_metadata['Modelling History Index'] >= 6700]
+# print(ph.get_model_history().iloc[6700]['Estimated Parameters'])
+# print("========================================== N = 2500 ==========================================")
+# gr.print_model_metadata(test.index)
+# gr.plot_model_metadata(test.index, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=2500")
+# print(test)
+# selected_metadata_indices = model_metadata.iloc[30120:].index
+# gr.plot_model_metadata(selected_metadata_indices)
+# gr.print_model_metadata(selected_metadata_indices)
+
 # print(metadata)
 
 # model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-print(ph.get_model_history().tail(10))
-# print(history.tail(1)['Input Columns'])
+
+ph.libs.pd.set_option('display.max_columns', None)
+models = ph.read_pickle_as_dataframe(models_path)
+
+# print(models.columns)
+# print(models.tail())
+
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 
-selected_metadata = model_metadata[model_metadata['Modelling History Index'] > 6296]
-selected_indices = selected_metadata.index
+# selected_metadata = model_metadata[model_metadata['Modelling History Index'] > 6296]
+# selected_indices = selected_metadata.index
 
 #print(selected_metadata.iloc[0].)
 

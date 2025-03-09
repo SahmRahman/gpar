@@ -5,3 +5,13 @@ sphinx-rtd-theme
 pytest
 pytest-cov
 coveralls
+stheno~=1.4.1
+numpy~=2.0.2
+torch~=2.5.1
+varz~=0.8.1
+wbml~=0.4.1
+gpar~=0.3.1
+matplotlib~=3.9.2
+pandas~=2.2.3
+scikit-learn~=1.5.2
+setuptools~=58.0.4

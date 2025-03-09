@@ -1,5 +1,5 @@
 import os
-os.chdir("/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project")
+os.chdir("/Users/sahmrahman/Desktop/GitHub/stat0035_project")
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +10,9 @@ from gpar.regression import GPARRegressor
 import sys
 from datetime import datetime
 import pickle_helper as ph
+import warnings
+warnings.simplefilter("ignore", category=DeprecationWarning)
+
 
 print('Libraries imported successfully')
 

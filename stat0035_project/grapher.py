@@ -1,6 +1,7 @@
 from libraries import plt, np, os, datetime, ph, pd
+from GPARModel import WindFarmGPAR
 
-model_metadata_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/Turbine Model Metadata.pkl'
+model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
 
 
 def contains_illegal_chars(value, name):
@@ -146,6 +147,8 @@ def plot_graph(x, y_list, model_history_index,
         # only show if not saving
         plt.show()
 
+    plt.close()
+
 
 def plot_model_metadata(indices=[], save_path=''):
     df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
@@ -199,6 +202,8 @@ def plot_model_metadata(indices=[], save_path=''):
                 print(f"Figure saved at: {full_path}")
             else:
                 plt.show()
+
+    plt.close()
 
 
 def print_model_metadata(indices=[]):
