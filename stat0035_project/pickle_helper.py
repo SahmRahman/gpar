@@ -132,6 +132,6 @@ def append_to_pickle(file_path, new_row):
 
 def get_model_history():
     model_history_paths = [f'/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History {i}.pkl' for i in
-                           range(1, 6)]
+                           range(1, 8)]
 
     return libs.pd.concat([read_pickle_as_dataframe(path) for path in model_history_paths], ignore_index=True)

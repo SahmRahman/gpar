@@ -174,7 +174,7 @@ def plot_model_metadata(indices=[], save_path=''):
         entries_by_permutation_size[i] = pd.DataFrame(entries_by_permutation_size[i])
         # convert each list of DataFrame rows to one full DataFrame
 
-    for metadata_val, y_lims in zip(['MSE', 'MAE', 'Calibration'],
+    for metadata_val, y_lims in zip(['RMSE', 'MAE', 'Calibration Error'],
                                     [(30, 100), (25, 70), (.7, 1)]):
         for turbine in turbines:
 

@@ -65,12 +65,14 @@ all_input_cols = [
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
-df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on only Wind Speed.pkl")
-df1 = df.iloc[:len(df)//2]
-df2 = df.iloc[len(df)//2:]
-print('...')
 
-# history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on only Wind Speed.pkl")
+history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=2500 run on Wind Speed.pkl")
+est_params = history.iloc[6417:]
+print('...')
+# speed_and_dir = history[history['Input Columns'].apply(lambda x: len(x) == 3)]
+# complete_speed_and_dir = speed_and_dir[speed_and_dir['Input Columns'].apply(lambda x: x == ['Wind Speed',
+#                                                                                             'Sine of Wind Direction',
+#                                                                                             'Cosine of Wind Direction'])]
 # selected_indices = history.index
 
 # print(wind_speed_history.tail(5))
