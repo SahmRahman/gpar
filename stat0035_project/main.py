@@ -7,7 +7,7 @@ from libraries import np
 from libraries import datetime
 import itertools
 
-model_history_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History 4.pkl'
+model_history_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History 5.pkl'
 models_path = WindFarmGPAR.models_filepath
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -103,7 +103,7 @@ useful_covariates = [
 
 
 
-def generate_permutations(lst, min_length=1, max_length=6):
+def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
     if min_length > max_length:
         print("Invalid lengths")
         return None
@@ -117,10 +117,10 @@ def generate_permutations(lst, min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=2)
+turbine_perms = generate_permutations()
 
 
-input_col_names = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']  # useful_covariates
+input_col_names = ['Wind.speed.me']  # useful_covariates
 if True:  # left this here just so I don't run everything all over again
     for turbines in turbine_perms:
         train_x = pd.concat(

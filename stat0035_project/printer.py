@@ -62,16 +62,34 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
-# print(history.tail(5))
+df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on only Wind Speed.pkl")
+df1 = df.iloc[:len(df)//2]
+df2 = df.iloc[len(df)//2:]
+print('...')
 
-model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-test = model_metadata.tail(12)
+# history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on only Wind Speed.pkl")
+# selected_indices = history.index
+
+# print(wind_speed_history.tail(5))
+
+# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+# selected_metadata = model_metadata[model_metadata['Modelling History Index'].isin(selected_indices)]
+# print("========================================== N = 1000 ==========================================")
+# gr.print_model_metadata(selected_metadata.index)
+# gr.plot_model_metadata(selected_metadata.index, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=1000")
+
+# test = model_metadata[model_metadata['Modelling History Index'] >= 6700]
+# print(ph.get_model_history().iloc[6700]['Estimated Parameters'])
+# print("========================================== N = 2500 ==========================================")
+# gr.print_model_metadata(test.index)
+# gr.plot_model_metadata(test.index, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=2500")
 # print(test)
-selected_metadata_indices = model_metadata.iloc[30120:].index
-gr.plot_model_metadata(selected_metadata_indices)
-gr.print_model_metadata(selected_metadata_indices)
+# selected_metadata_indices = model_metadata.iloc[30120:].index
+# gr.plot_model_metadata(selected_metadata_indices)
+# gr.print_model_metadata(selected_metadata_indices)
 
 # print(metadata)
 
@@ -81,7 +99,7 @@ ph.libs.pd.set_option('display.max_columns', None)
 models = ph.read_pickle_as_dataframe(models_path)
 
 # print(models.columns)
-print(models.tail())
+# print(models.tail())
 
 
 test_sample = ph.read_pickle_as_dataframe(test_sample_path)

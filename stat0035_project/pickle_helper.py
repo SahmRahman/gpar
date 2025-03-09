@@ -1,5 +1,6 @@
 import libraries as libs
 
+
 class PickleFileError(Exception):
     def __init__(self, error_message):
         print(error_message)
@@ -102,6 +103,7 @@ def append_to_pickle(file_path, new_row):
     except Exception as e:
         raise PickleFileError(f"Error saving to pickle file: {e}")
 
+
 # just keeping this if I never need to reset Models.pkl
 
 # data_dict = {
@@ -128,9 +130,8 @@ def append_to_pickle(file_path, new_row):
 # }
 
 
-
 def get_model_history():
-
-    model_history_paths = [f'/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History {i}.pkl' for i in range(1, 5)]
+    model_history_paths = [f'/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History {i}.pkl' for i in
+                           range(1, 6)]
 
     return libs.pd.concat([read_pickle_as_dataframe(path) for path in model_history_paths], ignore_index=True)
