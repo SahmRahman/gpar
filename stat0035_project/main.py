@@ -7,7 +7,7 @@ from libraries import np
 from libraries import datetime
 import itertools
 
-model_history_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History 5.pkl'
+model_history_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History 7.pkl'
 models_path = WindFarmGPAR.models_filepath
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -22,18 +22,45 @@ model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
 # complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
 # complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
 
+def get_season(date):
+    month, day = date.month, date.day
+
+    if (month == 12 and day >= 21) or month in [1, 2] or (month == 3 and day < 21):
+        return "Winter"
+    elif (month == 3 and day >= 21) or month in [4, 5] or (month == 6 and day < 21):
+        return "Spring"
+    elif (month == 6 and day >= 21) or month in [7, 8] or (month == 9 and day < 21):
+        return "Summer"
+    else:
+        return "Fall"
+
 
 def sample_complete_training_data(n=1000):
-    complete_df = ph.read_pickle_as_dataframe(complete_train_data_path)
-    sample_times = pd.Series(complete_df['Date.time'].unique()).sample(n)
-    sample = complete_df[complete_df['Date.time'].isin(sample_times)]
+    # get complete data by turbine
+    df = ph.read_pickle_as_dataframe(complete_train_data_path)
+
+    # Apply function to get season
+    df["season"] = df["Date.time"].map(get_season)
+
+    # Create separate DataFrames for each season
+    season_dfs = [df[df["season"] == season] for season in ['Winter', 'Spring', 'Summer', 'Fall']]
+
+    # sample n/4 times from each seasonal dataframe
+    sample_times = [pd.Series(df_['Date.time'].unique()).sample(n//4) for df_ in season_dfs]
+
+    # combine inputs that have these times all into one dataframe
+    sample = pd.concat([
+        df[df['Date.time'].isin(sample_times[i])] for i in range(4)
+    ],
+        ignore_index=False)  # want to keep the indices since we store them for training
     return sample
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Big Training Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
+
 
 
 input_cols = ['Wind.speed.me']
@@ -102,7 +129,6 @@ useful_covariates = [
 # ]
 
 
-
 def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
     if min_length > max_length:
         print("Invalid lengths")
@@ -118,7 +144,6 @@ def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
 
 
 turbine_perms = generate_permutations()
-
 
 input_col_names = ['Wind.speed.me']  # useful_covariates
 if True:  # left this here just so I don't run everything all over again
