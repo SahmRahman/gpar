@@ -35,6 +35,14 @@ def get_season(date):
         return "Fall"
 
 
+complete_data = ph.read_pickle_as_dataframe(complete_train_data_path)
+train_sample = ph.read_pickle_as_dataframe(
+    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
+complete_data['Season'] = complete_data['Date.time'].map(get_season)
+complete_season_dfs = [complete_data[complete_data["Season"] == season] for season in ['Winter', 'Spring', 'Summer', 'Fall']]
+train_sample['Season'] = train_sample['Date.time'].map(get_season)
+train_season_dfs = [train_sample[train_sample["Season"] == season] for season in ['Winter', 'Spring', 'Summer', 'Fall']]
+
 def sample_complete_training_data(n=1000):
     # get complete data by turbine
     df = ph.read_pickle_as_dataframe(complete_train_data_path)
@@ -46,7 +54,7 @@ def sample_complete_training_data(n=1000):
     season_dfs = [df[df["season"] == season] for season in ['Winter', 'Spring', 'Summer', 'Fall']]
 
     # sample n/4 times from each seasonal dataframe
-    sample_times = [pd.Series(df_['Date.time'].unique()).sample(n//4) for df_ in season_dfs]
+    sample_times = [pd.Series(df_['Date.time'].unique()).sample(n // 4) for df_ in season_dfs]
 
     # combine inputs that have these times all into one dataframe
     sample = pd.concat([
@@ -60,8 +68,6 @@ train_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
-
-
 
 input_cols = ['Wind.speed.me']
 
@@ -143,9 +149,9 @@ def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations()
+turbine_perms = generate_permutations(min_length=4)[232:]
 
-input_col_names = ['Wind.speed.me']  # useful_covariates
+input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me', 'Nacelle.ambient.temp.me']  # useful_covariates
 if True:  # left this here just so I don't run everything all over again
     for turbines in turbine_perms:
         train_x = pd.concat(

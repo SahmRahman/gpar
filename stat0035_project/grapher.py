@@ -174,14 +174,18 @@ def plot_model_metadata(indices=[], save_path=''):
         entries_by_permutation_size[i] = pd.DataFrame(entries_by_permutation_size[i])
         # convert each list of DataFrame rows to one full DataFrame
 
-    for metadata_val, y_lims in zip(['RMSE', 'MAE', 'Calibration Error'],
+    for metadata_val, y_lims in zip(['MSE', 'MAE', 'Calibration'],
                                     [(30, 100), (25, 70), (.7, 1)]):
         for turbine in turbines:
 
             plt.figure(figsize=(8, 6))
             plt.xlabel('Turbine Permutation Size')
-            plt.ylabel(metadata_val)
-            title = f'Model {metadata_val} for Turbine {turbine} by Permutation Size'
+            if metadata_val == 'MSE':
+                plt.ylabel('R' + metadata_val)
+                title = f'Model R{metadata_val} for Turbine {turbine} by Permutation Size'
+            else:
+                plt.ylabel(metadata_val)
+                title = f'Model {metadata_val} for Turbine {turbine} by Permutation Size'
             plt.title(title)
             plt.xlim((0, 7))
             plt.ylim(y_lims)
@@ -189,7 +193,7 @@ def plot_model_metadata(indices=[], save_path=''):
             metadata = [entries_by_permutation_size[i][entries_by_permutation_size[i]['Turbine'] == turbine][metadata_val]
                         for i in entries_by_permutation_size.keys()]
 
-            plt.boxplot(x=metadata)
+            plt.boxplot(x=metadata, positions=[int(i) for i in entries_by_permutation_size.keys()])
 
             # plt.legend(loc='upper right')  didn't end up needing a legend for boxplot
             plt.grid(True)

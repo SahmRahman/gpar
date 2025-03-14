@@ -62,26 +62,30 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+df = ph.get_model_history()
+df = df[df['Input Columns'].apply(lambda x: len(x) == 4)]
+print()
+model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(df.index)]
+gr.plot_model_metadata(indices=model_metadata.index)
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
-df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction.pkl")
-df1 = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction - 1.pkl")
-df2 = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction - 2.pkl")
+df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/Complete n=1000 run on Wind Speed - 1.pkl")
 # n1000_history = n1000_history[n1000_history['Training Data Indices'].apply(lambda x: x == n1000_indices)]
 print('...')
 # speed_and_dir = history[history['Input Columns'].apply(lambda x: len(x) == 3)]
 # complete_speed_and_dir = speed_and_dir[speed_and_dir['Input Columns'].apply(lambda x: x == ['Wind Speed',
 #                                                                                             'Sine of Wind Direction',
 #                                                                                             'Cosine of Wind Direction'])]
-# selected_indices = history.index
+selected_indices = history.index
 
 # print(wind_speed_history.tail(5))
 
-# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-# selected_metadata = model_metadata[model_metadata['Modelling History Index'].isin(selected_indices)]
+model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+selected_metadata = model_metadata[model_metadata['Modelling History Index'].isin(selected_indices)]
 # print("========================================== N = 1000 ==========================================")
-# gr.print_model_metadata(selected_metadata.index)
+gr.print_model_metadata(selected_metadata.index)
 # gr.plot_model_metadata(selected_metadata.index, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=1000")
 
 # test = model_metadata[model_metadata['Modelling History Index'] >= 6700]
