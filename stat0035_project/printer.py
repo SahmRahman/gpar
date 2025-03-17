@@ -63,11 +63,16 @@ all_input_cols = [
 ]
 
 df = ph.get_model_history()
+
 df = df[df['Input Columns'].apply(lambda x: len(x) == 4)]
+# df = df[df['Output Columns'].apply(lambda x: len(x) == 6)]
 print()
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(df.index)]
+# gr.print_model_metadata(indices=model_metadata.index)
 gr.plot_model_metadata(indices=model_metadata.index)
+
+
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 

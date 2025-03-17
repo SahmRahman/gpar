@@ -2,12 +2,9 @@ import pandas as pd
 
 from GPARModel import WindFarmGPAR
 import pickle_helper as ph
-import grapher as gr
-from libraries import np
-from libraries import datetime
 import itertools
 
-model_history_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History 7.pkl'
+model_history_path = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History 8.pkl'
 models_path = WindFarmGPAR.models_filepath
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -39,9 +36,11 @@ complete_data = ph.read_pickle_as_dataframe(complete_train_data_path)
 train_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
 complete_data['Season'] = complete_data['Date.time'].map(get_season)
-complete_season_dfs = [complete_data[complete_data["Season"] == season] for season in ['Winter', 'Spring', 'Summer', 'Fall']]
+complete_season_dfs = [complete_data[complete_data["Season"] == season] for season in
+                       ['Winter', 'Spring', 'Summer', 'Fall']]
 train_sample['Season'] = train_sample['Date.time'].map(get_season)
 train_season_dfs = [train_sample[train_sample["Season"] == season] for season in ['Winter', 'Spring', 'Summer', 'Fall']]
+
 
 def sample_complete_training_data(n=1000):
     # get complete data by turbine
@@ -149,9 +148,14 @@ def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(min_length=4)[232:]
-
-input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me', 'Nacelle.ambient.temp.me']  # useful_covariates
+turbine_perms = generate_permutations(min_length=6)[256:]
+''' ============= HAD TO SKIP FOLLOWING PERMUTATIONS DUE TO NUMERICAL INSTABILITY =============
+(1,3,4,6,2,5)
+(1,3,5,6,4,2)
+'''
+input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me',
+                   'Nacelle.ambient.temp.me']  # useful_covariates
+failed_perms = []
 if True:  # left this here just so I don't run everything all over again
     for turbines in turbine_perms:
         train_x = pd.concat(
@@ -183,21 +187,29 @@ if True:  # left this here just so I don't run everything all over again
 
         model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
         # have to create a fresh model for every run, it was retraining from previous runs
-
-        model.train_model(train_x=train_x,
-                          train_y=train_y,
-                          test_x=test_x,
-                          test_y=test_y,
-                          train_indices=train_indices,
-                          test_indices=test_indices,
-                          input_columns=input_columns,
-                          output_columns=output_columns,
-                          turbine_permutation=turbines,
-                          modelling_history_path=model_history_path,
-                          store_posterior=True
-                          )
+        try:
+            model.train_model(train_x=train_x,
+                              train_y=train_y,
+                              test_x=test_x,
+                              test_y=test_y,
+                              train_indices=train_indices,
+                              test_indices=test_indices,
+                              input_columns=input_columns,
+                              output_columns=output_columns,
+                              turbine_permutation=turbines,
+                              modelling_history_path=model_history_path,
+                              store_posterior=True
+                              )
+        except:
+            print(f"Permutation {turbines} failed.")
+            failed_perms.append(turbines)
+            pass
 
         print()
 
         del model
         # deleting it just to be sure it'll be fresh for the next run
+
+print("FAILED PERMUTATIONS")
+for perm in failed_perms:
+    print(perm)

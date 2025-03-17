@@ -189,14 +189,16 @@ def plot_model_metadata(indices=[], save_path=''):
             plt.title(title)
             plt.xlim((0, 7))
             plt.ylim(y_lims)
+            plt.grid(True)
 
             metadata = [entries_by_permutation_size[i][entries_by_permutation_size[i]['Turbine'] == turbine][metadata_val]
                         for i in entries_by_permutation_size.keys()]
 
             plt.boxplot(x=metadata, positions=[int(i) for i in entries_by_permutation_size.keys()])
 
-            # plt.legend(loc='upper right')  didn't end up needing a legend for boxplot
-            plt.grid(True)
+            if metadata_val == 'Calibration':
+                plt.axhline(y=0.95, color='r', linestyle='-', linewidth=1.5, label='Confidence Interval %')
+                plt.legend(loc='lower right')
 
             if save_path:
                 filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} " + title
