@@ -2,8 +2,10 @@ import math
 import torch
 import gpytorch
 import os
-from libraries import ph, pd, np, gr
+from libraries import ph, pd, np
+import grapher as gr
 from matplotlib import pyplot as plt
+from itertools import combinations
 
 # %matplotlib inline
 # %load_ext autoreload
@@ -18,12 +20,24 @@ from matplotlib import pyplot as plt
 
 train_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
+train_sample_indices = train_sample.index
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
+test_sample_indices = test_sample.index
+mtgp_history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
 
 input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me', 'Nacelle.ambient.temp.me']
 
-turbines = (1,2,3,4)
+
+def all_combinations(numbers=range(1, 7)):
+    """Generate all combinations of numbers for all lengths."""
+    result = []
+    for length in range(1, len(numbers) + 1):
+        result.extend(combinations(numbers, length))
+    return result
+
+
+turbines = [1]
 
 train_x = torch.from_numpy(pd.concat(
     [train_sample[train_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
@@ -93,7 +107,6 @@ for i in range(training_iterations):
 model.eval()
 likelihood.eval()
 
-
 # Make predictions
 with torch.no_grad(), gpytorch.settings.fast_pred_var():
     # test_x = torch.linspace(0, 1, 51)
@@ -105,20 +118,37 @@ with torch.no_grad(), gpytorch.settings.fast_pred_var():
 # The first half of the predictions is for the first task
 # The second half is for the second task
 
-for j in [0, 1, 2, 3]:
+mean = mean.numpy()
+lower = lower.numpy()
+upper = upper.numpy()
+test_y = test_y.numpy()
 
-    selected_test_x = test_x[:, j * 4].numpy()
+sq_err = np.sqrt(np.mean((mean - test_y) ** 2, axis=0))
+abs_err = np.mean(np.abs(mean - test_y), axis=0)
+cal = np.mean(np.logical_and(upper > test_y, test_y > lower), axis=0)
 
-    gr.plot_graph(x=selected_test_x,
-                  y_list=[test_y[:, j].detach().numpy(),
-                          mean[:, j],
-                          upper[:, j],
-                          lower[:, j]],
-                  model_history_index=-1,
-                  intervals=True,
-                  x_label="Wind Speed",
-                  y_label="Power",
-                  title=f'Turbine {turbines[j]}')
+for j in range(len(turbines)):
+    turbine = turbines[j]
+    new_row = {
+        "Means": mean[:, j]
+    }
+
+
+
+
+
+    # selected_test_x = test_x[:, j * len(turbines)].numpy()
+
+    # gr.plot_graph(x=selected_test_x,
+    #               y_list=[test_y[:, j].detach().numpy(),
+    #                       mean[:, j],
+    #                       upper[:, j],
+    #                       lower[:, j]],
+    #               model_history_index=-1,
+    #               intervals=True,
+    #               x_label="Wind Speed",
+    #               y_label="Power",
+    #               title=f'Turbine {turbines[j]}')
 
     # # Initialize plots
     # fig, ((y1_ax, y2_ax), (y3_ax, y4_ax)) = plt.subplots(2, 2, figsize=(16, 10))
