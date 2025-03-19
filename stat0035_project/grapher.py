@@ -209,13 +209,13 @@ def plot_model_metadata(indices=[], save_path=''):
             else:
                 plt.show()
 
-    plt.close()
+            plt.close()
 
 
-def plot_mtgp_metadata(num_covariates, save_path=''):
+def plot_mtgp_metadata(indices, save_path=''):
 
     metadata = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
-    selected_metadata = metadata[metadata['Input Columns'].apply(lambda x: len(x) == num_covariates)]
+    selected_metadata = metadata[metadata.index.isin(indices)]
 
     turbines = []
     entries_by_combination_size = {}
@@ -269,7 +269,7 @@ def plot_mtgp_metadata(num_covariates, save_path=''):
             else:
                 plt.show()
 
-    plt.close()
+            plt.close()
 
 
 def print_model_metadata(indices=[]):

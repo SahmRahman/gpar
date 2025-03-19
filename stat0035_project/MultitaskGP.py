@@ -25,7 +25,7 @@ test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
 test_sample_indices = test_sample.index
 
-input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me', 'Nacelle.ambient.temp.me']
+input_col_names = ['Wind.speed.me']  # , "Wind.dir.sin.me", 'Wind.dir.cos.me', 'Nacelle.ambient.temp.me']
 
 
 def all_combinations(numbers=range(1, 7)):
@@ -81,8 +81,8 @@ for turbines in all_combinations():
     model = MultitaskGPModel(train_x, train_y, likelihood)
 
     # this is for running the notebook in our testing framework
-    smoke_test = ('CI' in os.environ)
-    training_iterations = 2 if smoke_test else 50
+    # smoke_test = ('CI' in os.environ)
+    training_iterations = 150
 
     # Find optimal model hyperparameters
     model.train()

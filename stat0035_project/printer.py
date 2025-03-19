@@ -62,19 +62,20 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 mtgp = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
-gr.plot_mtgp_metadata(num_covariates=1, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/MTGP/Wind Speed")
-gr.plot_mtgp_metadata(num_covariates=3, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/MTGP/Wind Speed and Direction")
-gr.plot_mtgp_metadata(num_covariates=4, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/MTGP/Wind Speed, Direction and Temperature")
+mtgp = mtgp[mtgp['Input Columns'].apply(lambda x: len(x) == 1)]
+gr.plot_mtgp_metadata(indices=mtgp.iloc[:len(mtgp)//2].index)
+gr.plot_mtgp_metadata(indices=mtgp.iloc[len(mtgp)//2:].index)
 
-df = ph.get_model_history()
+# df = ph.get_model_history()
 
-df = df[df['Input Columns'].apply(lambda x: len(x) == 4)]
+
+# df = df[df['Input Columns'].apply(lambda x: len(x) == 4)]
 # df = df[df['Output Columns'].apply(lambda x: len(x) == 6)]
 print()
-model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(df.index)]
+
+# model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(df.index)]
 # gr.print_model_metadata(indices=model_metadata.index)
-gr.plot_model_metadata(indices=model_metadata.index)
+# gr.plot_model_metadata(indices=model_metadata.index, save_path=)
 
 
 
