@@ -62,6 +62,8 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+print(ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl"))
+
 df = ph.get_model_history()
 
 df = df[df['Input Columns'].apply(lambda x: len(x) == 4)]
