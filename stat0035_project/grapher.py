@@ -212,6 +212,66 @@ def plot_model_metadata(indices=[], save_path=''):
     plt.close()
 
 
+def plot_mtgp_metadata(num_covariates, save_path=''):
+
+    metadata = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
+    selected_metadata = metadata[metadata['Input Columns'].apply(lambda x: len(x) == num_covariates)]
+
+    turbines = []
+    entries_by_combination_size = {}
+
+    for index, row in selected_metadata.iterrows():
+
+        combination = row['Turbine Combination']
+
+        if str(len(combination)) in entries_by_combination_size.keys():
+            entries_by_combination_size[str(len(combination))].append(row)
+        else:
+            entries_by_combination_size[str(len(combination))] = [row]
+
+        for turbine in combination:
+            if turbine not in turbines:
+                turbines.append(turbine)
+
+    for i in entries_by_combination_size.keys():
+        entries_by_combination_size[i] = pd.DataFrame(entries_by_combination_size[i])
+        # convert each list of DataFrame rows to one full DataFrame
+
+    for metadata_val, y_lims in zip(['RMSE', 'MAE'],  # , 'Calibration'],
+                                    [(30, 300), (25, 150)]):  # , (.7, 1)]):
+        for turbine in turbines:
+
+            plt.figure(figsize=(8, 6))
+            plt.xlabel('Turbine Combination Size')
+            title = f'Model {metadata_val} for Turbine {turbine} by Combination Size'
+            plt.title(title)
+            plt.xlim((0, 7))
+            plt.ylim(y_lims)
+            plt.grid(True)
+
+            metadata = [
+                entries_by_combination_size[i][entries_by_combination_size[i]['Turbine'] == turbine][metadata_val]
+                for i in entries_by_combination_size.keys()
+            ]
+
+            plt.boxplot(x=metadata, positions=[int(i) for i in entries_by_combination_size.keys()])
+
+            # if metadata_val == 'Calibration':
+            #     plt.axhline(y=0.95, color='r', linestyle='-', linewidth=1.5, label='Confidence Interval %')
+            #     plt.legend(loc='lower right')
+
+            if save_path:
+                filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} " + title
+
+                full_path = os.path.join(save_path, filename + '.png')
+                plt.savefig(full_path)
+                print(f"Figure saved at: {full_path}")
+            else:
+                plt.show()
+
+    plt.close()
+
+
 def print_model_metadata(indices=[]):
     df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
     selected_metadata = df_model_metadata.loc[indices]

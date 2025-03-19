@@ -61,8 +61,10 @@ all_input_cols = [
     'Wind.dir.sin.max',
     'Wind.dir.cos.max'
 ]
-
-print(ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl"))
+mtgp = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
+gr.plot_mtgp_metadata(num_covariates=1, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/MTGP/Wind Speed")
+gr.plot_mtgp_metadata(num_covariates=3, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/MTGP/Wind Speed and Direction")
+gr.plot_mtgp_metadata(num_covariates=4, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/MTGP/Wind Speed, Direction and Temperature")
 
 df = ph.get_model_history()
 
