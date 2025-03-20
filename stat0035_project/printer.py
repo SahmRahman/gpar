@@ -62,12 +62,13 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 mtgp = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
-mtgp = mtgp[mtgp['Input Columns'].apply(lambda x: len(x) == 1)]
-gr.plot_mtgp_metadata(indices=mtgp.iloc[:len(mtgp)//2].index)
-gr.plot_mtgp_metadata(indices=mtgp.iloc[len(mtgp)//2:].index)
+df_speed = mtgp.iloc[960:1152]
+gr.plot_mtgp_metadata(indices=df_speed.index, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/MTGP/Wind Speed")
 
-# df = ph.get_model_history()
-
+# df = pd.concat([
+#     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl'),
+#     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl')
+# ])
 
 # df = df[df['Input Columns'].apply(lambda x: len(x) == 4)]
 # df = df[df['Output Columns'].apply(lambda x: len(x) == 6)]
