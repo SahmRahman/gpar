@@ -61,9 +61,27 @@ all_input_cols = [
     'Wind.dir.sin.max',
     'Wind.dir.cos.max'
 ]
-mtgp = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
-df_speed = mtgp.iloc[960:1152]
-gr.plot_mtgp_metadata(indices=df_speed.index, save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/MTGP/Wind Speed")
+
+model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+
+# mtgp = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
+gr.plot_model_metadata(indices=model_metadata[model_metadata['Modelling History Index'].isin(pd.concat(
+    [ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed - 1.pkl"),
+     ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed - 2.pkl")]
+).index)].index,
+                       save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Wind Speed")
+
+gr.plot_model_metadata(indices=model_metadata[model_metadata['Modelling History Index'].isin(pd.concat(
+    [ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction - 1.pkl"),
+     ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction - 2.pkl")]
+).index)].index,
+                       save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Wind Speed and Direction")
+
+gr.plot_model_metadata(indices=model_metadata[model_metadata['Modelling History Index'].isin(pd.concat(
+    [ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
+     ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]
+).index)].index,
+                       save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Wind Speed, Direction and Temperature")
 
 # df = pd.concat([
 #     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl'),
@@ -82,7 +100,7 @@ print()
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
 
-df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/Complete n=1000 run on Wind Speed - 1.pkl")
+df = ph.read_pickle_as_dataframe("/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed - 1.pkl")
 # n1000_history = n1000_history[n1000_history['Training Data Indices'].apply(lambda x: x == n1000_indices)]
 print('...')
 # speed_and_dir = history[history['Input Columns'].apply(lambda x: len(x) == 3)]

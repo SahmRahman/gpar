@@ -175,7 +175,7 @@ def plot_model_metadata(indices=[], save_path=''):
         # convert each list of DataFrame rows to one full DataFrame
 
     for metadata_val, y_lims in zip(['MSE', 'MAE', 'Calibration'],
-                                    [(30, 100), (25, 70), (.7, 1)]):
+                                    [(30, 150), (30, 150), (.7, 1)]):
         for turbine in turbines:
 
             plt.figure(figsize=(8, 6))
@@ -238,7 +238,7 @@ def plot_mtgp_metadata(indices, save_path=''):
         # convert each list of DataFrame rows to one full DataFrame
 
     for metadata_val, y_lims in zip(['RMSE', 'MAE'],  # , 'Calibration'],
-                                    [(30, 300), (25, 150)]):  # , (.7, 1)]):
+                                    [(30, 150), (30, 150)]):  # , (.7, 1)]):
         for turbine in turbines:
 
             plt.figure(figsize=(8, 6))
