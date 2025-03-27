@@ -62,26 +62,22 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")
+
+gpar_indices = pd.concat([ph.read_pickle_as_dataframe(
+    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
+                  ph.read_pickle_as_dataframe(
+                      "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
+model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(gpar_indices)]
+gr.plot_model_metadata(indices=model_metadata.index,
+                       save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/GPAR/Wind Speed, Direction and Temperature")
 
-# mtgp = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
-gr.plot_model_metadata(indices=model_metadata[model_metadata['Modelling History Index'].isin(pd.concat(
-    [ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed - 1.pkl"),
-     ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed - 2.pkl")]
-).index)].index,
-                       save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Wind Speed")
-
-gr.plot_model_metadata(indices=model_metadata[model_metadata['Modelling History Index'].isin(pd.concat(
-    [ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction - 1.pkl"),
-     ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction - 2.pkl")]
-).index)].index,
-                       save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Wind Speed and Direction")
-
-gr.plot_model_metadata(indices=model_metadata[model_metadata['Modelling History Index'].isin(pd.concat(
-    [ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
-     ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]
-).index)].index,
-                       save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Wind Speed, Direction and Temperature")
+mtgp = ph.read_pickle_as_dataframe(
+    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
+gr.plot_mtgp_metadata(indices=mtgp.index,
+                      save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/MTGP/Wind Speed, Direction and Temperature")
+print(...)
 
 # df = pd.concat([
 #     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl'),
@@ -95,7 +91,6 @@ print()
 # model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(df.index)]
 # gr.print_model_metadata(indices=model_metadata.index)
 # gr.plot_model_metadata(indices=model_metadata.index, save_path=)
-
 
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
@@ -143,7 +138,7 @@ test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 # selected_metadata = model_metadata[model_metadata['Modelling History Index'] > 6296]
 # selected_indices = selected_metadata.index
 
-#print(selected_metadata.iloc[0].)
+# print(selected_metadata.iloc[0].)
 
 # print(ph.get_model_history().tail(27))
 
@@ -177,8 +172,6 @@ useful_covariates = [
     'Wind.dir.cos.me',
 ]
 
-
-
 # indices = [i for i in range(29352, len(model_metadata))]
 # gr.plot_model_metadata(indices=selected_indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/stat0035_project/saved_graphs/Multi-Turbine Model')
 # gr.print_model_metadata(indices=selected_indices)
@@ -191,7 +184,6 @@ useful_covariates = [
 
 # -------------- SINGLE INPUT INDICES IN METADATA DATAFRAME: 311 up to 9780 --------------
 # -------------- MULTI INPUT INDICES IN METADATA DATAFRAME: 9780 up to 19566 --------------
-
 
 
 # print(df_modelling_history.tail(10))

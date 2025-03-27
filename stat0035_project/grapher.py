@@ -20,7 +20,10 @@ def plot_graph(x, y_list, model_history_index,
                title=None,
                x_limits=None,
                y_limits=None,
-               save_path=None):
+               save_path=None,
+               hollow=True,
+               legend_loc='upper right',
+               fig_size = (12,6)):
     """
     Plots a graph using the given x values and multiple y datasets with optional customization.
 
@@ -38,6 +41,8 @@ def plot_graph(x, y_list, model_history_index,
     - x_limits: tuple, optional, (min, max) limits for the x-axis
     - y_limits: tuple, optional, (min, max) limits for the y-axis
     - save_path: str, optional, directory to save the figure
+    - hollow: boolean, optional, hollow points
+    - fig_size: tuple, optional, figure size of plot
     """
 
     illegal_characters = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0']
@@ -48,7 +53,7 @@ def plot_graph(x, y_list, model_history_index,
     if y_label:
         contains_illegal_chars(y_label, "y_label")
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=fig_size)
 
     # Plot each dataset
 
@@ -70,8 +75,13 @@ def plot_graph(x, y_list, model_history_index,
         x = np.array(x)
         observations = np.array(observations)
 
-        plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", c='black', marker='o', s=20)
+        if not hollow:
+            plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", c='black', marker='o', s=20)
+        else:
+            plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", edgecolors='black', facecolors='none', marker='o', s=20)
+
         plt.scatter(x[~inside_CI], observations[~inside_CI], label="Observations outside CI", c='red', marker='o', s=50)
+        # this should always be coloured in, it's meant to draw attention
 
         # --------- take care of anything between observations and bounds ---------
 
@@ -79,7 +89,10 @@ def plot_graph(x, y_list, model_history_index,
             if 0 < i < len(y_list) - 2:
                 color = colors[i] if colors and i < len(colors) else None
                 label = labels[i] if labels and i < len(labels) else None
-                plt.scatter(x, y, label=label, color=color, marker='o')
+                if not hollow:
+                    plt.scatter(x, y, label=label, color=color, marker='o')
+                else:
+                    plt.scatter(x, y, label=label, edgecolors=color, facecolors='none', marker='o')
 
         # --------- plot confidence interval ---------
 
@@ -121,10 +134,10 @@ def plot_graph(x, y_list, model_history_index,
             labels.append(f"Calibration {round(calibration * 100, 2)}%")  # Custom text to add
 
             # Update the legend with the new entry
-            plt.legend(handles, labels, loc="lower right")
+            plt.legend(handles, labels, loc=legend_loc)
 
         else:  # no calibration, just make the legend as normal
-            plt.legend(loc='lower right')  # Add legend in the top-left corner if labels are provided
+            plt.legend(loc=legend_loc)  # Add legend in the top-left corner if labels are provided
 
     plt.grid(True)  # Add a grid for better readability
 
@@ -175,7 +188,7 @@ def plot_model_metadata(indices=[], save_path=''):
         # convert each list of DataFrame rows to one full DataFrame
 
     for metadata_val, y_lims in zip(['MSE', 'MAE', 'Calibration'],
-                                    [(30, 150), (30, 150), (.7, 1)]):
+                                    [(30, 200), (30, 150), (.7, 1)]):
         for turbine in turbines:
 
             plt.figure(figsize=(8, 6))
@@ -238,7 +251,7 @@ def plot_mtgp_metadata(indices, save_path=''):
         # convert each list of DataFrame rows to one full DataFrame
 
     for metadata_val, y_lims in zip(['RMSE', 'MAE'],  # , 'Calibration'],
-                                    [(30, 150), (30, 150)]):  # , (.7, 1)]):
+                                    [(30, 200), (30, 150)]):  # , (.7, 1)]):
         for turbine in turbines:
 
             plt.figure(figsize=(8, 6))
@@ -332,3 +345,78 @@ def print_model_metadata(indices=[]):
         print()  # just to have a blank line to break up the turbines
 
 
+def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_permutation, mtgp_combination=None, save_path=None, hollow=True, legend_loc='upper center'):
+    turbine_perm = [f'Turbine {i} Power' for i in gpar_permutation]
+    test_data = test_data[test_data['turbine'] == turbine]
+
+    gpar_history = ph.get_model_history().loc[gpar_history_indices]
+    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: len(x) == len(turbine_perm))]
+    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: x == turbine_perm)]
+
+    if mtgp_combination:
+        mtgp_history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
+        mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: len(x) == len(mtgp_combination))]
+        mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: x == mtgp_combination)]
+        mtgp_history = mtgp_history[mtgp_history['Turbine'] == turbine]
+
+        test_data['MTGP Means'] = mtgp_history['Means'].iloc[0]
+        test_data['MTGP Uppers'] = mtgp_history['Uppers'].iloc[0]
+        test_data['MTGP Lowers'] = mtgp_history['Lowers'].iloc[0]
+
+    test_data['GPAR Means'] = gpar_history['Means'].iloc[0][f'Turbine {turbine} Power']
+    test_data['GPAR Uppers'] = gpar_history['Uppers'].iloc[0][f'Turbine {turbine} Power']
+    test_data['GPAR Lowers'] = gpar_history['Lowers'].iloc[0][f'Turbine {turbine} Power']
+
+
+
+    sorted_test_data = test_data.sort_values(by='Date.time', ascending=True)
+
+    plot_graph(x=sorted_test_data['Date.time'],
+               y_list=[sorted_test_data['Power.me'].values,
+                       # sorted_test_data['MTGP Means'].values,
+                       sorted_test_data['GPAR Lowers'].values,
+                       sorted_test_data['GPAR Uppers'].values],
+                       # sorted_test_data['MTGP Lowers'],
+                       # sorted_test_data['MTGP Uppers']],
+               labels=['Observations', 'GPAR Upper', 'GPAR Lower'],
+               colors=['black', 'blue', 'red'],
+               title=f'Prediction for Turbine {turbine} with Permutation {gpar_permutation}',
+               model_history_index=-1,
+               intervals=True,
+               save_path=save_path,
+               hollow=hollow,
+               legend_loc=legend_loc,
+               fig_size=(10,6),
+               y_label="Power (kWh)"
+               )
+
+plot_forecast_comparison(test_data=ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl"),
+                         gpar_history_indices=pd.concat([ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
+                                                         ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index,
+                         gpar_permutation=(6,),
+                         turbine=6,
+                         save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature")
+plot_forecast_comparison(test_data=ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl"),
+                         gpar_history_indices=pd.concat([ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
+                                                         ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index,
+                         gpar_permutation=(1,2,3,4,5,6),
+                         turbine=6,
+                         save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature")
+
+
+# plot_forecast_comparison(test_data=ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl"),
+#                          gpar_history_indices=pd.concat([ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
+#                                                          ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index,
+#                          gpar_permutation=(6,),
+#                          mtgp_combination=(6,),
+#                          turbine=6,
+#                          save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature",
+#                          )
+#
+# plot_forecast_comparison(test_data=ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl"),
+#                          gpar_history_indices=pd.concat([ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
+#                                                          ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index,
+#                          gpar_permutation=(1,2,3,4,5,6),
+#                          mtgp_combination=(1,2,3,4,5,6),
+#                          turbine=6,
+#                          save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature")
