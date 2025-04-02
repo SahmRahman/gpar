@@ -225,9 +225,9 @@ def plot_model_metadata(indices=[], save_path=''):
             plt.close()
 
 
-def plot_mtgp_metadata(indices, save_path=''):
+def plot_mtgp_metadata(indices, history_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl", save_path=''):
 
-    metadata = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/MTGP Modelling History.pkl")
+    metadata = ph.read_pickle_as_dataframe(history_path)
     selected_metadata = metadata[metadata.index.isin(indices)]
 
     turbines = []
@@ -386,37 +386,6 @@ def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_perm
                save_path=save_path,
                hollow=hollow,
                legend_loc=legend_loc,
-               fig_size=(10,6),
+               fig_size=(10, 6),
                y_label="Power (kWh)"
                )
-
-plot_forecast_comparison(test_data=ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl"),
-                         gpar_history_indices=pd.concat([ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
-                                                         ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index,
-                         gpar_permutation=(6,),
-                         turbine=6,
-                         save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature")
-plot_forecast_comparison(test_data=ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl"),
-                         gpar_history_indices=pd.concat([ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
-                                                         ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index,
-                         gpar_permutation=(1,2,3,4,5,6),
-                         turbine=6,
-                         save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature")
-
-
-# plot_forecast_comparison(test_data=ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl"),
-#                          gpar_history_indices=pd.concat([ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
-#                                                          ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index,
-#                          gpar_permutation=(6,),
-#                          mtgp_combination=(6,),
-#                          turbine=6,
-#                          save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature",
-#                          )
-#
-# plot_forecast_comparison(test_data=ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl"),
-#                          gpar_history_indices=pd.concat([ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
-#                                                          ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index,
-#                          gpar_permutation=(1,2,3,4,5,6),
-#                          mtgp_combination=(1,2,3,4,5,6),
-#                          turbine=6,
-#                          save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature")

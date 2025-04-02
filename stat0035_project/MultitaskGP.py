@@ -18,7 +18,6 @@ from itertools import combinations
 #     torch.cos(train_x * (2 * math.pi)) + torch.randn(train_x.size()) * 0.2,
 # ], -1)
 
-
 train_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
 train_sample_indices = train_sample.index
@@ -37,58 +36,74 @@ def all_combinations(numbers=range(1, 7)):
 
 input_col_names  = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me', 'Nacelle.ambient.temp.me']
 
+train_n = 990
+test_n = 96
+
 for turbines in all_combinations():
 
     train_x = torch.from_numpy(pd.concat(
         [train_sample[train_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
-        axis=1
+        axis=0
     ).to_numpy()).to(torch.float32)
     # gather the input columns into a dataframe per turbine,
     # then append them together column-wise and convert into one big numpy ndarray
 
+    task_indices = torch.cat([torch.ones(train_n) * i for i in range(len(turbines))])
+    # create long torch arrays of the corresponding index (e.g. [0,0,0,...,1,1,1,...,2,2,2,...])
+    # and concatenate them by row
+
     train_y = torch.from_numpy(pd.concat(
         [train_sample[train_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],
-        axis=1
+        axis=0
     ).to_numpy()).to(torch.float32)
 
     test_x = torch.from_numpy(pd.concat(
         [test_sample[test_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
-        axis=1
+        axis=0
     ).to_numpy()).to(torch.float32)
 
     test_y = torch.from_numpy(pd.concat(
         [test_sample[test_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],
-        axis=1
+        axis=0
     ).to_numpy()).to(torch.float32)
 
 
+
     class MultitaskGPModel(gpytorch.models.ExactGP):
-        def __init__(self, train_x, train_y, likelihood):
-            super(MultitaskGPModel, self).__init__(train_x, train_y, likelihood)
-            self.mean_module = gpytorch.means.MultitaskMean(
-                gpytorch.means.ConstantMean(), num_tasks=len(turbines)
+        def __init__(self, train_inputs, train_y, likelihood):
+            super().__init__(train_inputs, train_y, likelihood)
+
+            self.mean_module = gpytorch.means.ConstantMean()
+
+            self.data_covar_module = gpytorch.kernels.ScaleKernel(
+                gpytorch.kernels.RBFKernel(ard_num_dims=train_inputs[0].shape[1])
+                # train_inputs[0] is train_x, train_inputs[1] are the task indices
             )
-            self.covar_module = gpytorch.kernels.MultitaskKernel(
-                gpytorch.kernels.RBFKernel(ard_num_dims=train_x.shape[1]), num_tasks=len(turbines), rank=1
-            )
-            self.covar_module.data_covar_module.lengthscale = torch.tensor(
-                [([3.0] + [4.0] * (len(input_col_names) - 1)) * len(turbines)])
 
-        def forward(self, x):
-            mean_x = self.mean_module(x)
-            covar_x = self.covar_module(x)
-            return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x)
+            self.task_covar_module = gpytorch.kernels.IndexKernel(num_tasks=len(turbines), rank=1)
 
 
-    likelihood = gpytorch.likelihoods.MultitaskGaussianLikelihood(num_tasks=len(turbines))
-    model = MultitaskGPModel(train_x, train_y, likelihood)
+        def forward(self, *inputs):
+            x, task_idxs = inputs
+            mean = self.mean_module(x)
+            cov_data = self.data_covar_module(x)
+            cov_task = self.task_covar_module(task_idxs)
+            cov = cov_data.mul(cov_task)
+            return gpytorch.distributions.MultivariateNormal(mean, cov)
 
+            # self.covar_module = gpytorch.kernels.MultitaskKernel(
+            #     gpytorch.kernels.RBFKernel(ard_num_dims=train_x.shape[1]), num_tasks=len(turbines), rank=1
+            # )
+            # self.covar_module.data_covar_module.lengthscale = torch.tensor(
+            #     [([3.0] + [4.0] * (len(input_col_names) - 1)) * len(turbines)])
 
-    # this is for running the notebook in our testing framework
-    # smoke_test = ('CI' in os.environ)
-    # training_iterations = 500
+    # Define likelihood and model
+    likelihood = gpytorch.likelihoods.GaussianLikelihood()
+    model = MultitaskGPModel(train_inputs=(train_x, task_indices),
+                             train_y=train_y,
+                             likelihood=likelihood)
 
-    # Find optimal model hyperparameters
+    # Training loop setup
     model.train()
     likelihood.train()
 
@@ -100,16 +115,16 @@ for turbines in all_combinations():
 
     print(f"Training for turbines {turbines}")
     loss_delta = 99999
-    prev_loss = loss_delta
+    prev_loss = loss_delta * 2
     i = 0
-    while loss_delta > 1:
+    while abs(loss_delta/prev_loss) > .0001:  # if absolute change is less than .01%, stop!
         optimizer.zero_grad()
-        output = model(train_x)
+        output = model(train_x, task_indices)
         loss = -mll(output, train_y)
         loss_delta = prev_loss - loss
         prev_loss = loss
         loss.backward()
-        # print('Iter %d - Loss: %.3f' % (i+1, loss.item()))
+        print('Iter %d - Loss: %.3f' % (i + 1, loss.item()))
         optimizer.step()
         i += 1
 
@@ -117,10 +132,13 @@ for turbines in all_combinations():
     model.eval()
     likelihood.eval()
 
+    # Make new task_indices with appropriate size for test data
+    task_indices = torch.cat([torch.ones(test_n) * i for i in range(len(turbines))])
+
     # Make predictions
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         # test_x = torch.linspace(0, 1, 51)
-        predictions = likelihood(model(test_x))
+        predictions = likelihood(model(test_x, task_indices))
         mean = predictions.mean
         lower, upper = predictions.confidence_region()
 
@@ -128,10 +146,10 @@ for turbines in all_combinations():
     # The first half of the predictions is for the first task
     # The second half is for the second task
 
-    mean = mean.detach().numpy()
-    lower = lower.detach().numpy()
-    upper = upper.detach().numpy()
-    test_y = test_y.numpy()
+    mean = mean.detach().numpy().reshape(mean.size(0) // test_n, test_n).T
+    lower = lower.detach().numpy().reshape(lower.size(0) // test_n, test_n).T
+    upper = upper.detach().numpy().reshape(upper.size(0) // test_n, test_n).T
+    test_y = test_y.numpy().reshape(test_y.size(0) // test_n, test_n).T
 
     RMSE = np.sqrt(np.mean((mean - test_y) ** 2, axis=0))
     MAE = np.mean(np.abs(mean - test_y), axis=0)
@@ -149,8 +167,8 @@ for turbines in all_combinations():
                 'Means': mean.flatten(),
                 'Uppers': upper.flatten(),
                 'Lowers': lower.flatten(),
-                'RMSE': np.float32(RMSE[j]),
-                'MAE': np.float32(MAE[j]),
+                'RMSE': np.float32(RMSE[0]),
+                'MAE': np.float32(MAE[0]),
                 'Input Columns': input_col_names,
                 'Output Columns': [f'Turbine {turbines[j]} Power'],
                 'Training Data Indices': train_sample_indices,
@@ -176,47 +194,7 @@ for turbines in all_combinations():
             }
 
         ph.append_to_pickle(
-            file_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Direction and Temperature (while loop stop).pkl",
-            new_row=new_row)
+            file_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl",
+            new_row=new_row
+        )
 
-        # selected_test_x = test_x[:, j * len(turbines)].numpy()
-
-        # gr.plot_graph(x=selected_test_x,
-        #               y_list=[test_y[:, j].detach().numpy(),
-        #                       mean[:, j],
-        #                       upper[:, j],
-        #                       lower[:, j]],
-        #               model_history_index=-1,
-        #               intervals=True,
-        #               x_label="Wind Speed",
-        #               y_label="Power",
-        #               title=f'Turbine {turbines[j]}')
-
-        # # Initialize plots
-        # fig, ((y1_ax, y2_ax), (y3_ax, y4_ax)) = plt.subplots(2, 2, figsize=(16, 10))
-        #
-        # for ax in [y1_ax, y2_ax, y3_ax, y4_ax]:
-        #
-        #     # selected_train_x = train_x[:, j*4+j]
-        #     selected_test_x = test_x[:, j*4+j].numpy()
-        #
-        #     # Plot test data as black stars
-        #     ax.plot(selected_test_x, test_y[:, j].detach().numpy(), 'k*')
-        #
-        #     sorted_indices = np.argsort(selected_test_x)  # Get indices to sort x in ascending order
-        #     x_sorted = selected_test_x[sorted_indices]  # Sort x-values
-        #     means_sorted = mean[sorted_indices, j]  # Sort mean values according to sorted x
-        #     uppers_sorted = upper[sorted_indices, j]  # Sort upper values according to sorted x
-        #     lowers_sorted = lower[sorted_indices, j]  # Sort lower values according to sorted x
-        #
-        #     # Predictive mean as blue line
-        #     ax.plot(x_sorted, means_sorted, 'b')
-        #
-        #     # Shade in confidence
-        #     ax.fill_between(x_sorted, lowers_sorted, uppers_sorted, alpha=0.5)
-        #
-        #     # ax.set_ylim([-3, 3])
-        #     ax.legend([input_col_names[j], 'Mean', 'Confidence'])
-        #     ax.set_title(f'{input_col_names[j]} for Turbine {turbines[j]}')
-        #
-        # plt.show()

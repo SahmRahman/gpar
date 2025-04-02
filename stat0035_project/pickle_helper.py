@@ -55,12 +55,12 @@ def validate_row(df, df_to_append):
     for col, value in zip(df_to_append.columns.to_list(), df_to_append.values.flatten().tolist()):
         if col in df.columns:
             expected_dtype = df[col].dtype
-            actual_dtype = libs.pd.Series([value]).dtype
+            actual_dtype = df_to_append[col].dtype
 
             # Check if the value matches the expected column dtype
             if not libs.pd.api.types.is_dtype_equal(expected_dtype, actual_dtype) and expected_dtype != 'object':
                 raise ValueError(
-                    f"Value {value} in column '{col}' doesn't match expected type {expected_dtype}."
+                    f"Value {value} in column '{col}' is type {actual_dtype} and doesn't match expected type {expected_dtype}."
                 )
         else:
             raise ValueError(
