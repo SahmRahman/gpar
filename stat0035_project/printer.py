@@ -62,6 +62,21 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+
+df = ph.read_pickle_as_dataframe(file_path=model_metadata_path)
+print("...")
+
+
+
+
+
+
+
+
+
+
+
+
 df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl")
 gr.plot_mtgp_metadata(indices=df.index,
                       history_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl",
