@@ -61,7 +61,10 @@ def plot_graph(x, y_list, model_history_index,
         for i, y in enumerate(y_list):
             color = colors[i] if colors and i < len(colors) else None
             label = labels[i] if labels and i < len(labels) else None
-            plt.scatter(x, y, label=label, color=color, marker='o')
+            if hollow:
+                plt.scatter(x, y, label=label, edgecolors='black', facecolors='none', marker='o')
+            else:
+                plt.scatter(x, y, label=label, color=color, marker='o')
 
     else:  # confidence intervals, plot last two lists in y_list as intervals
         observations = y_list[0]

@@ -63,7 +63,15 @@ all_input_cols = [
 ]
 
 
-df = ph.read_pickle_as_dataframe(file_path=model_metadata_path)
+df = ph.read_pickle_as_dataframe(file_path=train_sample_path)
+gr.plot_graph(x=df['Nacelle.ambient.temp.me'],
+              y_list=[df['Power.me']],
+              model_history_index=-1,
+              intervals=False,
+              x_label="Temperature (ºC)",
+              y_label="Mean Power (kWh)",
+              save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Power v Covariates",
+              title="Power vs. Temperature")
 print("...")
 
 
