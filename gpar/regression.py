@@ -30,20 +30,23 @@ squishing_transform = (
 
 def _vector_from_init(init, length):
     # If only a single value is given, create ones.
-    if np.size(init) == 1:
-        return init * np.ones(length)
+    if np.size(np.array(init)) == 1:
+        return np.array(init) * np.ones(length)
 
     # Multiple values are given. Check that enough values are available.
-    init_squeezed = np.squeeze(init)
-    if np.ndim(init_squeezed) != 1:
+
+    # init_squeezed = np.squeeze(init)
+    # if np.ndim(init_squeezed) != 1:
+
+    if np.ndim(init) != 1:
         raise ValueError(
             "Incorrect shape {} of hyperparameters." "".format(np.shape(init))
         )
-    if np.size(init_squeezed) < length:  # Squeezed doesn't change size.
+    if np.size(np.array(init)) < length:
         raise ValueError("Not enough hyperparameters specified.")
 
     # Return initialisation.
-    return np.array(init_squeezed)[:length]
+    return np.array(init)[:length]
 
 
 def _determine_indices(m, pi, markov):

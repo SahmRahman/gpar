@@ -41,34 +41,26 @@ def read_pickle_as_dataframe(file_path):
     return libs.pd.DataFrame(data)
 
 
-# Function to validate a row against DataFrame column data types
 def validate_row(df, df_to_append):
-    # # Check if the row length matches the number of columns
-    # if len(df_to_append.columns) != len(df.columns):
-    #     # raise ValueError(
-    #     #     f"Row length {len(df_to_append)} does not match the number of DataFrame columns {len(df.columns)}."
-    #     # )
-    #     pass
+    """
+    Function to validate a row against DataFrame column data types
+    Args:
+        df: new singular row pandas.Dataframe
+        df_to_append: pandas.Dataframe to append to
 
-    # for col, value in zip(df.columns, df_to_append.values()):
-    #     expected_dtype = df[col].dtype
-    #     actual_dtype = libs.pd.Series([value]).dtype
-    #
-    #     # Check if the value matches the expected column dtype
-    #     if not libs.pd.api.types.is_dtype_equal(expected_dtype, actual_dtype):
-    #         raise ValueError(
-    #             f"Value {value} in column '{col}' doesn't match expected type {expected_dtype}."
-    #         )
+    Returns: None if all column datatypes match, throws ValueError otherwise
+
+    """
 
     for col, value in zip(df_to_append.columns.to_list(), df_to_append.values.flatten().tolist()):
         if col in df.columns:
             expected_dtype = df[col].dtype
-            actual_dtype = libs.pd.Series([value]).dtype
+            actual_dtype = df_to_append[col].dtype
 
             # Check if the value matches the expected column dtype
             if not libs.pd.api.types.is_dtype_equal(expected_dtype, actual_dtype) and expected_dtype != 'object':
                 raise ValueError(
-                    f"Value {value} in column '{col}' doesn't match expected type {expected_dtype}."
+                    f"Value {value} in column '{col}' is type {actual_dtype} and doesn't match expected type {expected_dtype}."
                 )
         else:
             raise ValueError(
@@ -111,7 +103,8 @@ def append_to_pickle(file_path, new_row):
     except Exception as e:
         raise PickleFileError(f"Error saving to pickle file: {e}")
 
-# just keeping this if i never need to reset Models.pkl
+
+# just keeping this if I never need to reset Models.pkl
 
 # data_dict = {
 #     'replace': libs.pd.Series(dtype='bool'),
@@ -135,3 +128,10 @@ def append_to_pickle(file_path, new_row):
 #     'normalise_y': libs.pd.Series(dtype='bool'),
 #     'transform_y': libs.pd.Series(dtype='object')  # Using 'object' for tuples
 # }
+
+
+def get_model_history():
+    model_history_paths = [f'/Users/sahmrahman/Desktop/GitHub/stat0035_project/Modelling History {i}.pkl' for i in
+                           range(1, 9)]
+
+    return libs.pd.concat([read_pickle_as_dataframe(path) for path in model_history_paths], ignore_index=True)
