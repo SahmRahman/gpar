@@ -79,11 +79,11 @@ def plot_graph(x, y_list, model_history_index,
         observations = np.array(observations)
 
         if not hollow:
-            plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", c='black', marker='o', s=20)
+            plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", c='black', marker='o', s=35)
         else:
-            plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", edgecolors='black', facecolors='none', marker='o', s=20)
+            plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", edgecolors='black', facecolors='none', marker='o', s=35)
 
-        plt.scatter(x[~inside_CI], observations[~inside_CI], label="Observations outside CI", c='red', marker='o', s=50)
+        plt.scatter(x[~inside_CI], observations[~inside_CI], label="Observations outside CI", c='red', marker='o', s=60)
         # this should always be coloured in, it's meant to draw attention
 
         # --------- take care of anything between observations and bounds ---------
@@ -107,9 +107,18 @@ def plot_graph(x, y_list, model_history_index,
         uppers_sorted = uppers[sorted_indices]  # Sort uppers values according to sorted x
         lowers_sorted = lowers[sorted_indices]  # Sort lowers values according to sorted x
 
-        # Fill between uppers and lowers
-        plt.fill_between(x_sorted, uppers_sorted, lowers_sorted, color='lightblue', alpha=0.5,
-                         label='95% Confidence Interval')
+        # Compute central value and asymmetric error
+        y_sorted = 0.5 * (uppers_sorted + lowers_sorted)
+        yerr_lower = y_sorted - lowers_sorted
+        yerr_upper = uppers_sorted - y_sorted
+
+        # Plot vertical bars with horizontal caps
+        plt.errorbar(
+            x_sorted, y_sorted,
+            yerr=[yerr_lower, yerr_upper],
+            fmt='none', color='black', ecolor='lightblue', elinewidth=1, capsize=3,
+            label='95% Confidence Interval'
+        )
 
     # Set labels and title if provided
     if x_label:

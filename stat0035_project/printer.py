@@ -62,8 +62,28 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+df = ph.read_pickle_as_dataframe(
+    file_path="/Users/sahmrahman/Desktop/GitHub2/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")
 
-df = ph.read_pickle_as_dataframe(file_path=train_sample_path)
+df = df[df['Output Columns'].apply(lambda x: len(x) == 6)]
+df = df[df['Output Columns'].apply(lambda x: x == [f"Turbine {i} Power" for i in (3,1,5,2,4,6)])]
+
+test_data = ph.read_pickle_as_dataframe(test_sample_path)
+x = test_data[test_data['turbine'] == 6]['Date.time'].tolist()
+obs = test_data[test_data['turbine'] == 6]['Power.me'].tolist()
+gr.plot_graph(x=x,
+              y_list=[obs,
+                      df['Lowers'].iloc[0]['Turbine 6 Power'],
+                      df['Uppers'].iloc[0]['Turbine 6 Power']],
+              model_history_index=10139,
+              intervals=True,
+              save_path="/Users/sahmrahman/Desktop/GitHub2/stat0035_project/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature",
+              x_label='Date',
+              y_label="Power Output (kWh)",
+              labels=['Observations', 'Lower CI', "Upper CI"],
+              legend_loc="upper center",
+              title="Forecast for Turbine 6 with Permutation (3,1,5,2,4,6)")
+
 gr.plot_graph(x=df['Nacelle.ambient.temp.me'],
               y_list=[df['Power.me']],
               model_history_index=-1,
@@ -74,26 +94,16 @@ gr.plot_graph(x=df['Nacelle.ambient.temp.me'],
               title="Power vs. Temperature")
 print("...")
 
-
-
-
-
-
-
-
-
-
-
-
-df = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl")
+df = ph.read_pickle_as_dataframe(
+    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl")
 gr.plot_mtgp_metadata(indices=df.index,
                       history_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl",
                       save_path="/Users/sahmrahman/Desktop/GitHub/stat0035_project/saved_graphs/Complete Runs/n=1000/MTGP/Wind Speed, Direction and Temperature")
 
 gpar_indices = pd.concat([ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
-                  ph.read_pickle_as_dataframe(
-                      "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index
+    ph.read_pickle_as_dataframe(
+        "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(gpar_indices)]
 gr.plot_model_metadata(indices=model_metadata.index,
