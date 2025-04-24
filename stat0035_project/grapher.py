@@ -47,7 +47,7 @@ def plot_graph(x, y_list, model_history_index,
 
     illegal_characters = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0']
 
-    # Validate labels
+    # validate labels
     if x_label:
         contains_illegal_chars(x_label, "x_label")
     if y_label:
@@ -55,9 +55,7 @@ def plot_graph(x, y_list, model_history_index,
 
     plt.figure(figsize=fig_size)
 
-    # Plot each dataset
-
-    if not intervals:  # no confidence intervals, just plot all points
+    if not intervals:
         for i, y in enumerate(y_list):
             color = colors[i] if colors and i < len(colors) else None
             label = labels[i] if labels and i < len(labels) else None
@@ -66,61 +64,62 @@ def plot_graph(x, y_list, model_history_index,
             else:
                 plt.scatter(x, y, label=label, color=color, marker='o')
 
-    else:  # confidence intervals, plot last two lists in y_list as intervals
-        observations = y_list[0]
-        uppers = y_list[-1]
-        lowers = y_list[-2]
-
-        # --------- Plot observations and colour if outside CI ---------
-        inside_CI = np.array(
-            [True if uppers[i] > observations[i] > lowers[i] else False for i in range(len(observations))])
-
+    else:
+        observations = np.array(y_list[0])
+        uppers = np.array(y_list[-1])
+        lowers = np.array(y_list[-2])
         x = np.array(x)
-        observations = np.array(observations)
 
+        # sort all x-dependent arrays
+        sorted_indices = np.argsort(x)
+        x_sorted = x[sorted_indices]
+        x_pos = np.arange(len(x_sorted))
+
+        observations = observations[sorted_indices]
+        uppers = uppers[sorted_indices]
+        lowers = lowers[sorted_indices]
+
+        # check which observations within CI
+        inside_CI = (uppers > observations) & (observations > lowers)
+
+        # Plot observations in/out CI
         if not hollow:
-            plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", c='black', marker='o', s=35)
+            plt.scatter(x_pos[inside_CI], observations[inside_CI], label="Observations inside CI", c='black',
+                        marker='o', s=35)
         else:
-            plt.scatter(x[inside_CI], observations[inside_CI], label="Observations inside CI", edgecolors='black', facecolors='none', marker='o', s=35)
+            plt.scatter(x_pos[inside_CI], observations[inside_CI], label="Observations inside CI", edgecolors='black',
+                        facecolors='none', marker='o', s=35)
 
-        plt.scatter(x[~inside_CI], observations[~inside_CI], label="Observations outside CI", c='red', marker='o', s=60)
-        # this should always be coloured in, it's meant to draw attention
+        plt.scatter(x_pos[~inside_CI], observations[~inside_CI], label="Observations outside CI", c='red', marker='o',
+                    s=60)
 
-        # --------- take care of anything between observations and bounds ---------
-
+        # plot intermediate curves in y_list
         for i, y in enumerate(y_list):
             if 0 < i < len(y_list) - 2:
+                y = np.array(y)[sorted_indices]
                 color = colors[i] if colors and i < len(colors) else None
                 label = labels[i] if labels and i < len(labels) else None
                 if not hollow:
-                    plt.scatter(x, y, label=label, color=color, marker='o')
+                    plt.scatter(x_pos, y, label=label, color=color, marker='o')
                 else:
-                    plt.scatter(x, y, label=label, edgecolors=color, facecolors='none', marker='o')
+                    plt.scatter(x_pos, y, label=label, edgecolors=color, facecolors='none', marker='o')
 
-        # --------- plot confidence interval ---------
+        # CI bars
+        y_sorted = 0.5 * (uppers + lowers)
+        yerr_lower = y_sorted - lowers
+        yerr_upper = uppers - y_sorted
 
-        uppers = np.array(uppers)
-        lowers = np.array(lowers)
-
-        sorted_indices = np.argsort(x)  # Get indices to sort x in ascending order
-        x_sorted = x[sorted_indices]  # Sort x-values
-        uppers_sorted = uppers[sorted_indices]  # Sort uppers values according to sorted x
-        lowers_sorted = lowers[sorted_indices]  # Sort lowers values according to sorted x
-
-        # Compute central value and asymmetric error
-        y_sorted = 0.5 * (uppers_sorted + lowers_sorted)
-        yerr_lower = y_sorted - lowers_sorted
-        yerr_upper = uppers_sorted - y_sorted
-
-        # Plot vertical bars with horizontal caps
         plt.errorbar(
-            x_sorted, y_sorted,
+            x_pos, y_sorted,
             yerr=[yerr_lower, yerr_upper],
             fmt='none', color='black', ecolor='lightblue', elinewidth=1, capsize=3,
             label='95% Confidence Interval'
         )
 
-    # Set labels and title if provided
+        # reduce the number of x-ticks
+        tick_interval = len(x_sorted) // 7  # show 7 ticks
+        plt.xticks(x_pos[::tick_interval], [ts.date() for ts in x_sorted[::tick_interval]])
+
     if x_label:
         plt.xlabel(x_label)
     if y_label:
@@ -130,46 +129,27 @@ def plot_graph(x, y_list, model_history_index,
     else:
         plt.title(f"{x_label} vs {y_label} - Modelling History Index {model_history_index}")
 
-    # Set axis limits if provided
     if x_limits:
         plt.xlim(x_limits)
     if y_limits:
         plt.ylim(y_limits)
 
+    # legend handling
     if labels:
+        handles, legend_labels = plt.gca().get_legend_handles_labels()
         if calibration > 0:
-            # Get the existing legend handles and labels
-            handles, labels = plt.gca().get_legend_handles_labels()
+            handles.append(plt.Line2D([0], [0], linestyle="none"))
+            legend_labels.append(f"Calibration {round(calibration * 100, 2)}%")
+        plt.legend(handles, legend_labels, loc=legend_loc)
 
-            # Add a dummy handle for the custom text
-            handles.append(plt.Line2D([0], [0], linestyle="none"))  # Invisible handle
-            labels.append(f"Calibration {round(calibration * 100, 2)}%")  # Custom text to add
+    plt.grid(False)
 
-            # Update the legend with the new entry
-            plt.legend(handles, labels, loc=legend_loc)
-
-        else:  # no calibration, just make the legend as normal
-            plt.legend(loc=legend_loc)  # Add legend in the top-left corner if labels are provided
-
-    plt.grid(True)  # Add a grid for better readability
-
-    # Save the figure if a directory is provided
     if save_path:
-        filename = ''
-
-        if title:
-            filename = title
-        else:
-            filename = f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}"
-        # replace "_" with " " if a title is given
-        # otherwise just do "X vs. Y - Modelling History Index z - 1999-01-01_00-59.png"
-
+        filename = title if title else f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}"
         full_path = os.path.join(save_path, filename + '.png')
         plt.savefig(full_path)
         print(f"Figure saved at: {full_path}")
-
     else:
-        # only show if not saving
         plt.show()
 
     plt.close()
