@@ -17,8 +17,11 @@ model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
 # test_data = ph.read_pickle_as_dataframe(test_data_path)
 #
 # complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
-# complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
+import os
+print(os.getcwd())
 
+complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
+''' some season stuff
 def get_season(date):
     month, day = date.month, date.day
 
@@ -41,7 +44,6 @@ complete_season_dfs = [complete_data[complete_data["Season"] == season] for seas
 train_sample['Season'] = train_sample['Date.time'].map(get_season)
 train_season_dfs = [train_sample[train_sample["Season"] == season] for season in ['Winter', 'Spring', 'Summer', 'Fall']]
 
-
 def sample_complete_training_data(n=1000):
     # get complete data by turbine
     df = ph.read_pickle_as_dataframe(complete_train_data_path)
@@ -61,14 +63,22 @@ def sample_complete_training_data(n=1000):
     ],
         ignore_index=False)  # want to keep the indices since we store them for training
     return sample
+'''
+
+complete_test_data.head(1000).to_pickle("./Biggest Test Sample.pkl")
+print(complete_test_data.shape)
+print(pd.read_pickle("./Biggest Test Sample.pkl").shape)
+print("File exists:", os.path.exists("./Biggest Test Sample.pkl"))
 
 
-train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Training Sample.pkl")
-test_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
 
-input_cols = ['Wind.speed.me']
+
+# train_sample = ph.read_pickle_as_dataframe(
+#      "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Biggest Training Sample.pkl")
+# test_sample = ph.read_pickle_as_dataframe(
+#     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
+
+input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.temp.me']
 
 useful_covariates = [
     "Wind.speed.me",
@@ -148,68 +158,68 @@ def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
     return result
 
 
-turbine_perms = generate_permutations(min_length=6)[256:]
+# turbine_perms = generate_permutations(min_length=6)[256:]
 ''' ============= HAD TO SKIP FOLLOWING PERMUTATIONS DUE TO NUMERICAL INSTABILITY =============
 (1,3,4,6,2,5)
 (1,3,5,6,4,2)
 '''
 input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me',
                    'Nacelle.ambient.temp.me']  # useful_covariates
-failed_perms = []
-if True:  # left this here just so I don't run everything all over again
-    for turbines in turbine_perms:
-        train_x = pd.concat(
-            [train_sample[train_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
-            axis=1
-        ).to_numpy()
-        # gather the input columns into a dataframe per turbine,
-        # then append them together column-wise and convert into one big numpy ndarray
-
-        train_y = pd.concat(
-            [train_sample[train_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],
-            axis=1
-        ).to_numpy()
-
-        test_x = pd.concat(
-            [test_sample[test_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
-            axis=1
-        ).to_numpy()
-
-        test_y = pd.concat(
-            [test_sample[test_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],
-            axis=1
-        ).to_numpy()
-
-        train_indices = train_sample['index'].values.tolist()
-        test_indices = test_sample['index'].values.tolist()
-        input_columns = input_col_names
-        output_columns = [f'Turbine {i} Power' for i in turbines]
-
-        model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
-        # have to create a fresh model for every run, it was retraining from previous runs
-        try:
-            model.train_model(train_x=train_x,
-                              train_y=train_y,
-                              test_x=test_x,
-                              test_y=test_y,
-                              train_indices=train_indices,
-                              test_indices=test_indices,
-                              input_columns=input_columns,
-                              output_columns=output_columns,
-                              turbine_permutation=turbines,
-                              modelling_history_path=model_history_path,
-                              store_posterior=True
-                              )
-        except:
-            print(f"Permutation {turbines} failed.")
-            failed_perms.append(turbines)
-            pass
-
-        print()
-
-        del model
-        # deleting it just to be sure it'll be fresh for the next run
-
-print("FAILED PERMUTATIONS")
-for perm in failed_perms:
-    print(perm)
+# failed_perms = []
+# if True:  # left this here just so I don't run everything all over again
+#     for turbines in turbine_perms:
+#         train_x = pd.concat(
+#             [train_sample[train_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
+#             axis=1
+#         ).to_numpy()
+#         # gather the input columns into a dataframe per turbine,
+#         # then append them together column-wise and convert into one big numpy ndarray
+#
+#         train_y = pd.concat(
+#             [train_sample[train_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],
+#             axis=1
+#         ).to_numpy()
+#
+#         test_x = pd.concat(
+#             [test_sample[test_sample['turbine'] == i][input_col_names].reset_index(drop=True) for i in turbines],
+#             axis=1
+#         ).to_numpy()
+#
+#         test_y = pd.concat(
+#             [test_sample[test_sample['turbine'] == i]['Power.me'].reset_index(drop=True) for i in turbines],
+#             axis=1
+#         ).to_numpy()
+#
+#         train_indices = train_sample['index'].values.tolist()
+#         test_indices = test_sample['index'].values.tolist()
+#         input_columns = input_col_names
+#         output_columns = [f'Turbine {i} Power' for i in turbines]
+#
+#         model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
+#         # have to create a fresh model for every run, it was retraining from previous runs
+#         try:
+#             model.train_model(train_x=train_x,
+#                               train_y=train_y,
+#                               test_x=test_x,
+#                               test_y=test_y,
+#                               train_indices=train_indices,
+#                               test_indices=test_indices,
+#                               input_columns=input_columns,
+#                               output_columns=output_columns,
+#                               turbine_permutation=turbines,
+#                               modelling_history_path=model_history_path,
+#                               store_posterior=True
+#                               )
+#         except:
+#             print(f"Permutation {turbines} failed.")
+#             failed_perms.append(turbines)
+#             pass
+#
+#         print()
+#
+#         del model
+#         # deleting it just to be sure it'll be fresh for the next run
+#
+# print("FAILED PERMUTATIONS")
+# for perm in failed_perms:
+#     print(perm)
