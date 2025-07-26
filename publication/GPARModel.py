@@ -3,8 +3,8 @@ from libraries import np, datetime
 
 
 class WindFarmGPAR:
-    models_filepath = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Models.pkl'
-    turbine_model_metadata_filepath = '/Users/sahmrahman/Desktop/GitHub/stat0035_project/Turbine Model Metadata.pkl'
+    models_filepath = '/Users/sahmrahman/Desktop/GitHub/publication/Models.pkl'
+    turbine_model_metadata_filepath = '/Users/sahmrahman/Desktop/GitHub/publication/Turbine Model Metadata.pkl'
 
     def __init__(self, model_params, existing, model_index):
         """
