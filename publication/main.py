@@ -12,12 +12,10 @@ complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-Univ
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
 model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
 
-
 # train_data = ph.read_pickle_as_dataframe(train_data_path)
 # test_data = ph.read_pickle_as_dataframe(test_data_path)
 #
 # complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
-import os
 
 complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
 ''' some season stuff
@@ -64,18 +62,10 @@ def sample_complete_training_data(n=1000):
     return sample
 '''
 
-complete_test_data.head(1000).to_pickle("/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
-print(complete_test_data.shape)
-print(pd.read_pickle("/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl").shape)
-print("File exists:", os.path.exists("/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl"))
-
-
-
-
-# train_sample = ph.read_pickle_as_dataframe(
-#      "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Biggest Training Sample.pkl")
-# test_sample = ph.read_pickle_as_dataframe(
-#     "/Users/sahmrahman/Desktop/GitHub/stat0035_project/Test Sample.pkl")
+train_sample = ph.read_pickle_as_dataframe(
+    "/Users/sahmrahman/Desktop/GitHub/publication/Biggest Training Sample.pkl")
+test_sample = ph.read_pickle_as_dataframe(
+    "/Users/sahmrahman/Desktop/GitHub/publication/Biggest Test Sample.pkl")
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.temp.me']
 
@@ -164,6 +154,45 @@ def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
 '''
 input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me',
                    'Nacelle.ambient.temp.me']  # useful_covariates
+
+turbines = [1,2,3,4,5,6]
+
+for i in turbines:
+
+    train_x = train_sample[train_sample['turbine'] == i][input_col_names].reset_index(drop=True)
+    # gather the input columns into a dataframe per turbine,
+    # then append them together column-wise and convert into one big numpy ndarray
+
+    train_y = train_sample[train_sample['turbine'] == i]['Power.me'].reset_index(drop=True)
+
+    test_x = test_sample[test_sample['turbine'] == i][input_col_names].reset_index(drop=True)
+
+    test_y = test_sample[test_sample['turbine'] == i]['Power.me'].reset_index(drop=True)
+
+    train_indices = train_sample['index'].values.tolist()
+    test_indices = test_sample['index'].values.tolist()
+    input_columns = input_col_names
+    output_columns = [f'Turbine {i} Power']
+
+    model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
+    # have to create a fresh model for every run, it was retraining from previous runs
+    try:
+        model.train_model(train_x=train_x,
+                          train_y=train_y,
+                          test_x=test_x,
+                          test_y=test_y,
+                          train_indices=train_indices,
+                          test_indices=test_indices,
+                          input_columns=input_columns,
+                          output_columns=output_columns,
+                          turbine_permutation=turbines,
+                          modelling_history_path=model_history_path,
+                          store_posterior=True
+                          )
+    except:
+        print(f"Turbine {i} failed.")
+        pass
+
 # failed_perms = []
 # if True:  # left this here just so I don't run everything all over again
 #     for turbines in turbine_perms:
