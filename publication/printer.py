@@ -1,4 +1,4 @@
-from libraries import np, pickle, pd
+from libraries import np, pickle, pd, sys
 import pickle_helper as ph
 import grapher as gr
 from GPARModel import WindFarmGPAR
@@ -69,10 +69,9 @@ df = ph.read_pickle_as_dataframe(
 # df = df[df['Output Columns'].apply(lambda x: x == [f"Turbine {i} Power" for i in (3,1,5,2,4,6)])]
 
 test_data = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
+df = ph.get_model_history().tail(6)
 
 for i in [1,2,3,4,5,6]:
-
-    df = ph.get_model_history().tail(6)
 
     x = test_data[test_data['turbine'] == i]['Date.time'].tolist()
     obs = test_data[test_data['turbine'] == i]['Power.me'].tolist()
@@ -99,7 +98,6 @@ for i in [1,2,3,4,5,6]:
     #               title="Power vs. Temperature")
 
 sys.exit(0)
-
 print("...")
 
 df = ph.read_pickle_as_dataframe(
