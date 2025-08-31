@@ -1,3 +1,6 @@
+import os
+import sys
+
 import pandas as pd
 
 from GPARModel import WindFarmGPAR
@@ -69,6 +72,24 @@ test_sample = ph.read_pickle_as_dataframe(
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.temp.me']
 
+def sample_complete_training_data(n=1000):
+    complete_df = ph.read_pickle_as_dataframe(complete_train_data_path)
+    sample_times = pd.Series(complete_df['Date.time'].unique()).sample(n)
+    sample = complete_df[complete_df['Date.time'].isin(sample_times)]
+    return sample
+
+def sample_complete_test_data(n=1000):
+    complete_df = ph.read_pickle_as_dataframe(complete_test_data_path)
+    sample_times = pd.Series(complete_df['Date.time'].unique()).sample(n)
+    sample = complete_df[complete_df['Date.time'].isin(sample_times)]
+    return sample
+
+biggest_train = sample_complete_training_data(10000)
+biggest_train.to_pickle("Biggest Training Sample.pkl")
+
+biggest_test = sample_complete_training_data()
+biggest_test.to_pickle("Biggest Test Sample.pkl")
+sys.exit(0)
 
 # all_covariates = [
 #     'Wind.dir.std',
@@ -115,6 +136,7 @@ input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.te
 # ]
 
 
+
 def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
     if min_length > max_length:
         print("Invalid lengths")
@@ -137,7 +159,7 @@ def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
 input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me',
                    'Nacelle.ambient.temp.me']  # useful_covariates
 
-turbines = [1, 2, 3, 4, 5, 6]
+turbines = [2]
 # ERROR HAPPENS AFTER SAMPLING FOR TEST POINTS
 for i in turbines:
 

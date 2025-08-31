@@ -1,5 +1,5 @@
 import os
-os.chdir("/Users/sahmrahman/Desktop/GitHub/stat0035_project")
+os.chdir("/Users/sahmrahman/Desktop/GitHub2/publication")
 
 import matplotlib.pyplot as plt
 import numpy as np
