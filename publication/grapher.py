@@ -217,7 +217,7 @@ def plot_model_metadata(indices=[], save_path=''):
             plt.close()
 
 
-def plot_mtgp_metadata(indices, history_path="/Users/sahmrahman/Desktop/GitHub/publication/MTGP Modelling History.pkl", save_path=''):
+def plot_mtgp_metadata(indices, history_path="/Users/sahmrahman/Desktop/GitHub2/publication/MTGP Modelling History.pkl", save_path=''):
 
     metadata = ph.read_pickle_as_dataframe(history_path)
     selected_metadata = metadata[metadata.index.isin(indices)]
@@ -346,7 +346,7 @@ def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_perm
     gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: x == turbine_perm)]
 
     if mtgp_combination:
-        mtgp_history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
+        mtgp_history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
         mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: len(x) == len(mtgp_combination))]
         mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: x == mtgp_combination)]
         mtgp_history = mtgp_history[mtgp_history['Turbine'] == turbine]

@@ -12,14 +12,14 @@ test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityColl
 complete_train_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Training Data.pkl'
 complete_test_data_path = '/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/Complete Test Data.pkl'
 model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
-train_sample_path = '/Users/sahmrahman/Desktop/GitHub/publication/Training Sample.pkl'
-big_train_sample_path = '/Users/sahmrahman/Desktop/GitHub/publication/Big Training Sample.pkl'
-bigger_train_sample_path = '/Users/sahmrahman/Desktop/GitHub/publication/Bigger Training Sample.pkl'
-biggest_train_sample_path = '/Users/sahmrahman/Desktop/GitHub/publication/Biggest Training Sample.pkl'
-test_sample_path = '/Users/sahmrahman/Desktop/GitHub/publication/Test Sample.pkl'
+train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Training Sample.pkl'
+big_train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Big Training Sample.pkl'
+bigger_train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Bigger Training Sample.pkl'
+biggest_train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Training Sample.pkl'
+test_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Test Sample.pkl'
 
 hist = ph.read_pickle_as_dataframe("Modelling History 8.pkl")
-print(hist.tail(2))
+print(hist.tail(10))
 
 all_input_cols = [
     'Wind.dir.std',
@@ -66,7 +66,7 @@ all_input_cols = [
 ]
 
 df = ph.read_pickle_as_dataframe(
-    file_path="/Users/sahmrahman/Desktop/GitHub2/publication/Modelling History 8.pkl").tail()
+    file_path="/Users/sahmrahman/Desktop/GitHub2/publication/Modelling History 8.pkl").tail(1)
 
 # df = df[df['Output Columns'].apply(lambda x: len(x) == 6)]
 # df = df[df['Output Columns'].apply(lambda x: x == [f"Turbine {i} Power" for i in (3,1,5,2,4,6)])]
@@ -76,8 +76,8 @@ x = test_data[test_data['turbine'] == 1]['Date.time'].tolist()
 obs = test_data[test_data['turbine'] == 1]['Power.me'].tolist()
 gr.plot_graph(x=x,
               y_list=[obs,
-                      df['Lowers'].iloc[0]['Turbine 6 Power'],
-                      df['Uppers'].iloc[0]['Turbine 6 Power']],
+                      df['Lowers'].iloc[0]['Turbine 1 Power'],
+                      df['Uppers'].iloc[0]['Turbine 1 Power']],
               model_history_index=10139,
               intervals=True,
               # save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature",
@@ -87,40 +87,40 @@ gr.plot_graph(x=x,
               legend_loc="upper center",
               title="Forecast for Turbine 6 with Permutation (3,1,5,2,4,6)")
 
-gr.plot_graph(x=df['Nacelle.ambient.temp.me'],
-              y_list=[df['Power.me']],
+gr.plot_graph(x=test_data[test_data['turbine'] == 1]['Nacelle.ambient.temp.me'].tolist(),
+              y_list=[test_data[test_data['turbine'] == 1]['Power.me'].tolist()],
               model_history_index=-1,
               intervals=False,
               x_label="Temperature (ºC)",
               y_label="Mean Power (kWh)",
-              # save_path="/Users/sahmrahman/Desktop/GitHub/publication/saved_graphs/Power v Covariates",
+              # save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Power v Covariates",
               title="Power vs. Temperature")
 print("...")
 
 df = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub/publication/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl")
 gr.plot_mtgp_metadata(indices=df.index,
-                      history_path="/Users/sahmrahman/Desktop/GitHub/publication/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl",
-                      save_path="/Users/sahmrahman/Desktop/GitHub/publication/saved_graphs/Complete Runs/n=1000/MTGP/Wind Speed, Direction and Temperature")
+                      history_path="/Users/sahmrahman/Desktop/GitHub2/publication/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl",
+                      save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/MTGP/Wind Speed, Direction and Temperature")
 
 gpar_indices = pd.concat([ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub/publication/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
     ph.read_pickle_as_dataframe(
-        "/Users/sahmrahman/Desktop/GitHub/publication/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index
+        "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index
 model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(gpar_indices)]
 gr.plot_model_metadata(indices=model_metadata.index,
-                       save_path="/Users/sahmrahman/Desktop/GitHub/publication/saved_graphs/Complete Runs/n=1000/GPAR/Wind Speed, Direction and Temperature")
+                       save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/GPAR/Wind Speed, Direction and Temperature")
 
 mtgp = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
 gr.plot_mtgp_metadata(indices=mtgp.index,
-                      save_path="/Users/sahmrahman/Desktop/GitHub/publication/saved_graphs/Complete Runs/n=1000/MTGP/Wind Speed, Direction and Temperature")
+                      save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/MTGP/Wind Speed, Direction and Temperature")
 print(...)
 
 # df = pd.concat([
-#     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub/publication/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl'),
-#     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub/publication/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl')
+#     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl'),
+#     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl')
 # ])
 
 # df = df[df['Input Columns'].apply(lambda x: len(x) == 4)]
@@ -149,13 +149,13 @@ model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
 selected_metadata = model_metadata[model_metadata['Modelling History Index'].isin(selected_indices)]
 # print("========================================== N = 1000 ==========================================")
 gr.print_model_metadata(selected_metadata.index)
-# gr.plot_model_metadata(selected_metadata.index, save_path="/Users/sahmrahman/Desktop/GitHub/publication/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=1000")
+# gr.plot_model_metadata(selected_metadata.index, save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=1000")
 
 # test = model_metadata[model_metadata['Modelling History Index'] >= 6700]
 # print(ph.get_model_history().iloc[6700]['Estimated Parameters'])
 # print("========================================== N = 2500 ==========================================")
 # gr.print_model_metadata(test.index)
-# gr.plot_model_metadata(test.index, save_path="/Users/sahmrahman/Desktop/GitHub/publication/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=2500")
+# gr.plot_model_metadata(test.index, save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=2500")
 # print(test)
 # selected_metadata_indices = model_metadata.iloc[30120:].index
 # gr.plot_model_metadata(selected_metadata_indices)
@@ -191,7 +191,7 @@ test_sample = ph.read_pickle_as_dataframe(test_sample_path)
 #                   model_history_index=5400+777+turbine,
 #                   calibration=model_metadata.iloc[29351+turbine]['Calibration'],
 #                   title=f"Wind Speed vs Power for Turbine {turbine} (Single-output with 10000 rows of input)",
-#                   save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/publication/saved_graphs/Multi-Input Single-Turbine Model/All relevant covariates')
+#                   save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub2/publication/saved_graphs/Multi-Input Single-Turbine Model/All relevant covariates')
 
 useful_covariates = [
     "Wind.speed.me",
@@ -212,7 +212,7 @@ useful_covariates = [
 ]
 
 # indices = [i for i in range(29352, len(model_metadata))]
-# gr.plot_model_metadata(indices=selected_indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub/publication/saved_graphs/Multi-Turbine Model')
+# gr.plot_model_metadata(indices=selected_indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub2/publication/saved_graphs/Multi-Turbine Model')
 # gr.print_model_metadata(indices=selected_indices)
 
 

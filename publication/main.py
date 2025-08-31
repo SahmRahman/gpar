@@ -4,7 +4,7 @@ from GPARModel import WindFarmGPAR
 import pickle_helper as ph
 import itertools
 
-model_history_path = '/Users/sahmrahman/Desktop/GitHub/publication/Modelling History 8.pkl'
+model_history_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Modelling History 8.pkl'
 models_path = WindFarmGPAR.models_filepath
 train_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/train.pkl"
 test_data_path = "/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/Wind farm final year project _ SR_DL_PD/test.pkl"
@@ -16,8 +16,8 @@ model_metadata_path = WindFarmGPAR.turbine_model_metadata_filepath
 # test_data = ph.read_pickle_as_dataframe(test_data_path)
 #
 # complete_train_data = ph.read_pickle_as_dataframe(complete_train_data_path)
+# complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
 
-complete_test_data = ph.read_pickle_as_dataframe(complete_test_data_path)
 ''' some season stuff
 def get_season(date):
     month, day = date.month, date.day
@@ -34,7 +34,7 @@ def get_season(date):
 
 complete_data = ph.read_pickle_as_dataframe(complete_train_data_path)
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub/publication/Training Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Training Sample.pkl")
 complete_data['Season'] = complete_data['Date.time'].map(get_season)
 complete_season_dfs = [complete_data[complete_data["Season"] == season] for season in
                        ['Winter', 'Spring', 'Summer', 'Fall']]
@@ -63,29 +63,11 @@ def sample_complete_training_data(n=1000):
 '''
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Training Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Big Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.temp.me']
-
-useful_covariates = [
-    "Wind.speed.me",
-    "Wind.speed.min",
-    "Wind.speed.max",
-    'Wind.speed.sd',
-    "Transformer.temp.me",
-    "Gear.oil.inlet.press.me",
-    "Gear.oil.pump.press.me",
-    "Drive.train.acceleration.me",
-    "Tower.Acceleration.y",
-    'CPU.temp.me',
-    'Gear.oil.pump.press.me',
-    'Nacelle.temp.me',
-    'Top.box.temp.me',
-    'Wind.dir.sin.me',
-    'Wind.dir.cos.me',
-]
 
 
 # all_covariates = [
@@ -155,8 +137,8 @@ def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
 input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me',
                    'Nacelle.ambient.temp.me']  # useful_covariates
 
-turbines = [1]
-
+turbines = [1, 2, 3, 4, 5, 6]
+# ERROR HAPPENS AFTER SAMPLING FOR TEST POINTS
 for i in turbines:
 
     train_x = train_sample[train_sample['turbine'] == i][input_col_names].reset_index(drop=True).to_numpy()
@@ -185,7 +167,7 @@ for i in turbines:
                           test_indices=test_indices,
                           input_columns=input_columns,
                           output_columns=output_columns,
-                          turbine_permutation=turbines,
+                          turbine_permutation=[i],
                           modelling_history_path=model_history_path,
                           store_posterior=True
                           )
