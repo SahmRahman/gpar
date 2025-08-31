@@ -18,9 +18,6 @@ bigger_train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Bigger
 biggest_train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Training Sample.pkl'
 test_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Test Sample.pkl'
 
-hist = ph.read_pickle_as_dataframe("Modelling History 8.pkl")
-print(hist.tail(10))
-
 all_input_cols = [
     'Wind.dir.std',
     'Wind.speed.me',
@@ -72,28 +69,37 @@ df = ph.read_pickle_as_dataframe(
 # df = df[df['Output Columns'].apply(lambda x: x == [f"Turbine {i} Power" for i in (3,1,5,2,4,6)])]
 
 test_data = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
-x = test_data[test_data['turbine'] == 1]['Date.time'].tolist()
-obs = test_data[test_data['turbine'] == 1]['Power.me'].tolist()
-gr.plot_graph(x=x,
-              y_list=[obs,
-                      df['Lowers'].iloc[0]['Turbine 1 Power'],
-                      df['Uppers'].iloc[0]['Turbine 1 Power']],
-              intervals=True,
-              # save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature",
-              x_label='Date',
-              y_label="Power Output (kWh)",
-              labels=['Observations', 'Lower CI', "Upper CI"],
-              legend_loc="upper center",
-              title="Forecast for Turbine 6 with Permutation (3,1,5,2,4,6)")
 
-gr.plot_graph(x=test_data[test_data['turbine'] == 1]['Nacelle.ambient.temp.me'].tolist(),
-              y_list=[test_data[test_data['turbine'] == 1]['Power.me'].tolist()],
-              model_history_index=-1,
-              intervals=False,
-              x_label="Temperature (ºC)",
-              y_label="Mean Power (kWh)",
-              # save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Power v Covariates",
-              title="Power vs. Temperature")
+for i in [1,2,3,4,5,6]:
+
+    df = ph.get_model_history().tail(6)
+
+    x = test_data[test_data['turbine'] == i]['Date.time'].tolist()
+    obs = test_data[test_data['turbine'] == i]['Power.me'].tolist()
+    gr.plot_graph(x=x,
+                  y_list=[obs,
+                          df['Lowers'].iloc[i-1][f'Turbine {i} Power'],
+                          df['Uppers'].iloc[i-1][f'Turbine {i} Power']],
+                  intervals=True,
+                  model_history_index=0,
+                  # save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature",
+                  x_label='Date',
+                  y_label="Power Output (kWh)",
+                  labels=['Observations', 'Lower CI', "Upper CI"],
+                  legend_loc="upper center",
+                  title=f"Forecast for Turbine {i}")
+
+    # gr.plot_graph(x=test_data[test_data['turbine'] == 1]['Nacelle.ambient.temp.me'].tolist(),
+    #               y_list=[test_data[test_data['turbine'] == 1]['Power.me'].tolist()],
+    #               model_history_index=-1,
+    #               intervals=False,
+    #               x_label="Temperature (ºC)",
+    #               y_label="Mean Power (kWh)",
+    #               # save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Power v Covariates",
+    #               title="Power vs. Temperature")
+
+sys.exit(0)
+
 print("...")
 
 df = ph.read_pickle_as_dataframe(

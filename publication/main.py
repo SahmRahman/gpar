@@ -65,6 +65,7 @@ def sample_complete_training_data(n=1000):
     return sample
 '''
 
+
 train_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub2/publication/Big Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
@@ -83,13 +84,6 @@ def sample_complete_test_data(n=1000):
     sample_times = pd.Series(complete_df['Date.time'].unique()).sample(n)
     sample = complete_df[complete_df['Date.time'].isin(sample_times)]
     return sample
-
-biggest_train = sample_complete_training_data(10000)
-biggest_train.to_pickle("Biggest Training Sample.pkl")
-
-biggest_test = sample_complete_training_data()
-biggest_test.to_pickle("Biggest Test Sample.pkl")
-sys.exit(0)
 
 # all_covariates = [
 #     'Wind.dir.std',
@@ -159,7 +153,7 @@ def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
 input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me',
                    'Nacelle.ambient.temp.me']  # useful_covariates
 
-turbines = [2]
+turbines = [3,4,5,6]
 # ERROR HAPPENS AFTER SAMPLING FOR TEST POINTS
 for i in turbines:
 

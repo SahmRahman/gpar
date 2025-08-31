@@ -381,3 +381,5 @@ def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_perm
                fig_size=(10, 6),
                y_label="Power (kWh)"
                )
+
+
