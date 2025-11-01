@@ -66,12 +66,14 @@ def sample_complete_training_data(n=1000):
     return sample
 '''
 
+
 train_sample = ph.read_pickle_as_dataframe(
     "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Test Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.temp.me']
+
 
 
 def sample_complete_training_data(n=1000):
@@ -80,13 +82,11 @@ def sample_complete_training_data(n=1000):
     sample = complete_df[complete_df['Date.time'].isin(sample_times)]
     return sample
 
-
 def sample_complete_test_data(n=1000):
     complete_df = ph.read_pickle_as_dataframe(complete_test_data_path)
     sample_times = pd.Series(complete_df['Date.time'].unique()).sample(n)
     sample = complete_df[complete_df['Date.time'].isin(sample_times)]
     return sample
-
 
 # all_covariates = [
 #     'Wind.dir.std',
@@ -133,6 +133,7 @@ def sample_complete_test_data(n=1000):
 # ]
 
 
+
 def generate_permutations(lst=[1, 2, 3, 4, 5, 6], min_length=1, max_length=6):
     if min_length > max_length:
         print("Invalid lengths")
@@ -157,49 +158,48 @@ input_col_names = ['Wind.speed.me', "Wind.dir.sin.me", 'Wind.dir.cos.me',
 
 turbines = [3, 4, 5, 1, 2, 6]
 ''' BEST PERM BY CALIBRATION '''
-for i in turbines:
-    test_sample = test_sample[test_sample['turbine'] == i]
-    train_x = pd.pivot_table(train_sample,
-                             values=input_col_names,
-                             index=['Date.time'],
-                             columns=['turbine']).reset_index(
-        drop=True).to_numpy()
-    train_y = pd.pivot_table(train_sample,
-                             values=['Power.me'],
-                             index=['Date.time'],
-                             columns=['turbine']).loc[:, ('Power.me', i)].reset_index(
-        drop=True).to_numpy()
-    test_x = pd.pivot_table(test_sample,
-                            values=input_col_names,
-                            index=['Date.time'],
-                            columns=['turbine']).reset_index(
-        drop=True).to_numpy()
-    test_y = pd.pivot_table(test_sample,
-                            values=['Power.me'],
-                            index=['Date.time'],
-                            columns=['turbine']).loc[:, ('Power.me', i)].reset_index(
-        drop=True).to_numpy()
 
-    model = WindFarmGPAR(model_params={}, existing=True, model_index=0)
-    train_indices = train_sample['index'].values.tolist()
-    test_indices = test_sample['index'].values.tolist()
-    input_columns = input_col_names
-    # output_columns = [f'Turbine {i} Power' for i in range(1, 7)]
-    output_columns = [f'Turbine {i} Power']
 
-    try:
-        model.train_model(train_x=train_x,
-                          train_y=train_y,
-                          test_x=test_x,
-                          test_y=test_y,
-                          train_indices=train_indices,
-                          test_indices=test_indices,
-                          input_columns=input_columns,
-                          output_columns=output_columns,
-                          turbine_permutation=turbines,
-                          modelling_history_path=model_history_path,
-                          store_posterior=True
-                          )
-    except Exception as e:
-        print(f"Failed with Exception {e}.")
-        pass
+train_x = pd.pivot_table(train_sample,
+                         values=input_col_names,
+                         index = ['Date.time'],
+                         columns=['turbine']).reset_index(drop=True).to_numpy()
+train_y = pd.pivot_table(train_sample,
+                         values=['Power.me'],
+                         index = ['Date.time'],
+                         columns=['turbine']).loc[:, [('Power.me', i) for i in turbines]].reset_index(drop=True).to_numpy()
+test_x = pd.pivot_table(test_sample,
+                         values=input_col_names,
+                         index = ['Date.time'],
+                         columns=['turbine']).reset_index(drop=True).to_numpy()
+test_y = pd.pivot_table(test_sample,
+                         values=['Power.me'],
+                         index =['Date.time'],
+                         columns=['turbine']).loc[:, [('Power.me', i) for i in turbines]].reset_index(drop=True).to_numpy()
+
+
+model = WindFarmGPAR(model_params={}, existing=False, model_index=-1)
+train_indices = train_sample['index'].values.tolist()
+test_indices = test_sample['index'].values.tolist()
+input_columns = input_col_names
+# output_columns = [f'Turbine {i} Power' for i in range(1, 7)]
+output_columns = [f'Turbine {i} Power' for i in turbines]
+
+try:
+    model.train_model(train_x=train_x,
+                      train_y=train_y,
+                      test_x=test_x,
+                      test_y=test_y,
+                      train_indices=train_indices,
+                      test_indices=test_indices,
+                      input_columns=input_columns,
+                      output_columns=output_columns,
+                      turbine_permutation=turbines,
+                      modelling_history_path=model_history_path,
+                      store_posterior=True,
+                      predict_only=False
+                      )
+except Exception as e:
+    print(f"Failed with Exception {e}.")
+    pass
+

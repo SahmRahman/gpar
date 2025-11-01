@@ -22,6 +22,8 @@ def plot_graph(x, y_list, model_history_index,
                y_limits=None,
                save_path=None,
                hollow=True,
+               plot_within=True,
+               x_date=True,
                legend_loc='upper right',
                fig_size=(12, 6)):
     """
@@ -83,12 +85,12 @@ def plot_graph(x, y_list, model_history_index,
         inside_CI = (uppers > observations) & (observations > lowers)
 
         # Plot observations in/out CI
-        if not hollow:
+        if not hollow and plot_within:
             plt.scatter(x_pos[inside_CI], observations[inside_CI], label="Observations inside CI", c='black',
-                        marker='o', s=35)
-        else:
+                        marker='o', s=15)
+        elif plot_within:
             plt.scatter(x_pos[inside_CI], observations[inside_CI], label="Observations inside CI", edgecolors='black',
-                        facecolors='none', marker='o', s=35)
+                        facecolors='none', marker='o', s=15)
 
         plt.scatter(x_pos[~inside_CI], observations[~inside_CI], label="Observations outside CI", c='red', marker='o',
                     s=60)
@@ -118,7 +120,11 @@ def plot_graph(x, y_list, model_history_index,
 
         # reduce the number of x-ticks
         tick_interval = len(x_sorted) // 7  # show 7 ticks
-        plt.xticks(x_pos[::tick_interval], [ts.date() for ts in x_sorted[::tick_interval]])
+        if x_date:
+            plt.xticks(x_pos[::tick_interval], [pd.to_datetime(ts).strftime('%Y-%m-%d') for ts in x_sorted[::tick_interval]])
+        else:
+            plt.xticks(x_pos[::tick_interval], [round(num, 2) for num in x_sorted[::tick_interval]])
+
 
     if x_label:
         plt.xlabel(x_label)
@@ -378,8 +384,75 @@ def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_perm
                save_path=save_path,
                hollow=hollow,
                legend_loc=legend_loc,
-               fig_size=(10, 6),
+               fig_size=(18, 12),
                y_label="Power (kWh)"
                )
 
+    return
 
+def plot_wind_speed_forecast(test_data, gpar_history_indices, turbine, gpar_permutation, mtgp_combination=None, save_path=None, hollow=True, plot_within=True, legend_loc='upper center'):
+    turbine_perm = [f'Turbine {i} Power' for i in gpar_permutation]
+    test_data = test_data[test_data['turbine'] == turbine]
+
+    gpar_history = ph.get_model_history().loc[gpar_history_indices]
+    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: len(x) == len(turbine_perm))]
+    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: x == turbine_perm)]
+
+    if mtgp_combination:
+        mtgp_history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
+        mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: len(x) == len(mtgp_combination))]
+        mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: x == mtgp_combination)]
+        mtgp_history = mtgp_history[mtgp_history['Turbine'] == turbine]
+
+        test_data['MTGP Means'] = mtgp_history['Means'].iloc[0]
+        test_data['MTGP Uppers'] = mtgp_history['Uppers'].iloc[0]
+        test_data['MTGP Lowers'] = mtgp_history['Lowers'].iloc[0]
+
+    test_data['GPAR Means'] = gpar_history['Means'].iloc[0][f'Turbine {turbine} Power']
+    test_data['GPAR Uppers'] = gpar_history['Uppers'].iloc[0][f'Turbine {turbine} Power']
+    test_data['GPAR Lowers'] = gpar_history['Lowers'].iloc[0][f'Turbine {turbine} Power']
+
+
+
+    sorted_test_data = test_data.sort_values(by='Wind.speed.me', ascending=True)
+
+    plot_graph(x=sorted_test_data['Wind.speed.me'],
+               y_list=[sorted_test_data['Power.me'].values,
+                       # sorted_test_data['MTGP Means'].values,
+                       sorted_test_data['GPAR Lowers'].values,
+                       sorted_test_data['GPAR Uppers'].values],
+                       # sorted_test_data['MTGP Lowers'],
+                       # sorted_test_data['MTGP Uppers']],
+               labels=['Observations', 'GPAR Upper', 'GPAR Lower'],
+               colors=['black', 'blue', 'red'],
+               title=f'Prediction for Turbine {turbine} with Permutation {gpar_permutation}',
+               model_history_index=-1,
+               intervals=True,
+               save_path=save_path,
+               hollow=hollow,
+               plot_within=plot_within,
+               legend_loc=legend_loc,
+               fig_size=(18, 12),
+               x_date=False,
+               y_label="Power (kWh)"
+               )
+
+    return
+
+
+perm = [3,4,5,1,2,6]
+test_data = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
+for turbine in perm:
+    continue
+    plot_wind_speed_forecast(test_data=test_data,
+                             gpar_history_indices=[10693],
+                             turbine=turbine,
+                             gpar_permutation=perm,
+                             hollow=False,
+                             plot_within=False,
+                             save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=10000/GPAR/Forecast/By Wind Speed")
+
+
+
+# [49829, 49830, 49831, 49832, 49833, 49834])
+pass

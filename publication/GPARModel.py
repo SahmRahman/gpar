@@ -43,15 +43,16 @@ class WindFarmGPAR:
             models_df = libs.ph.read_pickle_as_dataframe(WindFarmGPAR.models_filepath)
             model_params = models_df.iloc[model_index]
 
-            model_params = model_params[model_params.notna()]
+            model_params = model_params[model_params.notna()] # looks like this part isn't working??
 
             # only returns parameters that won't be their respective default values
 
         else:
+            pass
             # need to make from scratch using model_params
 
             # add new model to our models file
-            libs.ph.append_to_pickle(WindFarmGPAR.models_filepath, model_params)
+            # libs.ph.append_to_pickle(WindFarmGPAR.models_filepath, model_params)
 
         model = libs.GPARRegressor(**model_params)
         # ** is python's way of unpacking a dictionary as parameters
@@ -351,6 +352,7 @@ class WindFarmGPAR:
                     input_columns, output_columns,
                     modelling_history_path,
                     store_posterior,
+                    predict_only=False,
                     turbine_permutation=[]):
         """
         fit model to train data, draw samples from resulting posterior and log the results
@@ -364,8 +366,13 @@ class WindFarmGPAR:
         :param test_indices: indices in the test pickle file used for this model, list of ints
         :param turbine_permutation: order of turbines in model, list of ints
         :param modelling_history_path: path to modelling history pickle file to append to, string
+        :param predict_only: boolean to condition instead of train from scratch
         :param store_posterior: boolean, store estimated posterior parameters as a new model in Models.pkl
         :return: NONE
+
+        Args:
+            predict_only:
+
         """
 
         # for cols in [input_columns, output_columns]:
@@ -386,15 +393,15 @@ class WindFarmGPAR:
 
         start = datetime.now()
 
-        # train model
-        self.model.fit(train_x, train_y)
+        if not predict_only:
+            self.model.fit(train_x, train_y)
+        else:
+            self.model.condition(train_x, train_y)
 
         end = datetime.now()
         elapsed = end - start
 
         print(f"Elapsed Training Time: {elapsed.seconds}.{elapsed.microseconds} seconds")
-
-        # ================ DELETE WHEN DONE ================
 
         # collect metadata
         means, lowers, uppers = self.model.predict(test_x,

@@ -17,6 +17,7 @@ big_train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Big Train
 bigger_train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Bigger Training Sample.pkl'
 biggest_train_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Training Sample.pkl'
 test_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Test Sample.pkl'
+biggest_test_sample_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl'
 
 all_input_cols = [
     'Wind.dir.std',
@@ -62,250 +63,31 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
-df = ph.read_pickle_as_dataframe(
-    file_path="/Users/sahmrahman/Desktop/GitHub2/publication/Modelling History 8.pkl").tail(1)
-
-# df = df[df['Output Columns'].apply(lambda x: len(x) == 6)]
-# df = df[df['Output Columns'].apply(lambda x: x == [f"Turbine {i} Power" for i in (3,1,5,2,4,6)])]
-
-test_data = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
-df = ph.get_model_history().tail(6)
-
-for i in [1,2,3,4,5,6]:
-
-    x = test_data[test_data['turbine'] == i]['Date.time'].tolist()
-    obs = test_data[test_data['turbine'] == i]['Power.me'].tolist()
-    gr.plot_graph(x=x,
-                  y_list=[obs,
-                          df['Lowers'].iloc[i-1][f'Turbine {i} Power'],
-                          df['Uppers'].iloc[i-1][f'Turbine {i} Power']],
-                  intervals=True,
-                  model_history_index=0,
-                  # save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/Forecast Comparison/Wind Speed, Direction and Temperature",
-                  x_label='Date',
-                  y_label="Power Output (kWh)",
-                  labels=['Observations', 'Lower CI', "Upper CI"],
-                  legend_loc="upper center",
-                  title=f"Forecast for Turbine {i}")
-
-    # gr.plot_graph(x=test_data[test_data['turbine'] == 1]['Nacelle.ambient.temp.me'].tolist(),
-    #               y_list=[test_data[test_data['turbine'] == 1]['Power.me'].tolist()],
-    #               model_history_index=-1,
-    #               intervals=False,
-    #               x_label="Temperature (ºC)",
-    #               y_label="Mean Power (kWh)",
-    #               # save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Power v Covariates",
-    #               title="Power vs. Temperature")
-
-sys.exit(0)
-print("...")
-
-df = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl")
-gr.plot_mtgp_metadata(indices=df.index,
-                      history_path="/Users/sahmrahman/Desktop/GitHub2/publication/Complete n=1000 run on Wind Speed, Direction and Temperature (fixed hopefully).pkl",
-                      save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/MTGP/Wind Speed, Direction and Temperature")
-
-gpar_indices = pd.concat([ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl"),
-    ph.read_pickle_as_dataframe(
-        "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl")]).index
-model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(gpar_indices)]
-gr.plot_model_metadata(indices=model_metadata.index,
-                       save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/GPAR/Wind Speed, Direction and Temperature")
-
-mtgp = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
-gr.plot_mtgp_metadata(indices=mtgp.index,
-                      save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/MTGP/Wind Speed, Direction and Temperature")
-print(...)
-
-# df = pd.concat([
-#     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 1.pkl'),
-#     ph.read_pickle_as_dataframe('/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/Complete n=1000 run on Wind Speed, Sine and Cosine of Direction, and Temperature - 2.pkl')
-# ])
-
-# df = df[df['Input Columns'].apply(lambda x: len(x) == 4)]
-# df = df[df['Output Columns'].apply(lambda x: len(x) == 6)]
-print()
-
-# model_metadata = model_metadata[model_metadata['Modelling History Index'].isin(df.index)]
-# gr.print_model_metadata(indices=model_metadata.index)
-# gr.plot_model_metadata(indices=model_metadata.index, save_path=)
 
 
-input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me']
+log = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/History Log 10k.pkl")
 
-df = ph.read_pickle_as_dataframe("/publication/Complete Runs/GPAR/Complete n=1000 run on Wind Speed - 1.pkl")
-# n1000_history = n1000_history[n1000_history['Training Data Indices'].apply(lambda x: x == n1000_indices)]
+big_train = ph.read_pickle_as_dataframe(biggest_train_sample_path)
+big_test = ph.read_pickle_as_dataframe(biggest_test_sample_path)
+
+input_df = big_train.loc[:, log.loc['Input Columns', 10693] + ['turbine']]
+output_df = big_test.loc[:, ['Date.time', 'Power.me']]
+output_df = output_df.loc[output_df.index.repeat(6)].reset_index(drop=True)
+
+dfs = []
+for turbine_str in log.loc['Output Columns', 10693]:
+    df = pd.concat(
+        [pd.DataFrame(),
+         pd.DataFrame(log.loc['Means', 10693][turbine_str], columns=['Means']),
+         pd.DataFrame(log.loc['Lowers', 10693][turbine_str], columns=['Lowers']),
+         pd.DataFrame(log.loc['Uppers', 10693][turbine_str], columns=['Uppers']),
+         pd.DataFrame(log.loc['Error', 10693][turbine_str]['Squared Error'], columns=['Squared Error']),
+         pd.DataFrame(log.loc['Error', 10693][turbine_str]['Absolute Error'], columns=['Absolute Error'])],
+         axis=1
+    )
+    df['Turbine'] = turbine_str.split(" ")[1]
+    dfs.append(df)
+
+# building out output csv, but, not sure about index/time matching!
+
 print('...')
-# speed_and_dir = history[history['Input Columns'].apply(lambda x: len(x) == 3)]
-# complete_speed_and_dir = speed_and_dir[speed_and_dir['Input Columns'].apply(lambda x: x == ['Wind Speed',
-#                                                                                             'Sine of Wind Direction',
-#                                                                                             'Cosine of Wind Direction'])]
-selected_indices = history.index
-
-# print(wind_speed_history.tail(5))
-
-model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-selected_metadata = model_metadata[model_metadata['Modelling History Index'].isin(selected_indices)]
-# print("========================================== N = 1000 ==========================================")
-gr.print_model_metadata(selected_metadata.index)
-# gr.plot_model_metadata(selected_metadata.index, save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=1000")
-
-# test = model_metadata[model_metadata['Modelling History Index'] >= 6700]
-# print(ph.get_model_history().iloc[6700]['Estimated Parameters'])
-# print("========================================== N = 2500 ==========================================")
-# gr.print_model_metadata(test.index)
-# gr.plot_model_metadata(test.index, save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Single Turbine Model/n=1000 vs =2500 comparison/n=2500")
-# print(test)
-# selected_metadata_indices = model_metadata.iloc[30120:].index
-# gr.plot_model_metadata(selected_metadata_indices)
-# gr.print_model_metadata(selected_metadata_indices)
-
-# print(metadata)
-
-# model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
-
-ph.libs.pd.set_option('display.max_columns', None)
-models = ph.read_pickle_as_dataframe(models_path)
-
-# print(models.columns)
-# print(models.tail())
-
-
-test_sample = ph.read_pickle_as_dataframe(test_sample_path)
-
-# selected_metadata = model_metadata[model_metadata['Modelling History Index'] > 6296]
-# selected_indices = selected_metadata.index
-
-# print(selected_metadata.iloc[0].)
-
-# print(ph.get_model_history().tail(27))
-
-# for turbine in range(1, 7):
-#     data = history.iloc[turbine-1]
-#     gr.plot_graph(x=test_sample[test_sample['turbine'] == turbine]['Wind.speed.me'],
-#                   y_list=[test_sample[test_sample['turbine'] == turbine]['Power.me'].values,
-#                           data['Lowers'][f'Turbine {turbine} Power'],
-#                           data['Uppers'][f'Turbine {turbine} Power']],
-#                   intervals=True,
-#                   model_history_index=5400+777+turbine,
-#                   calibration=model_metadata.iloc[29351+turbine]['Calibration'],
-#                   title=f"Wind Speed vs Power for Turbine {turbine} (Single-output with 10000 rows of input)",
-#                   save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub2/publication/saved_graphs/Multi-Input Single-Turbine Model/All relevant covariates')
-
-useful_covariates = [
-    "Wind.speed.me",
-    "Wind.speed.min",
-    "Wind.speed.max",
-    'Wind.speed.sd',
-    "Transformer.temp.me",
-    "Gear.oil.inlet.press.me",
-    "Gear.oil.pump.press.me",
-    "Drive.train.acceleration.me",
-    "Tower.Acceleration.y",
-    'CPU.temp.me',
-    'Gear.oil.pump.press.me',
-    'Nacelle.temp.me',
-    'Top.box.temp.me',
-    'Wind.dir.sin.me',
-    'Wind.dir.cos.me',
-]
-
-# indices = [i for i in range(29352, len(model_metadata))]
-# gr.plot_model_metadata(indices=selected_indices)#, save_path='/Users/sahmrahman/Library/CloudStorage/OneDrive-UniversityCollegeLondon/Year 3 UCL/STAT0035/GitHub2/publication/saved_graphs/Multi-Turbine Model')
-# gr.print_model_metadata(indices=selected_indices)
-
-
-# metadata_df = ph.read_pickle_as_dataframe(model_metadata_path)
-# history_df = pd.concat([ph.read_pickle_as_dataframe(path) for path in [model_history_1,
-#                                                                        model_history_2,
-#                                                                        model_history_3]])
-
-# -------------- SINGLE INPUT INDICES IN METADATA DATAFRAME: 311 up to 9780 --------------
-# -------------- MULTI INPUT INDICES IN METADATA DATAFRAME: 9780 up to 19566 --------------
-
-
-# print(df_modelling_history.tail(10))
-# print("\n\n\n\nModels")
-# df_models = ph.read_pickle_as_dataframe(file_path=models)
-# print(df_models.head())
-# print("...")
-# print(df_models.tail())
-# print("\n\n\n\n")
-
-# train_indices = df_modelling_history.iloc[20]['Training Data Indices'].values.tolist()
-# test_data_ = ph.read_pickle_as_dataframe(test_data__path)
-# test_data_ = test_data_[test_data_['index'].isin(train_indices)]
-# for turbine in range(1, 7):
-#     current_turbine_data = train_sample[train_sample['turbine'] == turbine]
-#     x = current_turbine_data['Wind.speed.me'].values.tolist()
-#     y = [current_turbine_data['Power.me'].values.tolist()]
-#     gr.plot_graph(x, y, 11,
-#                   title=f"{gr.libs.datetime.now().strftime('%Y-%m-%d_%H-%M')} Turbine {turbine}")
-
-
-# full_timestamps = []
-# train_df = ph.read_pickle_as_dataframe(test_data__path)
-# test_df = ph.read_pickle_as_dataframe(test_data_path)
-# turbine_train_dfs = []
-# turbine_test_dfs = []
-#
-# train_timestamps = []
-# test_timestamps = []
-#
-# train_timestamps_len = 99999999
-# test_timestamps_len = 99999999
-#
-# for turbine in range(1, 7):
-#     turbine_train_dfs.append(train_df[train_df['turbine'] == turbine])
-#     turbine_test_dfs.append(test_df[test_df['turbine'] == turbine])
-#
-#     if len(turbine_train_dfs[turbine - 1]['Date.time']) < train_timestamps_len:
-#         # if we found a shorter timestamp series
-#
-#         train_timestamps = turbine_train_dfs[turbine - 1]['Date.time']
-#         # get timestamps for current turbine
-#         train_timestamps_len = len(train_timestamps)
-#         # update length
-#
-#     if len(turbine_test_dfs[turbine - 1]['Date.time']) < test_timestamps_len:
-#         test_timestamps = turbine_test_dfs[turbine - 1]['Date.time']
-#         test_timestamps_len = len(test_timestamps)
-#
-# turbines = [1, 2, 3, 4, 5, 6]
-#
-# # ------------------ SELECTING COMPLETE TRAINING DATA ------------------
-#
-# train_indices_to_remove = []
-#
-# for index, time in train_timestamps.items():
-#     timestamp_data = train_df[train_df['Date.time'] == time]
-#     if not all(turbine in timestamp_data['turbine'].values for turbine in turbines):
-#         # if the 'turbine' column doesn't have all six turbines... need to remove this timestamp
-#         # incomplete data!
-#         train_indices_to_remove.append(index)
-#
-# complete_turbine_test_data__timestamps = train_timestamps.drop(train_indices_to_remove)
-# # get the timestamps with complete data
-# complete_turbine_test_data_ = train_df[train_df['Date.time'].isin(complete_turbine_test_data__timestamps)]
-# # select rows from the original whole training dataframe with those timestamps
-#
-# # ------------------ SELECTING COMPLETE TEST DATA ------------------
-#
-# test_indices_to_remove = []
-#
-# for index, time in test_timestamps.items():
-#     timestamp_data = test_df[test_df['Date.time'] == time]
-#     if not all(turbine in timestamp_data['turbine'].values for turbine in turbines):
-#         # if the 'turbine' column doesn't have all six turbines... need to remove this timestamp
-#         # incomplete data!
-#         test_indices_to_remove.append(index)
-#
-# complete_turbine_test_data_timestamps = test_timestamps.drop(test_indices_to_remove)
-# complete_turbine_test_data = test_df[test_df['Date.time'].isin(complete_turbine_test_data_timestamps)]
-#
-# complete_turbine_test_data_.to_pickle('Complete Training Data.pkl')
-# complete_turbine_test_data.to_pickle('Complete Test Data.pkl')
