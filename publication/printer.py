@@ -63,7 +63,26 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+df_train = ph.read_pickle_as_dataframe(train_sample_path)
+df_test = ph.read_pickle_as_dataframe(test_sample_path)
 
+df_input = pd.read_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Input Data.csv")
+df_output = pd.read_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Output Data.csv")
+
+df_input = pd.merge(df_input, df_train[['index', 'Power.me']], left_on='index', right_on='index')
+df_output['Date.time'] = pd.to_datetime(df_output['Date.time'])
+df_output = pd.merge(df_output, df_test[['Date.time', 'turbine', 'Power.me', 'index']],
+                     left_on=['Date.time', 'Turbine'],
+                     right_on=['Date.time', 'turbine'],
+                     how='left')
+df_output.drop(columns=["turbine", 'Unnamed: 0'], axis=1, inplace=True)
+df_output = df_output[['index', 'Date.time', 'Power.me', 'Mean', 'Upper',
+                      'Lower', 'Squared Error', 'Absolute Error', 'Turbine']]
+
+df_input.to_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Input Data.csv")
+df_output.to_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Output Data.csv")
+
+sys.exit(0)
 
 log = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/History Log 10k.pkl")
 
