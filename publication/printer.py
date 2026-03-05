@@ -63,50 +63,39 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
-df_train = ph.read_pickle_as_dataframe(train_sample_path)
-df_test = ph.read_pickle_as_dataframe(test_sample_path)
-
-df_input = pd.read_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Input Data.csv")
-df_output = pd.read_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Output Data.csv")
-
-df_input = pd.merge(df_input, df_train[['index', 'Power.me']], left_on='index', right_on='index')
-df_output['Date.time'] = pd.to_datetime(df_output['Date.time'])
-df_output = pd.merge(df_output, df_test[['Date.time', 'turbine', 'Power.me', 'index']],
-                     left_on=['Date.time', 'Turbine'],
-                     right_on=['Date.time', 'turbine'],
-                     how='left')
-df_output.drop(columns=["turbine", 'Unnamed: 0'], axis=1, inplace=True)
-df_output = df_output[['index', 'Date.time', 'Power.me', 'Mean', 'Upper',
-                      'Lower', 'Squared Error', 'Absolute Error', 'Turbine']]
-
-df_input.to_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Input Data.csv")
-df_output.to_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Output Data.csv")
-
-sys.exit(0)
 
 log = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/History Log 10k.pkl")
 
 big_train = ph.read_pickle_as_dataframe(biggest_train_sample_path)
 big_test = ph.read_pickle_as_dataframe(biggest_test_sample_path)
 
-input_df = big_train.loc[:, log.loc['Input Columns', 10693] + ['turbine']]
-output_df = big_test.loc[:, ['Date.time', 'Power.me']]
-output_df = output_df.loc[output_df.index.repeat(6)].reset_index(drop=True)
+input_df = big_train.loc[:, ['index', 'Date.time'] + log.loc['Input Columns', 10693] + ['Power.me', 'turbine']]
+output_df = big_test.loc[:, ['index', 'Date.time', 'Power.me', 'turbine']]
 
 dfs = []
 for turbine_str in log.loc['Output Columns', 10693]:
     df = pd.concat(
-        [pd.DataFrame(),
-         pd.DataFrame(log.loc['Means', 10693][turbine_str], columns=['Means']),
+        [pd.DataFrame(log.loc['Means', 10693][turbine_str], columns=['Means']),
          pd.DataFrame(log.loc['Lowers', 10693][turbine_str], columns=['Lowers']),
          pd.DataFrame(log.loc['Uppers', 10693][turbine_str], columns=['Uppers']),
          pd.DataFrame(log.loc['Error', 10693][turbine_str]['Squared Error'], columns=['Squared Error']),
          pd.DataFrame(log.loc['Error', 10693][turbine_str]['Absolute Error'], columns=['Absolute Error'])],
          axis=1
     )
-    df['Turbine'] = turbine_str.split(" ")[1]
+
+
+    df[['index', 'Date.time', 'Power.me', 'turbine']] = output_df[output_df['turbine'] == int(turbine_str.split(" ")[1])].values
+    df = df[['index', 'Date.time', 'Power.me', 'Means', 'Lowers',
+             'Uppers', 'Squared Error', 'Absolute Error', 'turbine']]
+
+    # df['Turbine'] = turbine_str.split(" ")[1]
     dfs.append(df)
 
 # building out output csv, but, not sure about index/time matching!
+
+final_df = pd.concat(dfs, axis=0)
+
+input_df.to_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/Input Data.csv")
+final_df.to_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/Output Data.csv")
 
 print('...')
