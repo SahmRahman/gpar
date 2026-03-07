@@ -566,7 +566,87 @@ class GPARRegressor:
                 )
         return samples[0] if num_samples == 1 else samples
 
-    def predict(self, x, w=None, num_samples=100, latent=False, credible_bounds=False):
+    # def predict(self, x, w=None, num_samples=100, latent=False, credible_bounds=False):
+    #     """Predict at new inputs.
+    #
+    #     Args:
+    #         x (tensor): Inputs to predict at.
+    #         w (tensor, optional): Weights of inputs to predict at.
+    #         num_samples (int, optional): Number of samples. Defaults to `100`.
+    #         latent (bool, optional): Predict the latent function instead of
+    #             observations. Defaults to `True`.
+    #         credible_bounds (bool, optional): Also return 95% central marginal
+    #             credible bounds for the predictions.
+    #
+    #     Returns:
+    #         tensor: Predictive means. If `credible_bounds` is set to true,
+    #             a three-tuple will be returned containing the predictive means,
+    #             lower credible bounds, and upper credible bounds.
+    #     """
+    #     # Sample from posterior.
+    #     samples = self.sample(
+    #         x, w, num_samples=num_samples, latent=latent, posterior=True
+    #     )
+    #
+    #     # Compute mean.
+    #     mean = np.mean(samples, axis=0)
+    #
+    #     if credible_bounds:
+    #         # Also return lower and upper credible bounds if asked for.
+    #         lowers = np.percentile(samples, 2.5, axis=0)
+    #         uppers = np.percentile(samples, 100 - 2.5, axis=0)
+    #         return mean, lowers, uppers
+    #     else:
+    #         return mean
+
+    def sample_sum(self, x, w=None, num_samples=10000, latent=False, credible_bounds=True):
+        """
+        Compute the posterior distribution of the sum of outputs from a fitted
+        GPARRegressor using ancestral sampling.
+
+        Args:
+            self (GPARRegressor): A fitted GPARRegressor instance.
+            x (tensor): Inputs to predict at, shape (n_test, m_inputs).
+            w (tensor, optional): Weights of inputs to predict at.
+            num_samples (int, optional): Number of ancestral samples. Defaults to 10000.
+            latent (bool, optional): Sample latent function instead of observations.
+                Defaults to False.
+            credible_bounds (bool, optional): Also return 95% credible bounds.
+                Defaults to True.
+
+        Returns:
+            np.ndarray: Predictive mean of the sum, shape (n_test,).
+            If credible_bounds=True, returns a 3-tuple:
+                (mean_sum, lower_sum, upper_sum), each shape (n_test,).
+        """
+        # Returns list of (n_test, m) arrays, or single array if num_samples=1
+        samples = self.sample(
+            x,
+            w=w,
+            num_samples=num_samples,
+            latent=latent,
+            posterior=True,
+        )
+
+        # Ensure we always have a list
+        if not isinstance(samples, list):
+            samples = [samples]
+
+        # Stack to (num_samples, n_test, m), then sum over outputs -> (num_samples, n_test)
+        samples = np.stack(samples, axis=0)  # (num_samples, n_test, m)
+        sum_samples = samples.sum(axis=-1)  # (num_samples, n_test)
+
+        mean_sum = sum_samples.mean(axis=0)  # (n_test,)
+
+        if credible_bounds:
+            lower = np.percentile(sum_samples, 2.5, axis=0)  # (n_test,)
+            upper = np.percentile(sum_samples, 97.5, axis=0)  # (n_test,)
+            return mean_sum, lower, upper
+
+        return mean_sum
+
+
+    def predict(self, x, w=None, num_samples=100, latent=False, credible_bounds=False, sum_outputs=False):
         """Predict at new inputs.
 
         Args:
@@ -574,12 +654,16 @@ class GPARRegressor:
             w (tensor, optional): Weights of inputs to predict at.
             num_samples (int, optional): Number of samples. Defaults to `100`.
             latent (bool, optional): Predict the latent function instead of
-                observations. Defaults to `True`.
+                observations. Defaults to `False`.
             credible_bounds (bool, optional): Also return 95% central marginal
                 credible bounds for the predictions.
+            sum_outputs (bool, optional): Return predictions for the sum of all
+                outputs rather than each output individually. When True, returns
+                arrays of shape (n_test,) instead of (n_test, m). Defaults to `False`.
 
         Returns:
-            tensor: Predictive means. If `credible_bounds` is set to true,
+            tensor: Predictive means of shape (n_test, m), or (n_test,) if
+                sum_outputs is True. If `credible_bounds` is set to True,
                 a three-tuple will be returned containing the predictive means,
                 lower credible bounds, and upper credible bounds.
         """
@@ -588,13 +672,27 @@ class GPARRegressor:
             x, w, num_samples=num_samples, latent=latent, posterior=True
         )
 
-        # Compute mean.
-        mean = np.mean(samples, axis=0)
+        # Ensure list for consistent handling.
+        if not isinstance(samples, list):
+            samples = [samples]
+
+        # Stack to (num_samples, n_test, m).
+        samples = np.stack(samples, axis=0)
+
+        # Sum over output dimension if requested, giving (num_samples, n_test).
+        if sum_outputs:
+            samples = samples.sum(axis=-1)
+
+        # Compute mean over samples: (n_test, m) or (n_test,).
+        mean = samples.mean(axis=0)
 
         if credible_bounds:
-            # Also return lower and upper credible bounds if asked for.
             lowers = np.percentile(samples, 2.5, axis=0)
-            uppers = np.percentile(samples, 100 - 2.5, axis=0)
+            uppers = np.percentile(samples, 97.5, axis=0)
             return mean, lowers, uppers
         else:
             return mean
+
+
+
+

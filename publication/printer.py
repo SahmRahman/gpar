@@ -64,6 +64,8 @@ all_input_cols = [
 ]
 
 
+# keeping the below for later logging + csv gen'ing
+
 log = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/History Log 10k.pkl")
 
 big_train = ph.read_pickle_as_dataframe(biggest_train_sample_path)

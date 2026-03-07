@@ -331,7 +331,7 @@ class WindFarmGPAR:
             MAE = np.mean(results_df['Error'].iloc[0][col]['Absolute Error'])
 
             df_modelling_history = libs.ph.get_model_history()
-            turbine_num = int(col.split(' ')[1])
+            turbine_num = int(col.split(' ')[1]) if col != 'Wind Farm Power' else 6
             model_metadata = {
                 'Turbine Count': len(turbine_permutation),
                 'Turbine Permutation': turbine_permutation,
@@ -353,6 +353,7 @@ class WindFarmGPAR:
                     modelling_history_path,
                     store_posterior,
                     predict_only=False,
+                    sum_outputs=False,
                     turbine_permutation=[]):
         """
         fit model to train data, draw samples from resulting posterior and log the results
@@ -367,6 +368,7 @@ class WindFarmGPAR:
         :param turbine_permutation: order of turbines in model, list of ints
         :param modelling_history_path: path to modelling history pickle file to append to, string
         :param predict_only: boolean to condition instead of train from scratch
+        :param sum_outputs: boolean to sum outputs from joint instead of returning individually
         :param store_posterior: boolean, store estimated posterior parameters as a new model in Models.pkl
         :return: NONE
 
@@ -406,7 +408,11 @@ class WindFarmGPAR:
         # collect metadata
         means, lowers, uppers = self.model.predict(test_x,
                                                    num_samples=150,
-                                                   credible_bounds=True)
+                                                   credible_bounds=True,
+                                                   sum_outputs=sum_outputs)
+        if sum_outputs:
+            test_y = test_y.sum(axis=1)
+            # sum across turbines (columns) for comparison
 
         error = {"SE": (means - test_y) ** 2,
                  "AE": np.absolute(means - test_y)}
@@ -416,15 +422,31 @@ class WindFarmGPAR:
 
         # ================ organise and log results ================
 
-        metadata = {
-            # uses dictionary comprehensions
-            # ------- {key:  value                for key,value in iterable}
-            "Means": [{name: means[:, i].tolist() for i, name in enumerate(output_columns)}],
-            "Lowers": [{name: lowers[:, i].tolist() for i, name in enumerate(output_columns)}],
-            "Uppers": [{name: uppers[:, i].tolist() for i, name in enumerate(output_columns)}],
-            "Error": [{name: {"Squared Error": error['SE'][:, i].tolist(),
-                              "Absolute Error": error['AE'][:, i].tolist()} for i, name in enumerate(output_columns)}]
-        }
+        metadata = {}
+
+        if sum_outputs:
+            metadata = {
+                # uses dictionary comprehensions
+                # ------- {key:  value                for key,value in iterable}
+                "Means": [{output_columns[0]: means.tolist()}],
+                "Lowers": [{output_columns[0]: lowers.tolist()}],
+                "Uppers": [{output_columns[0]: uppers.tolist()}],
+                "Error": [{output_columns[0]: {"Squared Error": error['SE'].tolist(),
+                                               "Absolute Error": error['AE'].tolist()}}]
+            }
+            # had to get rid of [:, i] for indexing the means, lowers and uppers, ndarrays
+            # because they're 1D here (we summed across columns!)
+
+        else:
+            metadata = {
+                # uses dictionary comprehensions
+                # ------- {key:  value                for key,value in iterable}
+                "Means": [{name: means[:, i].tolist() for i, name in enumerate(output_columns)}],
+                "Lowers": [{name: lowers[:, i].tolist() for i, name in enumerate(output_columns)}],
+                "Uppers": [{name: uppers[:, i].tolist() for i, name in enumerate(output_columns)}],
+                "Error": [{name: {"Squared Error": error['SE'][:, i].tolist(),
+                                  "Absolute Error": error['AE'][:, i].tolist()} for i, name in enumerate(output_columns)}]
+            }
         # dictionary with list values (of one length),
         # each list consists of one dictionary where the output column
         #   is matched to its respective statistic list

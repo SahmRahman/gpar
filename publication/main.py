@@ -68,9 +68,9 @@ def sample_complete_training_data(n=1000):
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Training Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Test Sample.pkl")
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.temp.me']
 
@@ -183,7 +183,7 @@ train_indices = train_sample['index'].values.tolist()
 test_indices = test_sample['index'].values.tolist()
 input_columns = input_col_names
 # output_columns = [f'Turbine {i} Power' for i in range(1, 7)]
-output_columns = [f'Turbine {i} Power' for i in turbines]
+output_columns = ['Wind Farm Power']  # MUST USE 'Wind Farm Power', I've hardcoded this...!
 
 try:
     model.train_model(train_x=train_x,
@@ -197,7 +197,8 @@ try:
                       turbine_permutation=turbines,
                       modelling_history_path=model_history_path,
                       store_posterior=True,
-                      predict_only=False
+                      predict_only=False,
+                      sum_outputs=True
                       )
 except Exception as e:
     print(f"Failed with Exception {e}.")
