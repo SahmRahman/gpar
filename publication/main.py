@@ -68,9 +68,9 @@ def sample_complete_training_data(n=1000):
 
 
 train_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Training Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Training Sample.pkl")
 test_sample = ph.read_pickle_as_dataframe(
-    "/Users/sahmrahman/Desktop/GitHub2/publication/Test Sample.pkl")
+    "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
 
 input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.temp.me']
 
