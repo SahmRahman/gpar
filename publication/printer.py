@@ -63,8 +63,28 @@ all_input_cols = [
     'Wind.dir.cos.max'
 ]
 
+df_1k = pd.read_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Output Data - Whole Farm.csv")
+df_10k = pd.read_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/Output Data - Whole Farm.csv")
+
+test = ph.read_pickle_as_dataframe(test_sample_path)
+big_test = ph.read_pickle_as_dataframe(biggest_test_sample_path)
+
+prev_cols = df_1k.columns
+new_cols = ['Date.time', 'Power.me']
+
+output_1k_df = test.loc[:, new_cols].groupby()
+output_10k_df = big_test.loc[:, new_cols]
+
+df_1k[new_cols] = output_1k_df.values()
+df_10k[new_cols] = output_10k_df.values()
+
+df_1k = df_1k[new_cols + prev_cols.to_list()[1:]]
+df_10k = df_10k[new_cols + prev_cols.to_list()[1:]]
+
 
 # keeping the below for later logging + csv gen'ing
+
+sys.exit(0)
 
 log = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/History Log 10k.pkl")
 
