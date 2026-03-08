@@ -1,3 +1,5 @@
+import sys
+
 from libraries import plt, np, os, datetime, ph, pd
 from GPARModel import WindFarmGPAR
 
@@ -10,7 +12,9 @@ def contains_illegal_chars(value, name):
         raise ValueError(f"{name} contains illegal characters: {illegal_characters}")
 
 
-def plot_graph(x, y_list, model_history_index,
+
+def plot_graph(x, y_list,
+               model_history_index=None,
                intervals=False,
                calibration=0,
                labels=None,
@@ -26,26 +30,6 @@ def plot_graph(x, y_list, model_history_index,
                x_date=True,
                legend_loc='upper right',
                fig_size=(12, 6)):
-    """
-    Plots a graph using the given x values and multiple y datasets with optional customization.
-
-    Parameters:
-    - x: List or array-like, x-axis values
-    - y_list: List of List or array-like, y-axis values for each dataset
-    - model_history_index: int, index in Modelling History X.pkl where this data was pulled
-    - intervals: boolean, optional, will plot last two lists in y_list as an interval
-    - calibration: float (between 0 and 1), optional, proportion of test data captured by intervals
-    - labels: List of str, optional, labels for each dataset (excluding confidence interval)
-    - colors: List of str, optional, colors for each dataset (excluding confidence interval)
-    - x_label: str, optional, label for the x-axis
-    - y_label: str, optional, label for the y-axis
-    - title: str, optional, title of the graph
-    - x_limits: tuple, optional, (min, max) limits for the x-axis
-    - y_limits: tuple, optional, (min, max) limits for the y-axis
-    - save_path: str, optional, directory to save the figure
-    - hollow: boolean, optional, hollow points
-    - fig_size: tuple, optional, figure size of plot
-    """
 
     illegal_characters = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0']
 
@@ -58,15 +42,24 @@ def plot_graph(x, y_list, model_history_index,
     plt.figure(figsize=fig_size)
 
     if not intervals:
+
         for i, y in enumerate(y_list):
+
             color = colors[i] if colors and i < len(colors) else None
             label = labels[i] if labels and i < len(labels) else None
+
             if hollow:
-                plt.scatter(x, y, label=label, edgecolors='black', facecolors='none', marker='o')
+                plt.scatter(x, y, label=label,
+                            edgecolors='black',
+                            facecolors='none',
+                            marker='o')
             else:
-                plt.scatter(x, y, label=label, color=color, marker='o')
+                plt.scatter(x, y, label=label,
+                            color=color,
+                            marker='o')
 
     else:
+
         observations = np.array(y_list[0])
         uppers = np.array(y_list[-1])
         lowers = np.array(y_list[-2])
@@ -75,7 +68,6 @@ def plot_graph(x, y_list, model_history_index,
         # sort all x-dependent arrays
         sorted_indices = np.argsort(x)
         x_sorted = x[sorted_indices]
-        x_pos = np.arange(len(x_sorted))
 
         observations = observations[sorted_indices]
         uppers = uppers[sorted_indices]
@@ -86,50 +78,100 @@ def plot_graph(x, y_list, model_history_index,
 
         # Plot observations in/out CI
         if not hollow and plot_within:
-            plt.scatter(x_pos[inside_CI], observations[inside_CI], label="Observations inside CI", c='black',
-                        marker='o', s=15)
-        elif plot_within:
-            plt.scatter(x_pos[inside_CI], observations[inside_CI], label="Observations inside CI", edgecolors='black',
-                        facecolors='none', marker='o', s=15)
+            plt.scatter(x_sorted[inside_CI],
+                        observations[inside_CI],
+                        label="Observations inside CI",
+                        c='black',
+                        marker='o',
+                        s=15)
 
-        plt.scatter(x_pos[~inside_CI], observations[~inside_CI], label="Observations outside CI", c='red', marker='o',
+        elif plot_within:
+            plt.scatter(x_sorted[inside_CI],
+                        observations[inside_CI],
+                        label="Observations inside CI",
+                        edgecolors='black',
+                        facecolors='none',
+                        marker='o',
+                        s=15)
+
+        plt.scatter(x_sorted[~inside_CI],
+                    observations[~inside_CI],
+                    label="Observations outside CI",
+                    c='red',
+                    marker='o',
                     s=60)
 
-        # plot intermediate curves in y_list
+        # plot intermediate curves
         for i, y in enumerate(y_list):
+
             if 0 < i < len(y_list) - 2:
+
                 y = np.array(y)[sorted_indices]
+
                 color = colors[i] if colors and i < len(colors) else None
                 label = labels[i] if labels and i < len(labels) else None
+
                 if not hollow:
-                    plt.scatter(x_pos, y, label=label, color=color, marker='o')
+                    plt.scatter(x_sorted, y,
+                                label=label,
+                                color=color,
+                                marker='o')
                 else:
-                    plt.scatter(x_pos, y, label=label, edgecolors=color, facecolors='none', marker='o')
+                    plt.scatter(x_sorted, y,
+                                label=label,
+                                edgecolors=color,
+                                facecolors='none',
+                                marker='o')
 
         # CI bars
         y_sorted = 0.5 * (uppers + lowers)
+
         yerr_lower = y_sorted - lowers
         yerr_upper = uppers - y_sorted
 
         plt.errorbar(
-            x_pos, y_sorted,
+            x_sorted,
+            y_sorted,
             yerr=[yerr_lower, yerr_upper],
-            fmt='none', color='black', ecolor='lightblue', elinewidth=1, capsize=3,
+            fmt='none',
+            color='black',
+            ecolor='lightblue',
+            elinewidth=1,
+            capsize=3,
             label='95% Confidence Interval'
         )
 
-        # reduce the number of x-ticks
-        tick_interval = len(x_sorted) // 7  # show 7 ticks
-        if x_date:
-            plt.xticks(x_pos[::tick_interval], [pd.to_datetime(ts).strftime('%Y-%m-%d') for ts in x_sorted[::tick_interval]])
+        # determine tick range
+        if x_limits:
+            start, end = x_limits
         else:
-            plt.xticks(x_pos[::tick_interval], [round(num, 2) for num in x_sorted[::tick_interval]])
+            start, end = x_sorted.min(), x_sorted.max()
 
+        # generate ticks with step size 2
+        tick_positions = list(np.arange(start, end, 2))
+
+        # ensure the starting point is included
+        if not tick_positions or tick_positions[0] != start:
+            tick_positions.insert(0, start)
+
+        # ensure the final bound is included
+        if tick_positions[-1] != end:
+            tick_positions.append(end)
+
+        # labels
+        if x_date:
+            tick_labels = [pd.to_datetime(ts).strftime('%Y-%m-%d') for ts in tick_positions]
+        else:
+            tick_labels = [round(num, 2) for num in tick_positions]
+
+        plt.xticks(tick_positions, tick_labels)
 
     if x_label:
         plt.xlabel(x_label)
+
     if y_label:
         plt.ylabel(y_label)
+
     if title:
         plt.title(title)
     else:
@@ -137,29 +179,37 @@ def plot_graph(x, y_list, model_history_index,
 
     if x_limits:
         plt.xlim(x_limits)
+
     if y_limits:
         plt.ylim(y_limits)
 
     # legend handling
     if labels:
         handles, legend_labels = plt.gca().get_legend_handles_labels()
+
         if calibration > 0:
             handles.append(plt.Line2D([0], [0], linestyle="none"))
             legend_labels.append(f"Calibration {round(calibration * 100, 2)}%")
+
         plt.legend(handles, legend_labels, loc=legend_loc)
 
     plt.grid(False)
 
     if save_path:
-        filename = title if title else f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}"
+
+        filename = title if title else \
+            f"{datetime.now().strftime('%Y-%m-%d_%H-%M')} - {x_label} vs {y_label} - Modelling History Index {model_history_index}"
+
         full_path = os.path.join(save_path, filename + '.png')
+
         plt.savefig(full_path)
+
         print(f"Figure saved at: {full_path}")
+
     else:
         plt.show()
 
     plt.close()
-
 
 def plot_model_metadata(indices=[], save_path=''):
     df_model_metadata = ph.read_pickle_as_dataframe(model_metadata_path)
@@ -441,18 +491,19 @@ def plot_wind_speed_forecast(test_data, gpar_history_indices, turbine, gpar_perm
 
 
 perm = [3,4,5,1,2,6]
-test_data = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl")
-for turbine in perm:
-    continue
-    plot_wind_speed_forecast(test_data=test_data,
-                             gpar_history_indices=[10693],
-                             turbine=turbine,
-                             gpar_permutation=perm,
-                             hollow=False,
-                             plot_within=False,
-                             save_path="/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=10000/GPAR/Forecast/By Wind Speed")
-
-
-
-# [49829, 49830, 49831, 49832, 49833, 49834])
-pass
+output_sum = pd.read_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Output Data - Whole Farm.csv")
+test_data = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Test Sample.pkl")
+plot_graph(x=test_data[test_data['turbine']==1]['Wind.speed.me'],
+           y_list=[output_sum['Power.me'],
+                   output_sum['Lowers'],
+                   output_sum['Uppers'],
+                   ],
+           intervals=True,
+           x_label="Wind Speed (mps)",
+           y_label="Wind Farm Power (kwh)",
+           title="Wind Farm Power Prediction on Wind Speed (read from Turbine 1) - 1k Training Data",
+           save_path="/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/",
+           plot_within=False,
+           x_date=False,
+           x_limits=(0,16),
+           fig_size=(12,6))
