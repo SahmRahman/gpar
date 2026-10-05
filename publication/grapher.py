@@ -506,4 +506,4 @@ plot_graph(x=test_data[test_data['turbine']==1]['Wind.speed.me'],
            plot_within=False,
            x_date=False,
            x_limits=(0,16),
-           fig_size=(12,6))
+           fig_size=(20,6))
