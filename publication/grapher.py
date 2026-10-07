@@ -393,17 +393,38 @@ def print_model_metadata(indices=[]):
         print()  # just to have a blank line to break up the turbines
 
 
-def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_permutation, mtgp_combination=None, save_path=None, hollow=True, legend_loc='upper center'):
-    turbine_perm = [f'Turbine {i} Power' for i in gpar_permutation]
-    test_data = test_data[test_data['turbine'] == turbine]
+def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_permutation, mtgp_combination=None,
+                             save_path=None, hollow=True, legend_loc='upper center', farm_power=False):
+    """
+    farm_power: set True for a run trained with sum_outputs=True /
+    output_columns=['Wind Farm Power'] (e.g. the 1K/10K experiment runs).
+    This switches the Output Columns match and the Means/Lowers/Uppers key
+    from the per-turbine 'Turbine {turbine} Power' lookup to 'Wind Farm
+    Power', sums test_data's actual Power.me across all turbines per
+    timestamp instead of filtering to a single turbine, and swaps the
+    label fed into plot_graph's title/y_label accordingly. `turbine` is
+    ignored when farm_power=True.
+    """
+    if farm_power:
+        output_key = 'Wind Farm Power'
+        expected_output_columns = ['Wind Farm Power']
+        test_data = test_data.groupby('Date.time', as_index=False)['Power.me'].sum()
+        plot_label = 'Wind Farm'
+    else:
+        output_key = f'Turbine {turbine} Power'
+        expected_output_columns = [f'Turbine {i} Power' for i in gpar_permutation]
+        test_data = test_data[test_data['turbine'] == turbine]
+        plot_label = f'Turbine {turbine}'
 
     gpar_history = ph.get_model_history().loc[gpar_history_indices]
-    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: len(x) == len(turbine_perm))]
-    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: x == turbine_perm)]
+    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: len(x) == len(expected_output_columns))]
+    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: x == expected_output_columns)]
 
     if mtgp_combination:
-        mtgp_history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
-        mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: len(x) == len(mtgp_combination))]
+        mtgp_history = ph.read_pickle_as_dataframe(
+            "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
+        mtgp_history = mtgp_history[
+            mtgp_history['Turbine Combination'].apply(lambda x: len(x) == len(mtgp_combination))]
         mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: x == mtgp_combination)]
         mtgp_history = mtgp_history[mtgp_history['Turbine'] == turbine]
 
@@ -411,11 +432,9 @@ def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_perm
         test_data['MTGP Uppers'] = mtgp_history['Uppers'].iloc[0]
         test_data['MTGP Lowers'] = mtgp_history['Lowers'].iloc[0]
 
-    test_data['GPAR Means'] = gpar_history['Means'].iloc[0][f'Turbine {turbine} Power']
-    test_data['GPAR Uppers'] = gpar_history['Uppers'].iloc[0][f'Turbine {turbine} Power']
-    test_data['GPAR Lowers'] = gpar_history['Lowers'].iloc[0][f'Turbine {turbine} Power']
-
-
+    test_data['GPAR Means'] = gpar_history['Means'].iloc[0][output_key]
+    test_data['GPAR Uppers'] = gpar_history['Uppers'].iloc[0][output_key]
+    test_data['GPAR Lowers'] = gpar_history['Lowers'].iloc[0][output_key]
 
     sorted_test_data = test_data.sort_values(by='Date.time', ascending=True)
 
@@ -424,33 +443,53 @@ def plot_forecast_comparison(test_data, gpar_history_indices, turbine, gpar_perm
                        # sorted_test_data['MTGP Means'].values,
                        sorted_test_data['GPAR Lowers'].values,
                        sorted_test_data['GPAR Uppers'].values],
-                       # sorted_test_data['MTGP Lowers'],
-                       # sorted_test_data['MTGP Uppers']],
+               # sorted_test_data['MTGP Lowers'],
+               # sorted_test_data['MTGP Uppers']],
                labels=['Observations', 'GPAR Upper', 'GPAR Lower'],
                colors=['black', 'blue', 'red'],
-               title=f'Prediction for Turbine {turbine} with Permutation {gpar_permutation}',
+               title=f'Prediction for {plot_label} with Permutation {gpar_permutation}',
                model_history_index=-1,
                intervals=True,
                save_path=save_path,
                hollow=hollow,
                legend_loc=legend_loc,
                fig_size=(18, 12),
-               y_label="Power (kWh)"
+               y_label=f"{plot_label} Power (kWh)"
                )
 
     return
 
-def plot_wind_speed_forecast(test_data, gpar_history_indices, turbine, gpar_permutation, mtgp_combination=None, save_path=None, hollow=True, plot_within=True, legend_loc='upper center'):
-    turbine_perm = [f'Turbine {i} Power' for i in gpar_permutation]
-    test_data = test_data[test_data['turbine'] == turbine]
+
+def plot_wind_speed_forecast(test_data, gpar_history_indices, turbine, gpar_permutation, mtgp_combination=None,
+                             save_path=None, hollow=True, plot_within=True, legend_loc='upper center',
+                             farm_power=False, repetition=None):
+    """See plot_forecast_comparison's farm_power docstring -- identical
+    adjustment, just plotted against wind speed instead of time."""
+    if farm_power:
+        output_key = 'Wind Farm Power'
+        expected_output_columns = ['Wind Farm Power']
+        # wind speed is turbine-specific (Wind.speed.me differs by turbine),
+        # so keep one turbine's readings for the x-axis while summing the
+        # observed power across all turbines for the y-axis.
+        wind_speed_by_time = test_data[test_data['turbine'] == turbine][['Date.time', 'Wind.speed.me']]
+        test_data = test_data.groupby('Date.time', as_index=False)['Power.me'].sum()
+        test_data = test_data.merge(wind_speed_by_time, on='Date.time')
+        plot_label = 'Wind Farm'
+    else:
+        output_key = f'Turbine {turbine} Power'
+        expected_output_columns = [f'Turbine {i} Power' for i in gpar_permutation]
+        test_data = test_data[test_data['turbine'] == turbine]
+        plot_label = f'Turbine {turbine}'
 
     gpar_history = ph.get_model_history().loc[gpar_history_indices]
-    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: len(x) == len(turbine_perm))]
-    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: x == turbine_perm)]
+    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: len(x) == len(expected_output_columns))]
+    gpar_history = gpar_history[gpar_history['Output Columns'].apply(lambda x: x == expected_output_columns)]
 
     if mtgp_combination:
-        mtgp_history = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
-        mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: len(x) == len(mtgp_combination))]
+        mtgp_history = ph.read_pickle_as_dataframe(
+            "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/MTGP/Complete n=1000 run on Wind Speed, Direction and Temperature.pkl")
+        mtgp_history = mtgp_history[
+            mtgp_history['Turbine Combination'].apply(lambda x: len(x) == len(mtgp_combination))]
         mtgp_history = mtgp_history[mtgp_history['Turbine Combination'].apply(lambda x: x == mtgp_combination)]
         mtgp_history = mtgp_history[mtgp_history['Turbine'] == turbine]
 
@@ -458,11 +497,9 @@ def plot_wind_speed_forecast(test_data, gpar_history_indices, turbine, gpar_perm
         test_data['MTGP Uppers'] = mtgp_history['Uppers'].iloc[0]
         test_data['MTGP Lowers'] = mtgp_history['Lowers'].iloc[0]
 
-    test_data['GPAR Means'] = gpar_history['Means'].iloc[0][f'Turbine {turbine} Power']
-    test_data['GPAR Uppers'] = gpar_history['Uppers'].iloc[0][f'Turbine {turbine} Power']
-    test_data['GPAR Lowers'] = gpar_history['Lowers'].iloc[0][f'Turbine {turbine} Power']
-
-
+    test_data['GPAR Means'] = gpar_history['Means'].iloc[0][output_key]
+    test_data['GPAR Uppers'] = gpar_history['Uppers'].iloc[0][output_key]
+    test_data['GPAR Lowers'] = gpar_history['Lowers'].iloc[0][output_key]
 
     sorted_test_data = test_data.sort_values(by='Wind.speed.me', ascending=True)
 
@@ -471,11 +508,11 @@ def plot_wind_speed_forecast(test_data, gpar_history_indices, turbine, gpar_perm
                        # sorted_test_data['MTGP Means'].values,
                        sorted_test_data['GPAR Lowers'].values,
                        sorted_test_data['GPAR Uppers'].values],
-                       # sorted_test_data['MTGP Lowers'],
-                       # sorted_test_data['MTGP Uppers']],
+               # sorted_test_data['MTGP Lowers'],
+               # sorted_test_data['MTGP Uppers']],
                labels=['Observations', 'GPAR Upper', 'GPAR Lower'],
                colors=['black', 'blue', 'red'],
-               title=f'Prediction for Turbine {turbine} with Permutation {gpar_permutation}',
+               title=f'Prediction {repetition if repetition else None} for {plot_label} with Permutation {gpar_permutation}',
                model_history_index=-1,
                intervals=True,
                save_path=save_path,
@@ -484,26 +521,39 @@ def plot_wind_speed_forecast(test_data, gpar_history_indices, turbine, gpar_perm
                legend_loc=legend_loc,
                fig_size=(18, 12),
                x_date=False,
-               y_label="Power (kWh)"
+               y_label=f"{plot_label} Power (kWh)"
                )
 
     return
 
 
-perm = [3,4,5,1,2,6]
-output_sum = pd.read_csv("/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Output Data - Whole Farm.csv")
-test_data = ph.read_pickle_as_dataframe("/Users/sahmrahman/Desktop/GitHub2/publication/Test Sample.pkl")
-plot_graph(x=test_data[test_data['turbine']==1]['Wind.speed.me'],
-           y_list=[output_sum['Power.me'],
-                   output_sum['Lowers'],
-                   output_sum['Uppers'],
-                   ],
-           intervals=True,
-           x_label="Wind Speed (mps)",
-           y_label="Wind Farm Power (kwh)",
-           title="Wind Farm Power Prediction on Wind Speed (read from Turbine 1) - 1k Training Data",
-           save_path="/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/",
-           plot_within=False,
-           x_date=False,
-           x_limits=(0,16),
-           fig_size=(20,6))
+if __name__ == "__main__":
+    perm = [3, 4, 5, 1, 2, 6]
+    test_pool_1k_path = "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl"  # same dummy path used in main.py
+
+    test_data = ph.read_pickle_as_dataframe(test_pool_1k_path)
+
+    # main.py's run_1k_setup appended exactly 10 rows to Modelling History 8
+    # (one per rep), immediately followed by run_10k_setup appending 1 more.
+    # ph.get_model_history() concatenates files 1-8 in order, with file 8
+    # last, so the 10 1K runs are the second-to-last 10 rows of the
+    # concatenation -- everything after them is the single 10K run.
+    N_1K_REPS = 10
+    N_NEW_TOTAL = N_1K_REPS # + 1  # + the one 10K run appended right after
+
+    history_df = ph.get_model_history()
+    new_indices = list(range(len(history_df) - N_NEW_TOTAL, len(history_df)))
+    one_k_indices = new_indices[:N_1K_REPS]  # excludes the trailing 10K run
+
+    for rep, history_index in enumerate(one_k_indices):
+        plot_wind_speed_forecast(
+            test_data=test_data,
+            gpar_history_indices=[history_index],
+            turbine=1,              # only picks which turbine's Wind.speed.me is used for the x-axis when farm_power=True
+            gpar_permutation=perm,
+            farm_power=True,
+            save_path=f"/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/GPAR/Rep runs for final publication",         # None -> plt.show(); pass a directory to save PNGs instead
+            legend_loc='upper center',
+            repetition=rep+1
+        )
+        print(f"Plotted 1K rep {rep} (Modelling History index {history_index})")
