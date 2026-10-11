@@ -7,6 +7,7 @@ import numpy as np
 from GPARModel import WindFarmGPAR
 import pickle_helper as ph
 import itertools
+import datetime
 
 model_history_path = '/Users/sahmrahman/Desktop/GitHub2/publication/Modelling History 8.pkl'
 models_path = WindFarmGPAR.models_filepath
@@ -77,6 +78,7 @@ input_cols = ['Wind.speed.me', 'Wind.dir.sin.me', 'Wind.dir.cos.me', 'Nacelle.te
 
 
 def sample_complete_training_data(n=1000):
+
     complete_df = ph.read_pickle_as_dataframe(complete_train_data_path)
     sample_times = pd.Series(complete_df['Date.time'].unique()).sample(n)
     sample = complete_df[complete_df['Date.time'].isin(sample_times)]
@@ -183,7 +185,7 @@ train_pool_10k_path = "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Tra
 test_pool_1k_path = "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test Sample.pkl"
 
 N_REPS_1K = 10          # drop to 3 if 10 full GP fits is too slow
-TRAIN_SIZE_1K = 990
+TRAIN_SIZE_1K = 1000
 N_RUNS_10K = 1          # >1 only useful if fitting itself is stochastic
 
 
@@ -256,6 +258,10 @@ def summarise(values):
     return {'mean': mean, 'se': se, 'n': n}
 
 
+hist = ph.read_pickle_as_dataframe(model_history_path).tail(20)
+
+sys.exit(0)
+
 # --- fixed test set, loaded once, used for BOTH setups ---
 test_pool_df = ph.read_pickle_as_dataframe(test_pool_1k_path)
 test_x_fixed, test_y_fixed = pivot_inputs_outputs(test_pool_df, turbines, input_col_names)
@@ -264,24 +270,28 @@ test_indices_fixed = test_pool_df['index'].values.tolist()
 # =============================================================================
 # 1K setup: resample 1,000 training points N_REPS_1K times, same fixed test set
 # =============================================================================
-train_pool_1k_df = ph.read_pickle_as_dataframe(train_pool_1k_path)
+complete_train_pool_df = ph.read_pickle_as_dataframe(complete_train_data_path)
 
 results_1k = []
-for rep in range(N_REPS_1K):
+for rep in range(1, N_REPS_1K+1):
     print(f"[1K rep {rep}] sampling and training...")
     try:
-        train_df = sample_n_unique_timestamps(train_pool_1k_df, TRAIN_SIZE_1K, seed=rep)
+        seed = rep + 1500
+        train_df = sample_n_unique_timestamps(pool_df=complete_train_pool_df, n=TRAIN_SIZE_1K, seed=seed)
         train_x, train_y = pivot_inputs_outputs(train_df, turbines, input_col_names)
         train_indices = train_df['index'].values.tolist()
 
         metrics = train_and_score(train_x, train_y, test_x_fixed, test_y_fixed,
                                   train_indices, test_indices_fixed)
         metrics['rep'] = rep
+        metrics['seed'] = seed
         results_1k.append(metrics)
+
     except Exception as e:
         print(f"[1K rep {rep}] Failed with Exception {e}.")
 
 results_1k_df = pd.DataFrame(results_1k)
+results_1k_df.to_csv(f"/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/GPAR/Rep runs for final publication/10 1k runs summary: {datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')}.csv")
 summary_1k = {metric: summarise(results_1k_df[metric]) for metric in ['MSE', 'MAE', 'Calibration']}
 
 print("\n1K setup -- per-repetition results:")
@@ -293,6 +303,9 @@ for metric, stats in summary_1k.items():
 # =============================================================================
 # 10K setup: full training pool, used as-is, scored on the SAME fixed test set
 # =============================================================================
+
+sys.exit(0)
+
 train_pool_10k_df = ph.read_pickle_as_dataframe(train_pool_10k_path)
 train_x_10k, train_y_10k = pivot_inputs_outputs(train_pool_10k_df, turbines, input_col_names)
 train_indices_10k = train_pool_10k_df['index'].values.tolist()
