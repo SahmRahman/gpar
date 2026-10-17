@@ -186,8 +186,8 @@ test_pool_1k_path = "/Users/sahmrahman/Desktop/GitHub2/publication/Biggest Test 
 
 N_REPS_1K = 10          # drop to 3 if 10 full GP fits is too slow
 TRAIN_SIZE_1K = 1000
-N_RUNS_10K = 1          # >1 only useful if fitting itself is stochastic
-
+N_RUNS_10K = 2          # >1 only useful if fitting itself is stochastic
+TRAIN_SIZE_10K = 10000
 
 def pivot_inputs_outputs(df, turbine_order, cols):
     """Pivot a long (timestamp x turbine) DataFrame into the wide arrays
@@ -258,14 +258,36 @@ def summarise(values):
     return {'mean': mean, 'se': se, 'n': n}
 
 
-hist = ph.read_pickle_as_dataframe(model_history_path).tail(20)
-
-sys.exit(0)
-
 # --- fixed test set, loaded once, used for BOTH setups ---
 test_pool_df = ph.read_pickle_as_dataframe(test_pool_1k_path)
 test_x_fixed, test_y_fixed = pivot_inputs_outputs(test_pool_df, turbines, input_col_names)
 test_indices_fixed = test_pool_df['index'].values.tolist()
+
+# --- results saving ---
+def check_writable(directory):
+    os.makedirs(directory, exist_ok=True)
+    probe = os.path.join(directory, ".write_test")
+    with open(probe, "w") as f:
+        f.write("ok")
+    os.remove(probe)
+
+
+out_dir_1k  = "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/1k/Rep runs for final publication/Complete Re-sample Run #2 - 20261017 13-29"
+out_dir_10k = "/Users/sahmrahman/Desktop/GitHub2/publication/Complete Runs/GPAR/Best Calibration/10k/Rep runs for final publication/Complete Re-sample Run #1 - 20261017 13-31"
+check_writable(out_dir_1k)    # raises immediately if either path is wrong
+check_writable(out_dir_10k)
+
+
+def save_results(out_dir, results, label, stamp):
+    path = os.path.join(out_dir, f"{label} {stamp}.csv")
+    try:
+        os.makedirs(out_dir, exist_ok=True)
+        pd.DataFrame(results).to_csv(path, index=False)
+    except Exception as e:
+        print(f"WARNING: could not save {path}: {e}")
+
+
+
 
 # =============================================================================
 # 1K setup: resample 1,000 training points N_REPS_1K times, same fixed test set
@@ -276,7 +298,7 @@ results_1k = []
 for rep in range(1, N_REPS_1K+1):
     print(f"[1K rep {rep}] sampling and training...")
     try:
-        seed = rep + 1500
+        seed = rep + 2500
         train_df = sample_n_unique_timestamps(pool_df=complete_train_pool_df, n=TRAIN_SIZE_1K, seed=seed)
         train_x, train_y = pivot_inputs_outputs(train_df, turbines, input_col_names)
         train_indices = train_df['index'].values.tolist()
@@ -287,46 +309,65 @@ for rep in range(1, N_REPS_1K+1):
         metrics['seed'] = seed
         results_1k.append(metrics)
 
+        stamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')  # define once, before the loops
+
+        save_results(out_dir=out_dir_1k,
+                     results=results_1k,
+                     label="1k runs summary",
+                     stamp=stamp)     # NEW
+
     except Exception as e:
         print(f"[1K rep {rep}] Failed with Exception {e}.")
 
 results_1k_df = pd.DataFrame(results_1k)
-results_1k_df.to_csv(f"/Users/sahmrahman/Desktop/GitHub2/publication/saved_graphs/Complete Runs/n=1000/GPAR/Rep runs for final publication/10 1k runs summary: {datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')}.csv")
-summary_1k = {metric: summarise(results_1k_df[metric]) for metric in ['MSE', 'MAE', 'Calibration']}
 
 print("\n1K setup -- per-repetition results:")
-print(results_1k_df)
-print("\n1K setup -- mean +/- standard error across repetitions:")
-for metric, stats in summary_1k.items():
-    print(f"  {metric}: {stats['mean']:.4f} +/- {stats['se']:.4f}  (n={stats['n']})")
+if results_1k_df.empty:
+    print("  All 1K reps failed -- nothing to summarise.")
+else:
+    print(results_1k_df)
+    summary_1k = {metric: summarise(results_1k_df[metric]) for metric in ['MSE', 'MAE', 'Calibration']}
+    print("\n1K setup -- mean +/- standard error across repetitions:")
+    for metric, stats in summary_1k.items():
+        print(f"  {metric}: {stats['mean']:.4f} +/- {stats['se']:.4f}  (n={stats['n']})")
 
 # =============================================================================
 # 10K setup: full training pool, used as-is, scored on the SAME fixed test set
 # =============================================================================
 
-sys.exit(0)
-
-train_pool_10k_df = ph.read_pickle_as_dataframe(train_pool_10k_path)
-train_x_10k, train_y_10k = pivot_inputs_outputs(train_pool_10k_df, turbines, input_col_names)
-train_indices_10k = train_pool_10k_df['index'].values.tolist()
-
 results_10k = []
 for run in range(N_RUNS_10K):
     print(f"[10K run {run}] training from scratch...")
     try:
-        metrics = train_and_score(train_x_10k, train_y_10k, test_x_fixed, test_y_fixed,
-                                  train_indices_10k, test_indices_fixed)
-        metrics['run'] = run
+        seed = run + 2500
+        train_df = sample_n_unique_timestamps(pool_df=complete_train_pool_df, n=TRAIN_SIZE_10K, seed=seed)
+        train_x, train_y = pivot_inputs_outputs(train_df, turbines, input_col_names)
+        train_indices = train_df['index'].values.tolist()
+
+        metrics = train_and_score(train_x, train_y, test_x_fixed, test_y_fixed,
+                                  train_indices, test_indices_fixed)
+        metrics['rep'] = run
+        metrics['seed'] = seed
         results_10k.append(metrics)
+
+        stamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')  # define once, before the loops
+
+        save_results(out_dir=out_dir_10k,
+                     results=results_10k,
+                     label="10k runs summary",
+                     stamp=stamp)   # NEW
+
     except Exception as e:
         print(f"[10K run {run}] Failed with Exception {e}.")
 
 results_10k_df = pd.DataFrame(results_10k)
 print("\n10K setup -- results:")
-print(results_10k_df)
-
-if N_RUNS_10K > 1:
-    summary_10k = {metric: summarise(results_10k_df[metric]) for metric in ['MSE', 'MAE', 'Calibration']}
-    print("\n10K setup -- mean +/- standard error across runs:")
-    for metric, stats in summary_10k.items():
-        print(f"  {metric}: {stats['mean']:.4f} +/- {stats['se']:.4f}  (n={stats['n']})")
+if results_10k_df.empty:
+    print("  All 10K runs failed -- nothing to summarise.")
+else:
+    print(results_10k_df)
+    if len(results_10k_df) > 1:
+        summary_10k = {metric: summarise(results_10k_df[metric]) for metric in ['MSE', 'MAE', 'Calibration']}
+        print("\n10K setup -- mean +/- standard error across runs:")
+        for metric, stats in summary_10k.items():
+            print(f"  {metric}: {stats['mean']:.4f} +/- {stats['se']:.4f}  (n={stats['n']})")
